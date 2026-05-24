@@ -1,0 +1,1056 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  /* ===== Apple Design System ===== */
+  @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --apple-blue: #007AFF;
+    --apple-blue-dark: #0056CC;
+    --apple-bg: #F2F2F7;
+    --apple-card: #FFFFFF;
+    --apple-separator: rgba(60,60,67,0.18);
+    --apple-label: rgba(60,60,67,0.6);
+    --apple-text: #1C1C1E;
+    --apple-secondary-bg: #EFEFF4;
+    --apple-green: #34C759;
+    --apple-orange: #FF9500;
+    --apple-red: #FF3B30;
+    --apple-radius: 16px;
+    --apple-radius-lg: 22px;
+  }
+
+  html.dark {
+    --apple-bg: #000000;
+    --apple-card: #1C1C1E;
+    --apple-separator: rgba(84,84,88,0.6);
+    --apple-label: rgba(235,235,245,0.6);
+    --apple-text: #FFFFFF;
+    --apple-secondary-bg: #2C2C2E;
+  }
+
+  html.light {
+    --apple-bg: #F2F2F7;
+    --apple-card: #FFFFFF;
+    --apple-separator: rgba(60,60,67,0.18);
+    --apple-label: rgba(60,60,67,0.6);
+    --apple-text: #1C1C1E;
+    --apple-secondary-bg: #EFEFF4;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --apple-bg: #000000;
+      --apple-card: #1C1C1E;
+      --apple-separator: rgba(84,84,88,0.6);
+      --apple-label: rgba(235,235,245,0.6);
+      --apple-text: #FFFFFF;
+      --apple-secondary-bg: #2C2C2E;
+    }
+  }
+
+  html, body {
+    overflow-x: hidden;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+
+  body {
+    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: var(--apple-bg);
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.3s ease;
+    overflow-y: auto;
+  }
+
+  /* Hide webkit scrollbar entirely */
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Container */
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 20px 36px;
+  }
+
+  /* Header area with icon */
+  .page-header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .page-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(145deg, #007AFF, #5AC8FA);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    box-shadow: 0 8px 24px rgba(0,122,255,0.3);
+    font-size: 30px;
+    color: white;
+  }
+  .page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--apple-text);
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--apple-label);
+  }
+
+  /* Section label */
+  .lbl {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--apple-label);
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+
+  /* Drop zone */
+  .drop {
+    border: 1.5px dashed var(--apple-separator);
+    border-radius: var(--apple-radius);
+    padding: 28px 16px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--apple-card);
+    transition: all 0.2s ease;
+    margin-bottom: 16px;
+  }
+  .drop:hover, .drop.over {
+    background: var(--apple-secondary-bg);
+    border-color: var(--apple-blue);
+  }
+  .drop-icon { font-size: 32px; color: var(--apple-blue); margin-bottom: 10px; }
+  .drop-t { font-size: 15px; font-weight: 600; color: var(--apple-text); margin-bottom: 4px; }
+  .drop-s { font-size: 13px; color: var(--apple-label); }
+  .badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; justify-content: center; }
+  .badge {
+    font-size: 10px;
+    background: var(--apple-secondary-bg);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: 6px;
+    padding: 3px 8px;
+    color: var(--apple-label);
+  }
+
+  /* Stats row */
+  .stat-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin: 12px 0 0; }
+  .stat {
+    background: var(--apple-card);
+    border-radius: 14px;
+    padding: 10px;
+    text-align: center;
+    border: 0.5px solid var(--apple-separator);
+  }
+  .stat-n { font-size: 20px; font-weight: 600; color: var(--apple-text); }
+  .stat-l { font-size: 10px; color: var(--apple-label); margin-top: 2px; }
+
+  /* Cards */
+  .card {
+    background: var(--apple-card);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: var(--apple-radius-lg);
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  /* Grid rows */
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; color: var(--apple-label); font-weight: 500; }
+
+  /* Inputs */
+  .inp {
+    background: var(--apple-secondary-bg);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 14px;
+    color: var(--apple-text);
+    outline: none;
+    font-family: inherit;
+    width: 100%;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .inp:focus { border-color: var(--apple-blue); box-shadow: 0 0 0 3px rgba(0,122,255,.15); }
+  select.inp { cursor: pointer; }
+
+  /* Sequence preview */
+  .seq-box {
+    background: var(--apple-secondary-bg);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-top: 10px;
+  }
+  .seq-title { font-size: 11px; color: var(--apple-label); margin-bottom: 6px; }
+  .seq-chips { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+  .seq-chip {
+    font-size: 12px;
+    background: var(--apple-card);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: 8px;
+    padding: 3px 10px;
+    color: var(--apple-text);
+    font-family: 'SF Mono', Menlo, monospace;
+  }
+  .seq-more { font-size: 11px; color: var(--apple-label); }
+
+  /* Sort buttons */
+  .sort-row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .sort-btn {
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 99px;
+    border: 0.5px solid var(--apple-separator);
+    background: var(--apple-secondary-bg);
+    color: var(--apple-label);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .sort-btn.active { background: var(--apple-blue); color: #fff; border-color: var(--apple-blue); }
+  .sort-btn:hover:not(.active) { background: var(--apple-separator); color: var(--apple-text); }
+
+  /* Preview strip */
+  .pvstrip {
+    background: var(--apple-secondary-bg);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: 'SF Mono', Menlo, monospace;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    border: 0.5px solid var(--apple-separator);
+  }
+  .pv-old { color: var(--apple-label); }
+  .pv-arr { color: var(--apple-blue); }
+  .pv-new { color: var(--apple-green); font-weight: 600; }
+
+  /* Toggle rows */
+  .tgl-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 0;
+    border-bottom: 0.5px solid var(--apple-separator);
+  }
+  .tgl-row:last-child { border-bottom: none; }
+  .tgl-info { display: flex; flex-direction: column; gap: 2px; }
+  .tgl-lbl { font-size: 14px; color: var(--apple-text); }
+  .tgl-sub { font-size: 11px; color: var(--apple-label); }
+  .tgl { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
+  .tgl input { opacity: 0; width: 0; height: 0; }
+  .tsl {
+    position: absolute;
+    inset: 0;
+    background: #E5E5EA;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: 0.25s;
+  }
+  .tsl:before {
+    content: '';
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: 0.25s;
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  }
+  .tgl input:checked + .tsl { background: var(--apple-green); }
+  .tgl input:checked + .tsl:before { transform: translateX(20px); }
+  html.dark .tsl { background: #3A3A3C; }
+
+  /* Progress */
+  .fc { font-size: 12px; color: var(--apple-label); margin: 10px 0 5px; }
+  .prog-w { height: 4px; background: var(--apple-secondary-bg); border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
+  .prog-f { height: 100%; width: 0%; background: var(--apple-blue); border-radius: 99px; transition: width .1s; }
+
+  /* File list */
+  .flist { max-height: 140px; overflow-y: auto; border: 0.5px solid var(--apple-separator); border-radius: 12px; }
+  .fi { display: flex; align-items: center; gap: 6px; padding: 7px 12px; font-size: 12px; border-bottom: 0.5px solid var(--apple-separator); }
+  .fi:last-child { border-bottom: none; }
+  .fi:hover { background: var(--apple-secondary-bg); }
+  .fi-ext {
+    font-size: 9px;
+    background: var(--apple-secondary-bg);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: var(--apple-label);
+    font-family: monospace;
+    flex-shrink: 0;
+  }
+  .fi-old { flex: 1; color: var(--apple-label); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fi-new { color: var(--apple-green); font-weight: 500; white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Extension chips */
+  .ext-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--apple-secondary-bg);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: 99px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: var(--apple-blue);
+    margin: 3px;
+  }
+  .ext-chip button { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--apple-blue); line-height: 1; padding: 0; }
+
+  /* Divider */
+  .divider { border: none; border-top: 0.5px solid var(--apple-separator); margin: 16px 0; }
+
+  /* Buttons */
+  .btn-p {
+    width: 100%;
+    padding: 15px;
+    background: var(--apple-blue);
+    color: #fff;
+    border: none;
+    border-radius: var(--apple-radius-lg);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-p:hover { background: var(--apple-blue-dark); }
+  .btn-p:active { transform: scale(.98); }
+  .btn-p:disabled { opacity: .4; cursor: not-allowed; }
+
+  .btn-s {
+    width: 100%;
+    padding: 12px;
+    background: var(--apple-secondary-bg);
+    color: var(--apple-text);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: var(--apple-radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .btn-s:hover { background: var(--apple-separator); }
+  .btn-s:disabled { opacity: .4; cursor: not-allowed; }
+
+  .btn-undo {
+    background: var(--apple-secondary-bg);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: var(--apple-radius);
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--apple-text);
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .btn-undo:hover { background: var(--apple-separator); }
+  .btn-undo:disabled { opacity: .35; cursor: not-allowed; }
+
+  .undo-stack { font-size: 11px; color: var(--apple-label); text-align: center; margin-top: 6px; }
+
+  /* Alert */
+  .alert {
+    font-size: 13px;
+    text-align: center;
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin-top: 10px;
+    display: none;
+    border: 0.5px solid transparent;
+  }
+  .alert.ok { background: #eaf3de; color: #3B6D11; border-color: #c0dd97; display: block; }
+  .alert.err { background: #fcebeb; color: #A32D2D; border-color: #f09595; display: block; }
+
+  .zprog { display: none; margin-top: 10px; }
+  .zinfo { font-size: 12px; color: var(--apple-label); margin-bottom: 4px; text-align: center; }
+</style>
+
+<div class="app" id="app">
+<div class="container">
+
+  <div class="page-header">
+    <div class="page-icon"><i class="ti ti-photo-edit" aria-hidden="true"></i></div>
+    <h1 class="page-title">Pengganti Nama File Pro</h1>
+    <p class="page-subtitle">Ubah nama banyak file dengan mudah dan cepat</p>
+  </div>
+
+
+    <div class="lbl">Pilih File</div>
+    <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
+      <input type="file" id="fi" multiple style="display:none">
+      <div class="drop-icon"><i class="ti ti-files" aria-hidden="true"></i></div>
+      <div class="drop-t">Semua format didukung — tanpa batasan</div>
+      <div class="drop-s">Seret & lepas atau klik untuk memilih</div>
+      <div class="badges">
+        <span class="badge">JPG PNG WEBP GIF</span><span class="badge">RAW CR2 NEF ARW DNG</span>
+        <span class="badge">HEIC HEIF AVIF</span><span class="badge">PSD TIFF BMP SVG</span><span class="badge">+ Semua format lain</span>
+      </div>
+    </div>
+
+    <div id="statsSection" style="display:none">
+      <div class="stat-row">
+        <div class="stat"><div class="stat-n" id="stTotal">0</div><div class="stat-l">Total File</div></div>
+        <div class="stat"><div class="stat-n" id="stSize">-</div><div class="stat-l">Ukuran</div></div>
+        <div class="stat"><div class="stat-n" id="stExt">0</div><div class="stat-l">Format</div></div>
+        <div class="stat"><div class="stat-n" id="stUndo">0</div><div class="stat-l">Riwayat Undo</div></div>
+      </div>
+      <div class="fc" id="fc"></div>
+      <div class="prog-w"><div class="prog-f" id="pf"></div></div>
+      <div class="flist" id="fl"></div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="lbl">Urutan & Sortir</div>
+    <div class="card">
+      <div class="lbl" style="margin-bottom:6px">Urutkan file berdasarkan</div>
+      <div class="sort-row">
+        <button class="sort-btn active" id="sb-name" onclick="setSort('name')"><i class="ti ti-sort-az" aria-hidden="true"></i> Nama A–Z</button>
+        <button class="sort-btn" id="sb-name-d" onclick="setSort('name-d')"><i class="ti ti-sort-za" aria-hidden="true"></i> Nama Z–A</button>
+        <button class="sort-btn" id="sb-size" onclick="setSort('size')"><i class="ti ti-arrow-up" aria-hidden="true"></i> Ukuran ↑</button>
+        <button class="sort-btn" id="sb-size-d" onclick="setSort('size-d')"><i class="ti ti-arrow-down" aria-hidden="true"></i> Ukuran ↓</button>
+        <button class="sort-btn" id="sb-ext" onclick="setSort('ext')"><i class="ti ti-file" aria-hidden="true"></i> Format</button>
+        <button class="sort-btn" id="sb-orig" onclick="setSort('orig')"><i class="ti ti-upload" aria-hidden="true"></i> Urutan Asli</button>
+      </div>
+    </div>
+
+    <div class="lbl">Pengaturan Nama</div>
+    <div class="card">
+      <div class="row2" style="margin-bottom:9px">
+        <div class="field"><label>Nama Dasar</label><input class="inp" type="text" id="base" value="yusjul" oninput="update()"></div>
+        <div class="field"><label>Awalan (opsional)</label><input class="inp" type="text" id="pre" placeholder="foto_" oninput="update()"></div>
+      </div>
+      <div class="row3" style="margin-bottom:9px">
+        <div class="field"><label>Nomor Mulai</label><input class="inp" type="number" id="sn" value="1" min="0" oninput="update()"></div>
+        <div class="field"><label>Nomor Akhir</label><input class="inp" type="number" id="en" value="1000" min="1" oninput="update()"></div>
+        <div class="field"><label>Step (loncat)</label><input class="inp" type="number" id="step" value="1" min="1" oninput="update()"></div>
+      </div>
+
+      <div class="seq-box">
+        <div class="seq-title"><i class="ti ti-list-numbers" aria-hidden="true" style="font-size:12px;margin-right:4px"></i>Preview urutan angka</div>
+        <div class="seq-chips" id="seqChips"></div>
+      </div>
+
+      <hr style="border:none;border-top:.5px solid var(--bd);margin:10px 0">
+
+      <div class="lbl" style="margin-bottom:6px">Ekstensi Output</div>
+      <select class="inp" id="extMode" onchange="toggleExtMode()" style="margin-bottom:9px">
+        <option value="original">Pertahankan ekstensi asli</option>
+        <option value="single">Ganti semua ke satu ekstensi</option>
+        <option value="manual">Pemetaan manual per-format</option>
+      </select>
+      <div id="singleExt" style="display:none;margin-bottom:9px">
+        <div class="field"><label>Ekstensi baru</label><input class="inp" type="text" id="singleV" placeholder=".jpg" oninput="update()"></div>
+      </div>
+      <div id="manualExt" style="display:none;margin-bottom:9px">
+        <div style="display:flex;gap:6px;margin-bottom:7px;align-items:flex-end">
+          <input class="inp" type="text" id="mf" placeholder=".heic" style="flex:1">
+          <span style="font-size:16px;color:var(--tx2);padding-bottom:9px">→</span>
+          <input class="inp" type="text" id="mt" placeholder=".jpg" style="flex:1">
+          <button onclick="addMap()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 11px;cursor:pointer;font-size:12px;font-family:inherit;white-space:nowrap">Tambah</button>
+        </div>
+        <div id="mapChips"></div>
+      </div>
+
+      <div class="lbl" style="margin-bottom:5px">Pratinjau nama</div>
+      <div class="pvstrip">
+        <span class="pv-old" id="pvOld">gambar.cr2</span>
+        <span class="pv-arr"><i class="ti ti-arrow-right" aria-hidden="true"></i></span>
+        <span class="pv-new" id="pvNew">yusjul1.cr2</span>
+      </div>
+    </div>
+
+    <div class="lbl">Opsi Lanjutan</div>
+    <div class="card">
+      <div class="tgl-row">
+        <div class="tgl-info"><div class="tgl-lbl">Pad angka dengan nol</div><div class="tgl-sub">yusjul001 bukan yusjul1</div></div>
+        <label class="tgl"><input type="checkbox" id="pad" onchange="update()"><span class="tsl"></span></label>
+      </div>
+      <div class="tgl-row">
+        <div class="tgl-info"><div class="tgl-lbl">Lowercase ekstensi</div><div class="tgl-sub">.JPG .CR2 → .jpg .cr2</div></div>
+        <label class="tgl"><input type="checkbox" id="lc" checked onchange="update()"><span class="tsl"></span></label>
+      </div>
+      <div class="tgl-row">
+        <div class="tgl-info"><div class="tgl-lbl">Laporan CSV hasil rename</div><div class="tgl-sub">Ikut tersimpan di dalam ZIP</div></div>
+        <label class="tgl"><input type="checkbox" id="csv" checked><span class="tsl"></span></label>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start">
+      <button class="btn-p" id="zipBtn" onclick="doZip()">
+        <i class="ti ti-file-zip" aria-hidden="true"></i> Download ZIP
+      </button>
+      <button class="btn-undo" id="undoBtn" onclick="doUndo()" disabled title="Undo pengaturan terakhir">
+        <i class="ti ti-arrow-back-up" aria-hidden="true"></i> Undo
+      </button>
+    </div>
+    <div class="undo-stack" id="undoStack">Belum ada riwayat undo</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <button class="btn-s" onclick="resetFiles()"><i class="ti ti-file-x" aria-hidden="true"></i> Hapus File</button>
+      <button class="btn-s" onclick="resetAll()"><i class="ti ti-refresh" aria-hidden="true"></i> Reset Semua</button>
+    </div>
+
+    <div class="zprog" id="zprog">
+      <div class="zinfo" id="zinfo">Menyiapkan ZIP...</div>
+      <div class="prog-w"><div class="prog-f" id="zpf"></div></div>
+    </div>
+    <div class="alert" id="alertBox"></div>
+
+  </div>
+</div>
+
+<script>
+let files=[], sortMode='name', extMap={}, undoHistory=[];
+
+const $ = id => document.getElementById(id);
+
+function applyTheme(dark) {
+  if (dark) {
+    document.documentElement.classList.add('dark');
+    document.documentElement.classList.remove('light');
+  } else {
+    document.documentElement.classList.add('light');
+    document.documentElement.classList.remove('dark');
+  }
+}
+
+// Programmatic Theme Sync from Parent Dashboard
+window.syncTheme = function(dark) {
+  applyTheme(dark);
+}
+
+
+$('fi').addEventListener('change', e => loadFiles([...e.target.files]));
+const drop=$('drop');
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over')});
+drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');loadFiles([...e.dataTransfer.files])});
+
+function toggleDark(){
+  isDark=!isDark;
+  $('app').classList.toggle('dark',isDark);
+  $('dmBtn').innerHTML=isDark?'<i class="ti ti-sun" aria-hidden="true"></i> Light':'<i class="ti ti-moon" aria-hidden="true"></i> Dark';
+}
+
+function loadFiles(f){
+  pushUndo('load');
+  files=f;
+  $('en').value=files.length;
+  sortFiles();
+  $('statsSection').style.display='block';
+  refreshStats();
+  $('pf').style.width='100%';
+  update();
+}
+
+function sortFiles(){
+  if(!files.length) return;
+  const arr=[...files];
+  if(sortMode==='name') arr.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(sortMode==='name-d') arr.sort((a,b)=>b.name.localeCompare(a.name));
+  else if(sortMode==='size') arr.sort((a,b)=>a.size-b.size);
+  else if(sortMode==='size-d') arr.sort((a,b)=>b.size-a.size);
+  else if(sortMode==='ext') arr.sort((a,b)=>getExt(a.name).localeCompare(getExt(b.name)));
+  files=arr;
+}
+
+function setSort(m){
+  pushUndo('sort');
+  sortMode=m;
+  ['name','name-d','size','size-d','ext','orig'].forEach(k=>$('sb-'+k).classList.remove('active'));
+  $('sb-'+m).classList.add('active');
+  sortFiles();
+  renderList();
+  update();
+}
+
+function refreshStats(){
+  const total=files.reduce((s,f)=>s+f.size,0);
+  $('stTotal').textContent=files.length;
+  $('stSize').textContent=fmtSize(total);
+  $('stExt').textContent=new Set(files.map(f=>getExt(f.name))).size;
+  $('stUndo').textContent=undoHistory.length;
+  $('fc').textContent=files.length+' file dipilih';
+}
+
+function getExt(name){const i=name.lastIndexOf('.');return i>=0?name.slice(i).toLowerCase():''}
+function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return Math.round(b/1024)+' KB';return (b/1048576).toFixed(1)+' MB'}
+
+function genName(i){
+  const base=$('base').value||'file';
+  const pre=$('pre').value||'';
+  const sn=parseInt($('sn').value)||1;
+  const en=parseInt($('en').value)||1000;
+  const step=parseInt($('step').value)||1;
+  const pad=$('pad').checked;
+  const lc=$('lc').checked;
+  const mode=$('extMode').value;
+  const num=sn+i*step;
+  const digits=String(en).length;
+  const numStr=pad?String(num).padStart(digits,'0'):String(num);
+  let e='';
+  if(files[i]){
+    const orig=getExt(files[i].name);
+    if(mode==='original') e=lc?orig.toLowerCase():orig;
+    else if(mode==='single'){const v=$('singleV').value||orig;e=lc?v.toLowerCase():v;}
+    else{e=extMap[orig]||orig;if(lc)e=e.toLowerCase();}
+  } else e=lc?'.jpg':'.JPG';
+  if(e&&!e.startsWith('.'))e='.'+e;
+  return pre+base+numStr+e;
+}
+
+function updateSeq(){
+  const sn=parseInt($('sn').value)||1;
+  const step=parseInt($('step').value)||1;
+  const total=files.length||10;
+  const chips=$('seqChips');
+  chips.innerHTML='';
+  const count=Math.min(total,8);
+  for(let i=0;i<count;i++){
+    const num=sn+i*step;
+    const sp=document.createElement('span');
+    sp.className='seq-chip';
+    sp.textContent=num;
+    chips.appendChild(sp);
+  }
+  if(total>8){
+    const more=document.createElement('span');
+    more.className='seq-more';
+    const last=sn+(total-1)*step;
+    more.textContent='… '+last;
+    chips.appendChild(more);
+  }
+}
+
+function renderList(){
+  const list=$('fl');
+  list.innerHTML='';
+  const lim=Math.min(files.length,12);
+  for(let i=0;i<lim;i++){
+    const d=document.createElement('div');
+    d.className='fi';
+    const e=getExt(files[i].name).toUpperCase().replace('.','')||'?';
+    d.innerHTML=`<span class="fi-ext">${e}</span><span class="fi-old">${files[i].name}</span><i class="ti ti-arrow-right" aria-hidden="true" style="color:var(--tx2);font-size:11px;flex-shrink:0"></i><span class="fi-new">${genName(i)}</span>`;
+    list.appendChild(d);
+  }
+  if(files.length>12){
+    const m=document.createElement('div');
+    m.style.cssText='padding:5px 10px;font-size:11px;color:var(--tx2);text-align:center';
+    m.textContent='+ '+(files.length-12)+' file lainnya';
+    list.appendChild(m);
+  }
+}
+
+function update(){
+  updateSeq();
+  const old=files[0]?files[0].name:'gambar.cr2';
+  $('pvOld').textContent=old;
+  $('pvNew').textContent=genName(0);
+  if(files.length) renderList();
+  if(files.length) refreshStats();
+}
+
+function toggleExtMode(){
+  const m=$('extMode').value;
+  $('singleExt').style.display=m==='single'?'block':'none';
+  $('manualExt').style.display=m==='manual'?'block':'none';
+  update();
+}
+
+function addMap(){
+  const from=$('mf').value.trim().toLowerCase();
+  const to=$('mt').value.trim().toLowerCase();
+  if(!from||!to)return;
+  const k=from.startsWith('.')?from:'.'+from;
+  const v=to.startsWith('.')?to:'.'+to;
+  pushUndo('map');
+  extMap[k]=v;
+  renderChips();
+  $('mf').value='';$('mt').value='';
+  update();
+}
+
+function renderChips(){
+  const c=$('mapChips');c.innerHTML='';
+  for(const[k,v]of Object.entries(extMap)){
+    const s=document.createElement('span');s.className='ext-chip';
+    s.innerHTML=`${k} → ${v} <button onclick="delMap('${k}')">×</button>`;
+    c.appendChild(s);
+  }
+}
+
+function delMap(k){pushUndo('map');delete extMap[k];renderChips();update();}
+
+function pushUndo(type){
+  undoHistory.push({
+    type,
+    base:$('base').value,
+    pre:$('pre').value,
+    sn:$('sn').value,
+    en:$('en').value,
+    step:$('step').value,
+    pad:$('pad').checked,
+    lc:$('lc').checked,
+    extMode:$('extMode').value,
+    singleV:$('singleV').value,
+    extMap:{...extMap},
+    sortMode,
+    files:[...files]
+  });
+  if(undoHistory.length>20)undoHistory.shift();
+  $('undoBtn').disabled=false;
+  $('stUndo').textContent=undoHistory.length;
+  $('undoStack').textContent='Riwayat: '+undoHistory.length+' langkah (max 20)';
+}
+
+function doUndo(){
+  if(!undoHistory.length)return;
+  const s=undoHistory.pop();
+  files=[...s.files];
+  sortMode=s.sortMode;
+  $('base').value=s.base;
+  $('pre').value=s.pre;
+  $('sn').value=s.sn;
+  $('en').value=s.en;
+  $('step').value=s.step;
+  $('pad').checked=s.pad;
+  $('lc').checked=s.lc;
+  $('extMode').value=s.extMode;
+  $('singleV').value=s.singleV;
+  extMap={...s.extMap};
+  toggleExtMode();
+  renderChips();
+  ['name','name-d','size','size-d','ext','orig'].forEach(k=>$('sb-'+k).classList.remove('active'));
+  $('sb-'+sortMode).classList.add('active');
+  if(files.length){
+    $('statsSection').style.display='block';
+    $('pf').style.width='100%';
+  } else {
+    $('statsSection').style.display='none';
+  }
+  $('undoBtn').disabled=undoHistory.length===0;
+  $('stUndo').textContent=undoHistory.length;
+  $('undoStack').textContent=undoHistory.length?'Riwayat: '+undoHistory.length+' langkah':'Belum ada riwayat undo';
+  update();
+  showAlert('↩ Undo berhasil — kembali ke langkah sebelumnya','ok');
+}
+
+async function doZip(){
+  if(!files.length){showAlert('Pilih file terlebih dahulu.','err');return;}
+  const btn=$('zipBtn');
+  btn.disabled=true;
+  btn.innerHTML='<i class="ti ti-loader" aria-hidden="true"></i> Memproses...';
+  $('zprog').style.display='block';
+  const zpf=$('zpf'),zinfo=$('zinfo');
+  const zip=new JSZip();
+  const folder=zip.folder('renamed');
+  const csv=['Nama Asli,Nama Baru,Ukuran,Format'];
+  for(let i=0;i<files.length;i++){
+    const nn=genName(i);
+    folder.file(nn,files[i]);
+    csv.push(`"${files[i].name}","${nn}","${fmtSize(files[i].size)}","${getExt(files[i].name)}"`);
+    zpf.style.width=Math.round(((i+1)/files.length)*80)+'%';
+    zinfo.textContent='Menambahkan '+(i+1)+' / '+files.length+' file...';
+    if(i%15===0)await new Promise(r=>setTimeout(r,0));
+  }
+  if($('csv').checked) zip.file('laporan_rename.csv',csv.join('\n'));
+  zinfo.textContent='Mengompresi...';
+  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'},m=>{zpf.style.width=Math.round(80+m.percent*.2)+'%'});
+  zpf.style.width='100%';
+  zinfo.textContent='Selesai! Mengunduh ZIP...';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=($('base').value||'renamed')+'_files.zip';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showAlert('✓ '+files.length+' file direname & dikemas dalam ZIP!','ok');
+  btn.disabled=false;
+  btn.innerHTML='<i class="ti ti-file-zip" aria-hidden="true"></i> Download ZIP';
+  setTimeout(()=>{$('zprog').style.display='none';zpf.style.width='0%'},4000);
+}
+
+function showAlert(msg,type){
+  const el=$('alertBox');el.className='alert '+type;el.textContent=msg;
+  setTimeout(()=>el.className='alert',5000);
+}
+
+function resetFiles(){
+  pushUndo('reset-files');
+  files=[];$('fi').value='';
+  $('statsSection').style.display='none';
+  $('pf').style.width='0%';
+  update();
+}
+
+function resetAll(){
+  pushUndo('reset-all');
+  files=[];$('fi').value='';
+  $('base').value='yusjul';$('pre').value='';
+  $('sn').value='1';$('en').value='1000';$('step').value='1';
+  $('pad').checked=false;$('lc').checked=true;$('csv').checked=true;
+  $('extMode').value='original';$('singleV').value='';
+  extMap={};renderChips();
+  sortMode='name';
+  ['name','name-d','size','size-d','ext','orig'].forEach(k=>$('sb-'+k).classList.remove('active'));
+  $('sb-name').classList.add('active');
+  $('singleExt').style.display='none';$('manualExt').style.display='none';
+  $('statsSection').style.display='none';$('pf').style.width='0%';
+  $('zprog').style.display='none';$('alertBox').className='alert';
+  update();
+}
+
+update();
+
+// ===== Language Sync from Parent Dashboard =====
+window.syncLang = function(lang) {
+  const t = {
+    id: {
+      pageTitle:     'Pengganti Nama File Pro',
+      pageSubtitle:  'Ubah nama banyak file dengan mudah dan cepat',
+      lblPickFile:   'Pilih File',
+      dropTitle:     'Semua format didukung — tanpa batasan',
+      dropSub:       'Seret & lepas atau klik untuk memilih',
+      badgeMore:     '+ Semua format lain',
+      statTotal:     'Total File',
+      statSize:      'Ukuran',
+      statFormat:    'Format',
+      statUndo:      'Riwayat Undo',
+      lblSort:       'Urutan & Sortir',
+      sortBy:        'Urutkan file berdasarkan',
+      sortNameAZ:    'Nama A–Z',
+      sortNameZA:    'Nama Z–A',
+      sortSizeAsc:   'Ukuran ↑',
+      sortSizeDesc:  'Ukuran ↓',
+      sortExt:       'Format',
+      sortOrig:      'Urutan Asli',
+      lblNaming:     'Pengaturan Nama',
+      labelBase:     'Nama Dasar',
+      labelPrefix:   'Awalan (opsional)',
+      labelStart:    'Nomor Mulai',
+      labelEnd:      'Nomor Akhir',
+      labelStep:     'Step (loncat)',
+      seqPreview:    'Preview urutan angka',
+      lblExt:        'Ekstensi Output',
+      extOrig:       'Pertahankan ekstensi asli',
+      extSingle:     'Ganti semua ke satu ekstensi',
+      extManual:     'Pemetaan manual per-format',
+      labelNewExt:   'Ekstensi baru',
+      addMapBtn:     'Tambah',
+      lblPreview:    'Pratinjau nama',
+      lblAdvanced:   'Opsi Lanjutan',
+      padLabel:      'Pad angka dengan nol',
+      padSub:        'yusjul001 bukan yusjul1',
+      lcLabel:       'Lowercase ekstensi',
+      lcSub:         '.JPG .CR2 → .jpg .cr2',
+      csvLabel:      'Laporan CSV hasil rename',
+      csvSub:        'Ikut tersimpan di dalam ZIP',
+      downloadBtn:   'Download ZIP',
+      undoBtn:       'Undo',
+      noUndo:        'Belum ada riwayat undo',
+      deleteFiles:   'Hapus File',
+      resetAll:      'Reset Semua',
+      preparing:     'Menyiapkan ZIP...',
+    },
+    en: {
+      pageTitle:     'Batch Renamer Pro',
+      pageSubtitle:  'Rename multiple files easily and quickly',
+      lblPickFile:   'Pick Files',
+      dropTitle:     'All formats supported — no limits',
+      dropSub:       'Drag & drop or click to select',
+      badgeMore:     '+ All other formats',
+      statTotal:     'Total Files',
+      statSize:      'Size',
+      statFormat:    'Formats',
+      statUndo:      'Undo History',
+      lblSort:       'Order & Sort',
+      sortBy:        'Sort files by',
+      sortNameAZ:    'Name A–Z',
+      sortNameZA:    'Name Z–A',
+      sortSizeAsc:   'Size ↑',
+      sortSizeDesc:  'Size ↓',
+      sortExt:       'Format',
+      sortOrig:      'Original Order',
+      lblNaming:     'Naming Settings',
+      labelBase:     'Base Name',
+      labelPrefix:   'Prefix (optional)',
+      labelStart:    'Start Number',
+      labelEnd:      'End Number',
+      labelStep:     'Step (increment)',
+      seqPreview:    'Number sequence preview',
+      lblExt:        'Output Extension',
+      extOrig:       'Keep original extension',
+      extSingle:     'Replace all with one extension',
+      extManual:     'Manual mapping per format',
+      labelNewExt:   'New extension',
+      addMapBtn:     'Add',
+      lblPreview:    'Name preview',
+      lblAdvanced:   'Advanced Options',
+      padLabel:      'Pad numbers with zeros',
+      padSub:        'yusjul001 instead of yusjul1',
+      lcLabel:       'Lowercase extensions',
+      lcSub:         '.JPG .CR2 → .jpg .cr2',
+      csvLabel:      'CSV rename report',
+      csvSub:        'Included in the ZIP file',
+      downloadBtn:   'Download ZIP',
+      undoBtn:       'Undo',
+      noUndo:        'No undo history yet',
+      deleteFiles:   'Remove Files',
+      resetAll:      'Reset All',
+      preparing:     'Preparing ZIP...',
+    }
+  };
+
+  const d = t[lang];
+  if (!d) return;
+
+  // Page title and subtitle
+  const pTitle = document.querySelector('.page-title');
+  const sub = document.querySelector('.page-subtitle');
+  if (pTitle) pTitle.textContent = d.pageTitle;
+  if (sub) sub.textContent = d.pageSubtitle;
+
+  // Section labels (by class .lbl — map by order)
+  const lbls = document.querySelectorAll('.lbl');
+  const lblMap = [d.lblPickFile, d.lblSort, null, d.lblNaming, null, d.lblExt, d.lblPreview, d.lblAdvanced];
+  // Use data-i18n instead — manually target specific ones
+  document.querySelectorAll('.lbl').forEach(el => {
+    const txt = el.textContent.trim();
+    if (['Pilih File','Pick Files'].includes(txt))              el.textContent = d.lblPickFile;
+    else if (['Urutan & Sortir','Order & Sort'].includes(txt))  el.textContent = d.lblSort;
+    else if (['Pengaturan Nama','Naming Settings'].includes(txt)) el.textContent = d.lblNaming;
+    else if (['Opsi Lanjutan','Advanced Options'].includes(txt)) el.textContent = d.lblAdvanced;
+    else if (['Pratinjau nama','Name preview'].includes(txt))   el.textContent = d.lblPreview;
+    else if (['Ekstensi Output','Output Extension'].includes(txt)) el.textContent = d.lblExt;
+    else if (['Urutkan file berdasarkan','Sort files by'].includes(txt)) el.textContent = d.sortBy;
+  });
+
+  // Drop zone
+  const dropT = document.querySelector('.drop-t');
+  const dropS = document.querySelector('.drop-s');
+  if (dropT) dropT.textContent = d.dropTitle;
+  if (dropS) dropS.textContent = d.dropSub;
+
+  // Badges — last badge only (dynamic text)
+  const badges = document.querySelectorAll('.badge');
+  if (badges.length) badges[badges.length-1].textContent = d.badgeMore;
+
+  // Stats labels
+  const statLbls = document.querySelectorAll('.stat-l');
+  const statKeys = ['statTotal','statSize','statFormat','statUndo'];
+  statLbls.forEach((el,i) => { if (statKeys[i]) el.textContent = d[statKeys[i]]; });
+
+  // Sort buttons
+  $('sb-name').innerHTML    = `<i class="ti ti-sort-az" aria-hidden="true"></i> ${d.sortNameAZ}`;
+  $('sb-name-d').innerHTML  = `<i class="ti ti-sort-za" aria-hidden="true"></i> ${d.sortNameZA}`;
+  $('sb-size').innerHTML    = `<i class="ti ti-arrow-up" aria-hidden="true"></i> ${d.sortSizeAsc}`;
+  $('sb-size-d').innerHTML  = `<i class="ti ti-arrow-down" aria-hidden="true"></i> ${d.sortSizeDesc}`;
+  $('sb-ext').innerHTML     = `<i class="ti ti-file" aria-hidden="true"></i> ${d.sortExt}`;
+  $('sb-orig').innerHTML    = `<i class="ti ti-upload" aria-hidden="true"></i> ${d.sortOrig}`;
+
+  // Form field labels
+  document.querySelectorAll('.field label').forEach(el => {
+    const txt = el.textContent.trim();
+    if (['Nama Dasar','Base Name'].includes(txt))         el.textContent = d.labelBase;
+    else if (['Awalan (opsional)','Prefix (optional)'].includes(txt)) el.textContent = d.labelPrefix;
+    else if (['Nomor Mulai','Start Number'].includes(txt)) el.textContent = d.labelStart;
+    else if (['Nomor Akhir','End Number'].includes(txt))   el.textContent = d.labelEnd;
+    else if (['Step (loncat)','Step (increment)'].includes(txt)) el.textContent = d.labelStep;
+    else if (['Ekstensi baru','New extension'].includes(txt)) el.textContent = d.labelNewExt;
+  });
+
+  // Seq title
+  const seqTitle = document.querySelector('.seq-title');
+  if (seqTitle) seqTitle.innerHTML = `<i class="ti ti-list-numbers" aria-hidden="true" style="font-size:12px;margin-right:4px"></i>${d.seqPreview}`;
+
+  // Ext dropdown options
+  const extMode = $('extMode');
+  if (extMode && extMode.options.length >= 3) {
+    extMode.options[0].textContent = d.extOrig;
+    extMode.options[1].textContent = d.extSingle;
+    extMode.options[2].textContent = d.extManual;
+  }
+
+  // Add map button
+  const addBtn = document.querySelector('#manualExt button');
+  if (addBtn) addBtn.textContent = d.addMapBtn;
+
+  // Toggle labels
+  document.querySelectorAll('.tgl-lbl').forEach(el => {
+    const txt = el.textContent.trim();
+    if (['Pad angka dengan nol','Pad numbers with zeros'].includes(txt))  el.textContent = d.padLabel;
+    else if (['Lowercase ekstensi','Lowercase extensions'].includes(txt))  el.textContent = d.lcLabel;
+    else if (['Laporan CSV hasil rename','CSV rename report'].includes(txt)) el.textContent = d.csvLabel;
+  });
+  document.querySelectorAll('.tgl-sub').forEach(el => {
+    const txt = el.textContent.trim();
+    if (['yusjul001 bukan yusjul1','yusjul001 instead of yusjul1'].includes(txt)) el.textContent = d.padSub;
+    else if (['.JPG .CR2 → .jpg .cr2'].includes(txt))                             el.textContent = d.lcSub;
+    else if (['Ikut tersimpan di dalam ZIP','Included in the ZIP file'].includes(txt)) el.textContent = d.csvSub;
+  });
+
+  // Main buttons
+  $('zipBtn').innerHTML  = `<i class="ti ti-file-zip" aria-hidden="true"></i> ${d.downloadBtn}`;
+  $('undoBtn').innerHTML = `<i class="ti ti-arrow-back-up" aria-hidden="true"></i> ${d.undoBtn}`;
+
+  const resetBtns = document.querySelectorAll('.btn-s');
+  if (resetBtns[0]) resetBtns[0].innerHTML = `<i class="ti ti-file-x" aria-hidden="true"></i> ${d.deleteFiles}`;
+  if (resetBtns[1]) resetBtns[1].innerHTML = `<i class="ti ti-refresh" aria-hidden="true"></i> ${d.resetAll}`;
+
+  // Undo stack empty text
+  const undoStack = $('undoStack');
+  if (undoStack && undoStack.textContent === (lang === 'en' ? 'Belum ada riwayat undo' : 'No undo history yet') || undoStack.textContent === 'Belum ada riwayat undo' || undoStack.textContent === 'No undo history yet') {
+    undoStack.textContent = d.noUndo;
+  }
+
+  // ZIP preparing text
+  const zinfo = $('zinfo');
+  if (zinfo) zinfo.textContent = d.preparing;
+
+  // Update file count text
+  if (files.length > 0) {
+    $('fc').textContent = files.length + (lang === 'id' ? ' file dipilih' : ' files selected');
+  }
+};
+</script>

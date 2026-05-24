@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolSuf — Premium, Fast & Simple Productivity Tools</title>
+  <meta name="description" content="Welcome to ToolSuf a premium digital space offering simple, secure, and lightning-fast desktop productivity utilities right in your browser.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Premium Navigation Header -->
+  <header class="header-nav" id="home">
+    <div class="container header-container">
+      <div class="logo" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">ToolSuf</div>
+      
+      <nav aria-label="Navigasi Utama">
+        <ul class="nav-links">
+          <li><a href="#home" class="active" data-i18n="navHome">Home</a></li>
+          <li><a href="#tools" data-i18n="navTools">Tools</a></li>
+          <li><a href="#about" data-i18n="navAbout">About</a></li>
+          <li><a href="#contact" data-i18n="navContact">Contact</a></li>
+        </ul>
+      </nav>
+      
+      <div class="nav-actions">
+        <div class="lang-selector-container">
+          <button class="nav-btn" id="langToggle" aria-label="Ganti Bahasa">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+          </button>
+          <div class="lang-dropdown" id="langDropdown">
+            <button class="lang-opt" data-lang="id" data-i18n="langId">Indonesia</button>
+            <button class="lang-opt" data-lang="en" data-i18n="langEn">Inggris</button>
+          </div>
+        </div>
+        
+        <button class="nav-btn" id="themeToggle" aria-label="Ganti Tema Gelap/Terang">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <h1 class="hero-title" data-i18n="heroTitle">Welcome to ToolSuf</h1>
+      <p class="hero-desc" data-i18n="heroDesc">Welcome to ToolSuf a digital space for simple, fast, and premium-crafted tools.</p>
+      
+      <div class="hero-actions">
+        <a href="#tools" class="btn btn-primary" data-i18n="exploreBtn">Explore Tools</a>
+        <a href="#about" class="btn btn-secondary" data-i18n="aboutBtn">About ToolSuf</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tools Grid Section ("Precision Tools") -->
+  <section class="tools-section" id="tools">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="precisionTools">Precision Tools</h2>
+        <p class="section-subtitle" data-i18n="engineered">Engineered for a frictionless experience.</p>
+      </div>
+      
+      <div class="tools-grid">
+        <!-- Card 1: Password Generator -->
+        <article class="tool-card" data-launch="password" tabindex="0" role="button" aria-label="Buka Apple Password Generator">
+          <div class="card-top">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <span class="card-badge" data-i18n="securityBadge">Security</span>
+          </div>
+          <h3 class="card-title" data-i18n="toolPassTitle">Apple Password Generator</h3>
+          <p class="card-desc" data-i18n="toolPassDesc">Generate secure passwords with Apple-style UI.</p>
+          <div class="card-action">
+            <span data-i18n="launch">Launch</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </div>
+        </article>
+
+        <!-- Card 2: Batch Renamer -->
+        <article class="tool-card" data-launch="renamer" tabindex="0" role="button" aria-label="Buka Batch Renamer Pro">
+          <div class="card-top">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+            <span class="card-badge" data-i18n="productivityBadge">Productivity</span>
+          </div>
+          <h3 class="card-title" data-i18n="toolRenameTitle">Batch Renamer Pro</h3>
+          <p class="card-desc" data-i18n="toolRenameDesc">Rename multiple files with macOS utility style.</p>
+          <div class="card-action">
+            <span data-i18n="launch">Launch</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </div>
+        </article>
+
+        <!-- Card 3: AI Workflow Assistant (Coming Soon) -->
+        <article class="tool-card coming-soon" tabindex="0" aria-label="AI Workflow Assistant - Segera Hadir">
+          <div class="card-top">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="9" x2="15" y2="9"></line>
+                <line x1="9" y1="13" x2="15" y2="13"></line>
+                <line x1="9" y1="17" x2="11" y2="17"></line>
+              </svg>
+            </div>
+            <span class="card-badge" data-i18n="comingSoon">Coming Soon</span>
+          </div>
+          <h3 class="card-title">AI Workflow Assistant</h3>
+          <p class="card-desc" data-i18n="toolAiDesc">Intelligent automation for repetitive tasks.</p>
+          <div class="card-action" data-i18n="comingSoon">
+            Coming Soon
+          </div>
+        </article>
+
+        <!-- Card 4: Media Compressor HQ (Coming Soon) -->
+        <article class="tool-card coming-soon" tabindex="0" aria-label="Media Compressor HQ - Segera Hadir">
+          <div class="card-top">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            </div>
+            <span class="card-badge" data-i18n="comingSoon">Coming Soon</span>
+          </div>
+          <h3 class="card-title">Media Compressor HQ</h3>
+          <p class="card-desc" data-i18n="toolCompressDesc">Lossless compression with minimal UI.</p>
+          <div class="card-action" data-i18n="comingSoon">
+            Coming Soon
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Showcase Section ("The Interface of Less") -->
+  <section class="features-section" id="about">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="interfaceOfLess">The Interface of Less</h2>
+      </div>
+      
+      <div class="features-grid">
+        <!-- Feature 1: Fast -->
+        <div class="feature-item">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </div>
+          <h3 class="feature-title" data-i18n="fastTitle">Fast</h3>
+          <p class="feature-desc" data-i18n="fastDesc">Zero lag, instant results.</p>
+        </div>
+
+        <!-- Feature 2: Premium UI -->
+        <div class="feature-item">
+          <div class="feature-icon" aria-hidden="true">
+            <span class="rk-logo">_ _ ORK</span>
+          </div>
+          <h3 class="feature-title" data-i18n="premiumUiTitle">Premium UI</h3>
+          <p class="feature-desc" data-i18n="premiumUiDesc">High-end aesthetic.</p>
+        </div>
+
+        <!-- Feature 3: Practical -->
+        <div class="feature-item">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </div>
+          <h3 class="feature-title" data-i18n="practicalTitle">Practical</h3>
+          <p class="feature-desc" data-i18n="practicalDesc">Tools you actually need.</p>
+        </div>
+
+        <!-- Feature 4: Private -->
+        <div class="feature-item">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <h3 class="feature-title" data-i18n="privateTitle">Private</h3>
+          <p class="feature-desc" data-i18n="privateDesc">Local processing focus.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact/Support Anchor -->
+  <section id="contact" style="padding: 20px;"></section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-container">
+      <div class="footer-logo">ToolSuf</div>
+      <div data-i18n="copyright">&copy; 2026 ToolSuf. Precision-crafted for power users.</div>
+      <ul class="footer-links">
+        <li><a href="#home" data-i18n="privacy">Privacy Policy</a></li>
+        <li><a href="#home" data-i18n="terms">Terms of Service</a></li>
+        <li><a href="#home" data-i18n="status">Status</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- macOS-style Overlay Window Modal -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="macTitle">
+    <div class="mac-window" id="macWindow">
+      <div class="mac-tbar">
+        <div class="mac-dots">
+          <button class="mac-dot mac-dot-close" id="closeWindow" title="Tutup Window" aria-label="Tutup Window"></button>
+          <button class="mac-dot mac-dot-minimize" aria-label="Minimize" tabindex="-1"></button>
+          <button class="mac-dot mac-dot-maximize" aria-label="Maximize" tabindex="-1"></button>
+        </div>
+        <div class="mac-title" id="macTitle">
+          <!-- Icon and title loaded dynamically by app.js -->
+        </div>
+      </div>
+      <iframe class="mac-body" id="toolFrame" src="about:blank" id="toolFrame" data-i18n-title="iframeTitle"></iframe>
+    </div>
+  </div>
+
+  <!-- Premium Toast Notification -->
+  <div class="toast-notif" id="toast" role="alert" aria-live="polite">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span id="toastText"></span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
