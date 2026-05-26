@@ -115,6 +115,7 @@ function applyLang(lang) {
   for (let i = 0; i < marginOpts.length && i < marginKeys.length; i++) {
     marginOpts[i].textContent = t(marginKeys[i]);
   }
+  initCustomDropdowns();
 }
 
 window.syncTheme = function(dark) {
@@ -386,3 +387,77 @@ function loadImageAsDataURL(file, quality) {
 document.addEventListener('DOMContentLoaded', () => {
   if (window.__initialLang) applyLang(window.__initialLang);
 });
+
+function initCustomDropdowns() {
+  document.querySelectorAll('.apple-dropdown-container').forEach(el => el.remove());
+  document.querySelectorAll('select.apple-select').forEach(select => {
+    select.style.display = 'none';
+    const container = document.createElement('div');
+    container.className = 'apple-dropdown-container';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'apple-dropdown-button';
+    const label = document.createElement('span');
+    label.className = 'apple-dropdown-label';
+    const activeOption = select.querySelector('option[selected]') || select.options[select.selectedIndex] || select.options[0];
+    label.textContent = activeOption ? activeOption.textContent : '';
+    const chevronSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    chevronSvg.setAttribute('class', 'apple-dropdown-chevron');
+    chevronSvg.setAttribute('viewBox', '0 0 24 24');
+    chevronSvg.setAttribute('fill', 'none');
+    chevronSvg.setAttribute('stroke', 'currentColor');
+    chevronSvg.setAttribute('stroke-width', '2.5');
+    chevronSvg.setAttribute('stroke-linecap', 'round');
+    chevronSvg.setAttribute('stroke-linejoin', 'round');
+    chevronSvg.innerHTML = '<polyline points="6 9 12 15 18 9"></polyline>';
+    button.appendChild(label);
+    button.appendChild(chevronSvg);
+    container.appendChild(button);
+    const menu = document.createElement('ul');
+    menu.className = 'apple-dropdown-menu';
+    Array.from(select.options).forEach(opt => {
+      const item = document.createElement('li');
+      item.className = 'apple-dropdown-item';
+      if (opt.value === select.value) {
+        item.classList.add('active');
+      }
+      item.dataset.value = opt.value;
+      item.textContent = opt.textContent;
+      const checkSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      checkSvg.setAttribute('class', 'apple-dropdown-check');
+      checkSvg.setAttribute('viewBox', '0 0 24 24');
+      checkSvg.setAttribute('fill', 'none');
+      checkSvg.setAttribute('stroke', 'currentColor');
+      checkSvg.setAttribute('stroke-width', '3');
+      checkSvg.setAttribute('stroke-linecap', 'round');
+      checkSvg.setAttribute('stroke-linejoin', 'round');
+      checkSvg.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+      item.appendChild(checkSvg);
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        select.value = opt.value;
+        label.textContent = opt.textContent;
+        menu.querySelectorAll('.apple-dropdown-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        select.dispatchEvent(new Event('change'));
+        container.classList.remove('open');
+      });
+      menu.appendChild(item);
+    });
+    container.appendChild(menu);
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = container.classList.contains('open');
+      document.querySelectorAll('.apple-dropdown-container').forEach(el => el.classList.remove('open'));
+      if (!isOpen) {
+        container.classList.add('open');
+      }
+    });
+    select.parentNode.insertBefore(container, select.nextSibling);
+  });
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.apple-dropdown-container').forEach(el => el.classList.remove('open'));
+});
+

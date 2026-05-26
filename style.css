@@ -79,20 +79,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar Customization */
+/* Scrollbar Customization - Hidden */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  display: none !important;
 }
-::-webkit-scrollbar-track {
-  background: var(--bg-primary);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-tertiary);
+html, body, * {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 /* Layout Utilities */

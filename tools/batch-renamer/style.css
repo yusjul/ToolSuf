@@ -37,29 +37,15 @@ html.light {
 
 html, body {
   overflow-x: hidden;
-  scrollbar-width: thin;
 }
 
-/* Custom premium scrollbar style */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  display: none !important;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(120, 120, 128, 0.25);
-  border-radius: 99px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(120, 120, 128, 0.4);
-}
-html.dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-}
-html.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+
+html, body, * {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 body {
