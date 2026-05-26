@@ -58,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
       toolVideoToUhdDesc: 'Upscale video resolution to UHD 4K with Apple-style UI.',
       toolWatermarkTitle: 'Watermark Remover',
       toolWatermarkDesc: 'Remove video watermark with manual or auto detection.',
+      toolQrTitle: 'QR Code Master',
+      toolQrDesc: 'Generate and scan customized QR codes with premium Apple-style UI.',
       copyright: '© 2026 ToolSuf. Precision-crafted for power users.',
       privacy: 'Privacy Policy',
       terms: 'Terms of Service',
@@ -115,6 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
       toolVideoToUhdDesc: 'Tingkatkan resolusi video ke UHD 4K dengan antarmuka bergaya Apple.',
       toolWatermarkTitle: 'Hapus Watermark Video',
       toolWatermarkDesc: 'Hapus watermark video dengan deteksi manual atau otomatis.',
+      toolQrTitle: 'QR Code Master',
+      toolQrDesc: 'Buat dan pindai QR Code kustom dengan antarmuka premium bergaya Apple.',
       copyright: '© 2026 ToolSuf. Dibuat presisi untuk pengguna ahli.',
       privacy: 'Kebijakan Privasi',
       terms: 'Ketentuan Layanan',
@@ -347,6 +351,13 @@ document.addEventListener('DOMContentLoaded', () => {
       src: 'tools/watermark-remover/frontend/index.html',
       wide: false,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/><line x1="3" y1="21" x2="21" y2="3"/></svg>`
+    },
+    'qr-code-master': {
+      titleEn: 'QR Code Master',
+      titleId: 'QR Code Master',
+      src: 'tools/qr-code-master/index.html',
+      wide: false,
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><rect x="15" y="3" width="6" height="6"></rect><rect x="3" y="15" width="6" height="6"></rect></svg>`
     }
   };
 
