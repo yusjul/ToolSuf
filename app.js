@@ -572,6 +572,7 @@ function initHeroThreeJS() {
   let mouseY = 0;
   let targetCameraX = 0;
   let targetCameraY = 80;
+  let baseCameraZ = 240;
 
   const onMouseMove = (e) => {
     const normX = (e.clientX / window.innerWidth) * 2 - 1;
@@ -682,17 +683,38 @@ function initHeroThreeJS() {
     // Smooth camera ease for parallax effect (Mouse + Drift + Scroll)
     camera.position.x += ((targetCameraX + autoDriftX + scrollXOffset) - camera.position.x) * 0.04;
     camera.position.y += ((targetCameraY + autoDriftY + scrollYOffset) - camera.position.y) * 0.04;
-    camera.position.z += ((240 + scrollZOffset) - camera.position.z) * 0.04;
+    camera.position.z += ((baseCameraZ + scrollZOffset) - camera.position.z) * 0.04;
     camera.lookAt(0, scrollYOffset * 0.5, 0);
 
     renderer.render(scene, camera);
   };
+
+  const adjustLayoutForAspect = () => {
+    const aspect = window.innerWidth / window.innerHeight;
+    if (aspect < 1) {
+      baseCameraZ = 300;
+      const scaleX = Math.max(aspect * 1.3, 0.55);
+      torus.position.x = -240 * scaleX;
+      box.position.x = -180 * scaleX;
+      octa.position.x = 220 * scaleX;
+      cone.position.x = 200 * scaleX;
+    } else {
+      baseCameraZ = 240;
+      torus.position.x = -240;
+      box.position.x = -180;
+      octa.position.x = 220;
+      cone.position.x = 200;
+    }
+  };
+
+  adjustLayoutForAspect();
 
   // Resize Handler
   const onResize = () => {
     width = window.innerWidth;
     height = window.innerHeight;
     camera.aspect = width / height;
+    adjustLayoutForAspect();
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
   };
