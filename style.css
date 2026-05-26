@@ -503,6 +503,52 @@ html.dark .hero-title {
   color: var(--text-tertiary);
 }
 
+/* Under Development (Launchable Placeholder) Card styling */
+.tool-card.under-dev {
+  background-color: var(--bg-secondary);
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.tool-card.under-dev::before {
+  background-color: var(--bg-secondary);
+  border-style: dashed;
+  border-bottom: 1px solid var(--bg-secondary);
+}
+
+.tool-card.under-dev .card-icon {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.tool-card.under-dev:hover {
+  background-color: var(--card-bg);
+  border-style: solid;
+  opacity: 1;
+}
+
+.tool-card.under-dev:hover::before {
+  background-color: var(--card-bg);
+  border-style: solid;
+  border-bottom: 1px solid var(--card-bg);
+}
+
+.tool-card.under-dev:hover .card-icon {
+  background-color: var(--accent-light);
+  color: var(--accent-color);
+}
+
+/* Custom color styling for Coming Soon / Under Development badge */
+.card-badge[data-i18n="comingSoon"] {
+  background-color: rgba(191, 90, 242, 0.12); /* Apple HIG soft purple tint */
+  color: #BF5AF2; /* Apple HIG purple */
+}
+
+html.dark .card-badge[data-i18n="comingSoon"] {
+  background-color: rgba(191, 90, 242, 0.2);
+  color: #BF5AF2;
+}
+
 /* --- Features Section ("The Interface of Less") --- */
 .features-section {
   padding: 64px 0 96px;
