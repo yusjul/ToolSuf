@@ -677,8 +677,10 @@ function initHeroThreeJS() {
     cone.rotation.y = frame * 0.006 + scrollRotation;
 
     // Slow camera auto-drift for mobile and static desktop viewports
-    const autoDriftX = Math.sin(frame * 0.4) * 20;
-    const autoDriftY = Math.cos(frame * 0.3) * 12;
+    const aspect = window.innerWidth / window.innerHeight;
+    const driftScale = aspect < 1 ? 0.6 : 1;
+    const autoDriftX = Math.sin(frame * 0.4) * 20 * driftScale;
+    const autoDriftY = Math.cos(frame * 0.3) * 12 * driftScale;
 
     // Smooth camera ease for parallax effect (Mouse + Drift + Scroll)
     camera.position.x += ((targetCameraX + autoDriftX + scrollXOffset) - camera.position.x) * 0.04;
@@ -692,13 +694,19 @@ function initHeroThreeJS() {
   const adjustLayoutForAspect = () => {
     const aspect = window.innerWidth / window.innerHeight;
     if (aspect < 1) {
-      baseCameraZ = 300;
-      const scaleX = Math.max(aspect * 1.3, 0.55);
-      torus.position.x = -240 * scaleX;
-      box.position.x = -180 * scaleX;
-      octa.position.x = 220 * scaleX;
-      cone.position.x = 200 * scaleX;
+      // Mobile / Portrait: Scale camera distance and bring shapes dynamically inside the frustum boundary
+      baseCameraZ = 280;
+      
+      // Visible half-width at Z = 0 is baseCameraZ * tan(30 deg) * aspect = 280 * 0.577 * aspect = 161 * aspect.
+      // We target placing shapes at ~75% of this boundary so they are perfectly framed on the screen sides.
+      const targetHalfWidth = 161 * aspect * 0.75;
+      
+      torus.position.x = -targetHalfWidth * 1.1; // offset slightly for deep Z positioning
+      box.position.x = -targetHalfWidth * 0.8;
+      octa.position.x = targetHalfWidth * 1.05;
+      cone.position.x = targetHalfWidth * 0.85;
     } else {
+      // Desktop / Landscape: default positions
       baseCameraZ = 240;
       torus.position.x = -240;
       box.position.x = -180;
