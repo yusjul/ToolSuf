@@ -30,14 +30,22 @@ function getFriendlyKey(key, lang) {
 // Load the library dynamically from jsDelivr CDN
 async function getRemoveBackgroundLib() {
   if (removeBackgroundFn) return removeBackgroundFn;
-  try {
-    const module = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal/+esm');
-    removeBackgroundFn = module.removeBackground;
-    return removeBackgroundFn;
-  } catch (e) {
-    console.error('Gagal memuat library @imgly/background-removal:', e);
-    throw e;
+  const urls = [
+    'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm',
+    'https://esm.sh/@imgly/background-removal@1.7.0',
+  ];
+  for (const url of urls) {
+    try {
+      const module = await import(url);
+      if (module && typeof module.removeBackground === 'function') {
+        removeBackgroundFn = module.removeBackground;
+        return removeBackgroundFn;
+      }
+    } catch (e) {
+      console.warn('CDN import failed for', url, e);
+    }
   }
+  throw new Error('All CDN URLs failed for @imgly/background-removal');
 }
 
 // Attach event listeners when DOM is loaded
@@ -159,47 +167,48 @@ async function processImage(file) {
   progressBar.style.width = '0%';
 
   try {
+    statusLabel.textContent = currentLang === 'id'
+      ? 'Memuat library AI...'
+      : 'Loading AI library...';
+
     const fn = await getRemoveBackgroundLib();
-    
+
+    statusLabel.textContent = currentLang === 'id'
+      ? 'Mengunduh model AI (~284MB, hanya sekali)...'
+      : 'Downloading AI model (~284MB, one-time only)...';
+    progressBar.style.width = '0%';
+
     const config = {
       progress: (key, current, total) => {
         const pct = Math.round((current / total) * 100);
         const name = getFriendlyKey(key, currentLang);
-        statusLabel.textContent = currentLang === 'id' 
-          ? `Mengunduh ${name}: ${pct}%` 
+        statusLabel.textContent = currentLang === 'id'
+          ? `Mengunduh ${name}: ${pct}%`
           : `Downloading ${name}: ${pct}%`;
         progressBar.style.width = pct + '%';
-      }
+      },
+      debug: true,
     };
-
-    // Delay slightly to transition progress bar smooth
-    await new Promise(r => setTimeout(r, 400));
-    
-    // Switch status to processing when download completes
-    setTimeout(() => {
-      if (!processedBlob) {
-        statusLabel.textContent = currentLang === 'id' ? 'Memotong latar belakang...' : 'Removing background...';
-        progressBar.style.width = '100%';
-      }
-    }, 1000);
 
     const resultBlob = await fn(file, config);
     processedBlob = resultBlob;
-    
-    // Revoke old URL if exists
+
+    statusLabel.textContent = currentLang === 'id'
+      ? 'Memproses gambar...'
+      : 'Processing image...';
+    progressBar.style.width = '100%';
+
     if (processedUrl) URL.revokeObjectURL(processedUrl);
     processedUrl = URL.createObjectURL(resultBlob);
-    
-    // Load result
+
     $('cmpResult').src = processedUrl;
-    
-    // Show views
+
     progressSection.style.display = 'none';
     $('cmpImages').style.display = 'block';
     $('downloadBtn').disabled = false;
     $('bgOptionsTitle').style.display = 'block';
     $('bgOptionsCard').style.display = 'block';
-    
+
     resetSlider();
     selectBgColor('transparent', document.querySelector('.color-btn[data-color="transparent"]'));
     showAlert(currentLang === 'id' ? 'Latar belakang berhasil dihapus!' : 'Background removed successfully!', 'ok');
@@ -208,7 +217,13 @@ async function processImage(file) {
     console.error(e);
     progressSection.style.display = 'none';
     $('cmpEmpty').style.display = 'block';
-    showAlert(currentLang === 'id' ? 'Gagal memproses gambar.' : 'Failed to process image.', 'err');
+    const msg = e.message || String(e);
+    showAlert(
+      currentLang === 'id'
+        ? `Gagal: ${msg.slice(0, 120)}`
+        : `Failed: ${msg.slice(0, 120)}`,
+      'err'
+    );
   }
 }
 

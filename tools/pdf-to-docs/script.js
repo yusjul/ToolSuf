@@ -191,6 +191,7 @@ async function handleFile(file) {
 
     previewSection.style.display = 'block';
     convBtn.disabled = false;
+    fileInput.value = '';
     setProgress(100, 'Selesai');
     setTimeout(() => { progressCard.style.display = 'none'; }, 400);
   } catch (e) {

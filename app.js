@@ -55,6 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
       toolBgRemoverDesc: 'Remove image backgrounds fully offline with browser AI.',
       toolImgToPdfDesc: 'Convert images to PDF with Apple-style UI.',
       toolPdfToDocsDesc: 'Convert PDF to Word documents with Apple-style UI.',
+      toolVideoToUhdDesc: 'Upscale video resolution to UHD 4K with Apple-style UI.',
+      toolWatermarkTitle: 'Watermark Remover',
+      toolWatermarkDesc: 'Remove video watermark with manual or auto detection.',
       copyright: '© 2026 ToolSuf. Precision-crafted for power users.',
       privacy: 'Privacy Policy',
       terms: 'Terms of Service',
@@ -65,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
       toolRenameTitle: 'Batch Renamer Pro',
       toolImgToPdfTitle: 'Image to PDF',
       toolPdfToDocsTitle: 'PDF to Docs',
+      toolVideoToUhdTitle: 'Video to UHD',
     },
     id: {
       navHome: 'Beranda',
@@ -104,9 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
       toolBgRemoverTitle: 'Penghapus Latar',
       toolImgToPdfTitle: 'Gambar ke PDF',
       toolPdfToDocsTitle: 'PDF ke Dokumen',
+      toolVideoToUhdTitle: 'Video ke UHD',
       toolBgRemoverDesc: 'Hapus latar belakang gambar secara offline dengan AI browser.',
       toolImgToPdfDesc: 'Konversi gambar ke PDF dengan antarmuka bergaya Apple.',
       toolPdfToDocsDesc: 'Konversi PDF ke dokumen Word dengan antarmuka bergaya Apple.',
+      toolVideoToUhdDesc: 'Tingkatkan resolusi video ke UHD 4K dengan antarmuka bergaya Apple.',
+      toolWatermarkTitle: 'Hapus Watermark Video',
+      toolWatermarkDesc: 'Hapus watermark video dengan deteksi manual atau otomatis.',
       copyright: '© 2026 ToolSuf. Dibuat presisi untuk pengguna ahli.',
       privacy: 'Kebijakan Privasi',
       terms: 'Ketentuan Layanan',
@@ -325,6 +333,20 @@ document.addEventListener('DOMContentLoaded', () => {
       src: 'tools/pdf-to-docs/index.html',
       wide: false,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M16 18H8"/><path d="M16 12H8"/><path d="M8 6h2"/></svg>`
+    },
+    'video-to-uhd': {
+      titleEn: 'Video to UHD',
+      titleId: 'Video ke UHD',
+      src: 'tools/video-to-uhd/index.html',
+      wide: false,
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`
+    },
+    'watermark-remover': {
+      titleEn: 'Watermark Remover',
+      titleId: 'Hapus Watermark',
+      src: 'tools/watermark-remover/frontend/index.html',
+      wide: false,
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/><line x1="3" y1="21" x2="21" y2="3"/></svg>`
     }
   };
 

@@ -176,6 +176,7 @@ function handleFiles(files) {
     if (!file.type.startsWith('image/')) continue;
     images.push({ file, name: file.name });
   }
+  fileInput.value = '';
   renderPreview();
 }
 

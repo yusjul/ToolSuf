@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video ke UHD</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container" id="app">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="23 7 16 12 23 17 23 7"/>
+          <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Drop Zone -->
+    <section class="mac-section">
+      <div class="mac-section-header" data-i18n="selectVideo">PILIH VIDEO</div>
+      <div class="drop" id="drop">
+        <input type="file" id="fi" accept="video/*" style="display:none">
+        <div class="drop-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="23 7 16 12 23 17 23 7"/>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+          </svg>
+        </div>
+        <div class="drop-t" data-i18n="dropTitle">Pilih video untuk ditingkatkan ke UHD</div>
+        <div class="drop-s" data-i18n="dropSub">Seret & lepas atau klik untuk memilih</div>
+        <div class="badges">
+          <span class="badge">MP4</span>
+          <span class="badge">MOV</span>
+          <span class="badge">WebM</span>
+          <span class="badge">AVI</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Before/After Comparison -->
+    <section class="mac-section" id="cmpSection" style="display:none">
+      <div class="mac-section-header" data-i18n="comparison">PERBANDINGAN</div>
+      <div class="card">
+        <div class="cmp" id="cmpContainer">
+          <div class="cmp-empty" id="cmpEmpty" data-i18n="cmpEmpty">Pilih video untuk perbandingan</div>
+          <div id="cmpImages" style="display:none">
+            <video id="cmpVideo" muted loop playsinline preload="auto"></video>
+            <div class="cmp-after" id="cmpAfter">
+              <canvas id="cmpUhdCanvas"></canvas>
+            </div>
+            <div class="cmp-handle" id="cmpHandle">
+              <div class="cmp-handle-knob">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 8l-4 4l4 4"/><path d="M17 8l4 4l-4 4"/><path d="M3 12l18 0"/>
+                </svg>
+              </div>
+            </div>
+            <div class="cmp-labels">
+              <span id="lblOriginal" data-i18n="original">Asli</span>
+              <span id="lblResult" data-i18n="result">UHD</span>
+            </div>
+          </div>
+        </div>
+        <div class="cmp-playbar">
+          <button class="cmp-play-btn" id="playBtn" aria-label="Putar/Jeda">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </button>
+          <div class="cmp-play-status" id="playStatus">0:00 / 0:00</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Video Info -->
+    <section class="mac-section" id="infoSection" style="display:none">
+      <div class="mac-section-header" data-i18n="videoInfo">INFORMASI VIDEO</div>
+      <div class="card-info">
+        <div class="info-row">
+          <span class="info-l" data-i18n="resolution">Resolusi</span>
+          <span class="info-v"><span id="infoOrigRes">—</span> → <span id="infoUhdRes">—</span></span>
+        </div>
+        <div class="info-row">
+          <span class="info-l" data-i18n="fileSize">Ukuran</span>
+          <span class="info-v"><span id="infoOrigSize">—</span> → <span id="infoUhdSize" data-i18n="estimated">Estimasi</span></span>
+        </div>
+        <div class="info-row">
+          <span class="info-l" data-i18n="duration">Durasi</span>
+          <span class="info-v" id="infoDuration">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-l">FPS</span>
+          <span class="info-v" id="infoFps">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-l" data-i18n="bitrate">Bitrate</span>
+          <span class="info-v"><span id="infoOrigBitrate">—</span> → <span id="infoUhdBitrate">—</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section class="mac-section">
+      <div class="mac-section-header" data-i18n="settings">PENGATURAN</div>
+      <div class="settings-group">
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#007AFF">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title" data-i18n="targetRes">Resolusi Target</div>
+          </div>
+          <select class="apple-select" id="targetRes">
+            <option value="3840x2160">UHD 4K (3840×2160)</option>
+            <option value="2560x1440">1440p (2560×1440)</option>
+            <option value="1920x1080">1080p Full HD (1920×1080)</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#007AFF">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title" data-i18n="frameRate">Frame Rate</div>
+          </div>
+          <select class="apple-select" id="targetFps">
+            <option value="0" data-i18n="fpsOrig">Original</option>
+            <option value="60">60 FPS</option>
+            <option value="30" selected>30 FPS</option>
+            <option value="24">24 FPS</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#007AFF">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title" data-i18n="quality">Kualitas</div>
+            <div class="setting-desc" id="qualLabel">Tinggi</div>
+          </div>
+          <select class="apple-select" id="qualityLevel">
+            <option value="20" data-i18n="qlow">Rendah</option>
+            <option value="10" data-i18n="qmid">Sedang</option>
+            <option value="5" selected data-i18n="qhigh">Tinggi</option>
+            <option value="1" data-i18n="qloss">Lossless</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <button class="btn-p" id="convBtn" onclick="convertVideo()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="23 7 16 12 23 17 23 7"/>
+        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+      </svg>
+      <span data-i18n="convertBtn">Konversi ke UHD</span>
+    </button>
+
+    <button class="btn-s" style="margin-top:8px" onclick="clearAll()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      </svg>
+      <span data-i18n="clear">Hapus</span>
+    </button>
+
+    <!-- Progress -->
+    <div class="progress-card" id="progressCard" style="display:none">
+      <div class="zinfo" id="progressText" data-i18n="processing">Memproses...</div>
+    </div>
+
+    <div class="alert" id="alertBox"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

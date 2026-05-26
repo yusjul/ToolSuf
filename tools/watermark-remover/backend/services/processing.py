@@ -1,0 +1,52 @@
+import cv2
+import numpy as np
+from .inpaint import inpaint_frame, reset_temporal_cache
+from .masks import build_mask, build_soft_mask
+from .video import VideoReader, VideoWriter
+
+
+def process_video(input_path: str, output_path: str, masks: list,
+                  method: str = 'advanced', radius: int = 5,
+                  progress_callback=None):
+    reader = VideoReader(input_path)
+    fps = reader.fps
+    width, height = reader.size
+    total = reader.frame_count
+
+    mask_arr = build_mask(height, width, masks, dilate=True)
+    if mask_arr is None:
+        writer = VideoWriter(output_path, fps, (width, height))
+        idx = 0
+        while True:
+            ret, frame = reader.read()
+            if not ret:
+                break
+            writer.write(frame)
+            if progress_callback:
+                pct = int(50 + (idx / total) * 45)
+                progress_callback(pct, f'Frame {idx + 1}/{total}')
+            idx += 1
+        writer.release()
+        reader.release()
+        return
+
+    mask_dict = build_soft_mask(mask_arr)
+    reset_temporal_cache()
+
+    writer = VideoWriter(output_path, fps, (width, height))
+    idx = 0
+    while True:
+        ret, frame = reader.read()
+        if not ret:
+            break
+
+        frame = inpaint_frame(frame, mask_dict, method, radius)
+        writer.write(frame)
+
+        if progress_callback:
+            pct = int(50 + (idx / total) * 45)
+            progress_callback(pct, f'Frame {idx + 1}/{total}')
+        idx += 1
+
+    writer.release()
+    reader.release()
