@@ -47,7 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
       toolPassDesc: 'Generate secure passwords with Apple-style UI.',
       toolRenameDesc: 'Rename multiple files with macOS utility style.',
       toolAiDesc: 'Intelligent automation for repetitive tasks.',
-      toolCompressDesc: 'Lossless compression with minimal UI.',
+      mediaBadge: 'Media',
+      toolCompressTitle: 'Media Compressor',
+      toolCompressDesc: 'Compress images with before/after comparison.',
       copyright: '© 2026 ToolSuf. Precision-crafted for power users.',
       privacy: 'Privacy Policy',
       terms: 'Terms of Service',
@@ -88,7 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
       toolPassDesc: 'Buat kata sandi aman dengan antarmuka bergaya Apple.',
       toolRenameDesc: 'Ubah nama banyak file dengan gaya utilitas macOS.',
       toolAiDesc: 'Otomatisasi cerdas untuk tugas-tugas berulang.',
-      toolCompressDesc: 'Kompresi lossless dengan antarmuka minimalis.',
+      mediaBadge: 'Media',
+      toolCompressTitle: 'Media Compressor',
+      toolCompressDesc: 'Kompres gambar dengan perbandingan sebelum/sesudah.',
       copyright: '© 2026 ToolSuf. Dibuat presisi untuk pengguna ahli.',
       privacy: 'Kebijakan Privasi',
       terms: 'Ketentuan Layanan',
@@ -136,15 +140,14 @@ document.addEventListener('DOMContentLoaded', () => {
     syncIframeTheme();
   };
 
-  // Sync theme inside iframe
+  // Sync theme inside iframe via postMessage (reliable cross-origin)
   const syncIframeTheme = () => {
     if (toolFrame && toolFrame.contentWindow) {
       try {
+        toolFrame.contentWindow.postMessage({ type: 'syncTheme', dark: isDark }, '*');
+        // Legacy fallback for tools without postMessage listener
         if (typeof toolFrame.contentWindow.syncTheme === 'function') {
           toolFrame.contentWindow.syncTheme(isDark);
-        } else if (toolFrame.contentWindow.document && toolFrame.contentWindow.document.documentElement) {
-          const frameHtml = toolFrame.contentWindow.document.documentElement;
-          frameHtml.className = isDark ? 'dark' : 'light';
         }
       } catch (e) {
         console.warn('Iframe theme sync issue', e);
@@ -152,10 +155,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Sync language inside iframe
+  // Sync language inside iframe via postMessage
   const syncIframeLang = () => {
     if (toolFrame && toolFrame.contentWindow) {
       try {
+        toolFrame.contentWindow.postMessage({ type: 'syncLang', lang: currentLang }, '*');
+        // Legacy fallback
         if (typeof toolFrame.contentWindow.syncLang === 'function') {
           toolFrame.contentWindow.syncLang(currentLang);
         }
@@ -277,6 +282,13 @@ document.addEventListener('DOMContentLoaded', () => {
       src: 'batch_renamer_v3_full.html',
       wide: true,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`
+    },
+    compressor: {
+      titleEn: 'Media Compressor',
+      titleId: 'Media Compressor',
+      src: 'media_compressor.html',
+      wide: false,
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`
     }
   };
 
@@ -297,8 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
       macWindow.classList.remove('wide');
     }
 
-    // Open iframe src
-    toolFrame.src = config.src;
+    // Open iframe src with language param
+    toolFrame.src = config.src + '?lang=' + currentLang;
 
     // Display Modal
     modalOverlay.classList.add('active');

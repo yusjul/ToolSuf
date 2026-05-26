@@ -1,535 +1,547 @@
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-  /* ===== Apple Design System ===== */
+  /* ===== macOS Native Utility Design ===== */
   @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&display=swap');
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --apple-blue: #007AFF;
-    --apple-blue-dark: #0056CC;
-    --apple-bg: #F2F2F7;
-    --apple-card: #FFFFFF;
-    --apple-separator: rgba(60,60,67,0.18);
-    --apple-label: rgba(60,60,67,0.6);
-    --apple-text: #1C1C1E;
-    --apple-secondary-bg: #EFEFF4;
-    --apple-green: #34C759;
-    --apple-orange: #FF9500;
-    --apple-red: #FF3B30;
-    --apple-radius: 16px;
-    --apple-radius-lg: 22px;
+    --mac-blue: #007AFF;
+    --mac-blue-hover: #0056CC;
+    --mac-bg: #F5F5F7;
+    --mac-row-bg: rgba(255,255,255,0.75);
+    --mac-separator: rgba(60,60,67,0.06);
+    --mac-label: rgba(60,60,67,0.4);
+    --mac-text: #1C1C1E;
+    --mac-secondary-bg: rgba(255,255,255,0.6);
+    --mac-green: #34C759;
+    --mac-red: #FF3B30;
+    --mac-radius: 10px;
+    --mac-window-radius: 22px;
   }
 
   html.dark {
-    --apple-bg: #000000;
-    --apple-card: #1C1C1E;
-    --apple-separator: rgba(84,84,88,0.6);
-    --apple-label: rgba(235,235,245,0.6);
-    --apple-text: #FFFFFF;
-    --apple-secondary-bg: #2C2C2E;
-  }
-
-  html.light {
-    --apple-bg: #F2F2F7;
-    --apple-card: #FFFFFF;
-    --apple-separator: rgba(60,60,67,0.18);
-    --apple-label: rgba(60,60,67,0.6);
-    --apple-text: #1C1C1E;
-    --apple-secondary-bg: #EFEFF4;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --apple-bg: #000000;
-      --apple-card: #1C1C1E;
-      --apple-separator: rgba(84,84,88,0.6);
-      --apple-label: rgba(235,235,245,0.6);
-      --apple-text: #FFFFFF;
-      --apple-secondary-bg: #2C2C2E;
-    }
+    --mac-bg: #1C1C1E;
+    --mac-row-bg: rgba(44,44,46,0.75);
+    --mac-separator: rgba(84,84,88,0.15);
+    --mac-label: rgba(235,235,245,0.4);
+    --mac-text: #FFFFFF;
+    --mac-secondary-bg: rgba(44,44,46,0.6);
   }
 
   html, body {
     overflow-x: hidden;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 
   body {
     font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-    background: var(--apple-bg);
+    background: var(--mac-bg);
     -webkit-font-smoothing: antialiased;
-    transition: background 0.3s ease;
     overflow-y: auto;
   }
 
-  /* Hide webkit scrollbar entirely */
   html::-webkit-scrollbar,
-  body::-webkit-scrollbar {
-    display: none;
-  }
+  body::-webkit-scrollbar { display: none; }
 
-  /* Container */
-  .container {
-    max-width: 640px;
+  .app {
+    max-width: 540px;
     margin: 0 auto;
-    padding: 24px 20px 36px;
+    padding: 20px 20px 32px;
   }
 
-  /* Header area with icon */
-  .page-header {
-    text-align: center;
-    margin-bottom: 28px;
+  /* ===== macOS Grouped Sections ===== */
+  .mac-section { margin-bottom: 18px; }
+  .mac-section-header {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--mac-label);
+    padding: 0 2px 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
   }
-  .page-icon {
-    width: 64px;
-    height: 64px;
-    background: linear-gradient(145deg, #007AFF, #5AC8FA);
-    border-radius: 18px;
+
+  /* ===== Dropzone - Finder/Preview style ===== */
+  .drop {
+    border: 1px dashed var(--mac-separator);
+    border-radius: var(--mac-radius);
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .drop:hover, .drop.over {
+    background: var(--mac-secondary-bg);
+    border-color: var(--mac-blue);
+  }
+  .drop-icon { color: var(--mac-blue); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; }
+  .drop-icon svg { width: 24px; height: 24px; }
+  .drop-t { font-size: 13px; font-weight: 500; color: var(--mac-text); margin-bottom: 4px; }
+  .drop-s { font-size: 11px; color: var(--mac-label); }
+  .badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; justify-content: center; }
+  .badge {
+    font-size: 9px;
+    background: var(--mac-secondary-bg);
+    border: 0.5px solid var(--mac-separator);
+    border-radius: 4px;
+    padding: 2px 6px;
+    color: var(--mac-label);
+  }
+
+  /* ===== Stats row ===== */
+  .stat-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; margin: 0 0 0; padding: 12px 0; }
+  .stat { text-align: center; }
+  .stat-n { font-size: 17px; font-weight: 500; color: var(--mac-text); }
+  .stat-l { font-size: 9px; color: var(--mac-label); margin-top: 1px; text-transform: uppercase; letter-spacing: 0.3px; }
+
+  /* ===== Grouped Setting Rows ===== */
+  .settings-group {
+    border-radius: var(--mac-radius);
+    overflow: hidden;
+    background: var(--mac-row-bg);
+    border: 0.5px solid var(--mac-separator);
+  }
+  .setting-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .setting-row.column { flex-direction: column; align-items: stretch; gap: 8px; }
+  .setting-row:not(:last-child) { border-bottom: 0.5px solid var(--mac-separator); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .field { display: flex; flex-direction: column; gap: 3px; }
+  .field label { font-size: 11px; color: var(--mac-label); font-weight: 500; }
+
+  .setting-icon {
+    width: 26px; height: 26px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 14px;
-    box-shadow: 0 8px 24px rgba(0,122,255,0.3);
-    font-size: 30px;
-    color: white;
+    flex-shrink: 0;
   }
-  .page-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--apple-text);
-    letter-spacing: -0.5px;
-    margin-bottom: 4px;
-  }
-  .page-subtitle {
-    font-size: 14px;
-    color: var(--apple-label);
-  }
+  .setting-icon svg { width: 14px; height: 14px; color: white; stroke-width: 1.5; }
+  .setting-text { flex: 1; }
+  .setting-title { font-size: 14px; font-weight: 500; color: var(--mac-text); line-height: 1.3; }
+  .setting-desc { font-size: 11px; color: var(--mac-label); margin-top: 1px; }
 
-  /* Section label */
-  .lbl {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--apple-label);
-    margin-bottom: 8px;
-    padding: 0 4px;
-  }
-
-  /* Drop zone */
-  .drop {
-    border: 1.5px dashed var(--apple-separator);
-    border-radius: var(--apple-radius);
-    padding: 28px 16px;
-    text-align: center;
-    cursor: pointer;
-    background: var(--apple-card);
-    transition: all 0.2s ease;
-    margin-bottom: 16px;
-  }
-  .drop:hover, .drop.over {
-    background: var(--apple-secondary-bg);
-    border-color: var(--apple-blue);
-  }
-  .drop-icon { font-size: 32px; color: var(--apple-blue); margin-bottom: 10px; }
-  .drop-t { font-size: 15px; font-weight: 600; color: var(--apple-text); margin-bottom: 4px; }
-  .drop-s { font-size: 13px; color: var(--apple-label); }
-  .badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; justify-content: center; }
-  .badge {
-    font-size: 10px;
-    background: var(--apple-secondary-bg);
-    border: 0.5px solid var(--apple-separator);
-    border-radius: 6px;
-    padding: 3px 8px;
-    color: var(--apple-label);
-  }
-
-  /* Stats row */
-  .stat-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin: 12px 0 0; }
-  .stat {
-    background: var(--apple-card);
-    border-radius: 14px;
-    padding: 10px;
-    text-align: center;
-    border: 0.5px solid var(--apple-separator);
-  }
-  .stat-n { font-size: 20px; font-weight: 600; color: var(--apple-text); }
-  .stat-l { font-size: 10px; color: var(--apple-label); margin-top: 2px; }
-
-  /* Cards */
-  .card {
-    background: var(--apple-card);
-    border: 0.5px solid var(--apple-separator);
-    border-radius: var(--apple-radius-lg);
-    padding: 18px 20px;
-    margin-bottom: 16px;
-    transition: background 0.3s ease, border-color 0.3s ease;
-  }
-
-  /* Grid rows */
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-  .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label { font-size: 12px; color: var(--apple-label); font-weight: 500; }
-
-  /* Inputs */
+  /* ===== macOS Native Inputs ===== */
   .inp {
-    background: var(--apple-secondary-bg);
-    border: 0.5px solid var(--apple-separator);
-    border-radius: 10px;
-    padding: 9px 12px;
+    background: var(--mac-secondary-bg);
+    border: 0.5px solid var(--mac-separator);
+    border-radius: var(--mac-radius);
+    padding: 8px 12px;
     font-size: 14px;
-    color: var(--apple-text);
+    color: var(--mac-text);
     outline: none;
     font-family: inherit;
     width: 100%;
-    transition: background 0.2s, border-color 0.2s;
+    transition: background 0.15s, border-color 0.15s;
   }
-  .inp:focus { border-color: var(--apple-blue); box-shadow: 0 0 0 3px rgba(0,122,255,.15); }
+  .inp:focus { border-color: var(--mac-blue); box-shadow: 0 0 0 3px rgba(0,122,255,.12); }
   select.inp { cursor: pointer; }
 
-  /* Sequence preview */
-  .seq-box {
-    background: var(--apple-secondary-bg);
-    border: 0.5px solid var(--apple-separator);
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-top: 10px;
-  }
-  .seq-title { font-size: 11px; color: var(--apple-label); margin-bottom: 6px; }
-  .seq-chips { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
-  .seq-chip {
-    font-size: 12px;
-    background: var(--apple-card);
-    border: 0.5px solid var(--apple-separator);
-    border-radius: 8px;
-    padding: 3px 10px;
-    color: var(--apple-text);
-    font-family: 'SF Mono', Menlo, monospace;
-  }
-  .seq-more { font-size: 11px; color: var(--apple-label); }
-
-  /* Sort buttons */
-  .sort-row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-  .sort-btn {
-    font-size: 12px;
-    padding: 6px 14px;
-    border-radius: 99px;
-    border: 0.5px solid var(--apple-separator);
-    background: var(--apple-secondary-bg);
-    color: var(--apple-label);
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .sort-btn.active { background: var(--apple-blue); color: #fff; border-color: var(--apple-blue); }
-  .sort-btn:hover:not(.active) { background: var(--apple-separator); color: var(--apple-text); }
-
-  /* Preview strip */
-  .pvstrip {
-    background: var(--apple-secondary-bg);
-    border-radius: 10px;
-    padding: 10px 14px;
+  .apple-select {
+    background: var(--mac-secondary-bg);
+    border: 0.5px solid var(--mac-separator);
+    border-radius: var(--mac-radius);
+    padding: 7px 10px;
     font-size: 13px;
-    font-family: 'SF Mono', Menlo, monospace;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    border: 0.5px solid var(--apple-separator);
-  }
-  .pv-old { color: var(--apple-label); }
-  .pv-arr { color: var(--apple-blue); }
-  .pv-new { color: var(--apple-green); font-weight: 600; }
-
-  /* Toggle rows */
-  .tgl-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 11px 0;
-    border-bottom: 0.5px solid var(--apple-separator);
-  }
-  .tgl-row:last-child { border-bottom: none; }
-  .tgl-info { display: flex; flex-direction: column; gap: 2px; }
-  .tgl-lbl { font-size: 14px; color: var(--apple-text); }
-  .tgl-sub { font-size: 11px; color: var(--apple-label); }
-  .tgl { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
-  .tgl input { opacity: 0; width: 0; height: 0; }
-  .tsl {
-    position: absolute;
-    inset: 0;
-    background: #E5E5EA;
-    border-radius: 14px;
+    color: var(--mac-text);
+    font-family: inherit;
     cursor: pointer;
-    transition: 0.25s;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: background 0.15s, border-color 0.15s;
   }
-  .tsl:before {
+  .apple-select:focus { border-color: var(--mac-blue); box-shadow: 0 0 0 3px rgba(0,122,255,.12); }
+  .apple-select.sm { padding: 4px 8px; font-size: 12px; }
+  .apple-select-w {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .apple-select-w::after {
     content: '';
     position: absolute;
-    height: 22px;
-    width: 22px;
-    left: 3px;
-    bottom: 3px;
-    background: #fff;
-    border-radius: 50%;
-    transition: 0.25s;
-    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    right: 8px;
+    pointer-events: none;
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid var(--mac-label);
   }
-  .tgl input:checked + .tsl { background: var(--apple-green); }
-  .tgl input:checked + .tsl:before { transform: translateX(20px); }
-  html.dark .tsl { background: #3A3A3C; }
 
-  /* Progress */
-  .fc { font-size: 12px; color: var(--apple-label); margin: 10px 0 5px; }
-  .prog-w { height: 4px; background: var(--apple-secondary-bg); border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
-  .prog-f { height: 100%; width: 0%; background: var(--apple-blue); border-radius: 99px; transition: width .1s; }
+  /* ===== Sequence preview ===== */
+  .seq-title { font-size: 10px; color: var(--mac-label); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+  .seq-title svg { width: 9px; height: 9px; }
+  .seq-chips { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .seq-chip {
+    font-size: 11px;
+    background: var(--mac-row-bg);
+    border: 0.5px solid var(--mac-separator);
+    border-radius: 6px;
+    padding: 2px 8px;
+    color: var(--mac-text);
+    font-family: 'SF Mono', Menlo, monospace;
+  }
+  .seq-more { font-size: 10px; color: var(--mac-label); }
 
-  /* File list */
-  .flist { max-height: 140px; overflow-y: auto; border: 0.5px solid var(--apple-separator); border-radius: 12px; }
-  .fi { display: flex; align-items: center; gap: 6px; padding: 7px 12px; font-size: 12px; border-bottom: 0.5px solid var(--apple-separator); }
+  /* ===== Segmented Control (Sort) ===== */
+  .sort-row { display: flex; gap: 0; border: 0.5px solid var(--mac-separator); border-radius: 7px; overflow: hidden; background: var(--mac-secondary-bg); }
+  .sort-btn {
+    flex: 1;
+    font-size: 10px;
+    padding: 6px 4px;
+    border: none;
+    border-right: 0.5px solid var(--mac-separator);
+    background: transparent;
+    color: var(--mac-label);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    white-space: nowrap;
+  }
+  .sort-btn:last-child { border-right: none; }
+  .sort-btn.active { background: var(--mac-blue); color: #fff; }
+  .sort-btn:hover:not(.active) { background: var(--mac-separator); color: var(--mac-text); }
+  .sort-btn svg { width: 7px; height: 7px; }
+
+  /* ===== macOS Toggle Switch ===== */
+  .apple-toggle {
+    width: 42px; height: 24px;
+    border-radius: 12px;
+    background: #E5E5EA;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+    border: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .apple-toggle.on { background: var(--mac-blue); }
+  .apple-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: white;
+    transition: left 0.2s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+  .apple-toggle.on::after { left: 20px; }
+  html.dark .apple-toggle { background: #3A3A3C; }
+  html.dark .apple-toggle.on { background: var(--mac-blue); }
+
+  /* ===== Preview strip ===== */
+  .pvstrip {
+    background: var(--mac-secondary-bg);
+    border-radius: 7px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-family: 'SF Mono', Menlo, monospace;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .pv-old { color: var(--mac-label); }
+  .pv-arr { color: var(--mac-blue); }
+  .pv-arr svg { width: 10px; height: 10px; }
+  .pv-new { color: var(--mac-green); font-weight: 600; }
+
+  /* ===== Progress ===== */
+  .fc { font-size: 11px; color: var(--mac-label); margin: 8px 0 4px; }
+  .prog-w { height: 3px; background: var(--mac-secondary-bg); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+  .prog-f { height: 100%; width: 0%; background: var(--mac-blue); border-radius: 99px; transition: width 0.15s; }
+
+  /* ===== File list ===== */
+  .flist { max-height: 130px; overflow-y: auto; border: 0.5px solid var(--mac-separator); border-radius: var(--mac-radius); }
+  .fi { display: flex; align-items: center; gap: 6px; padding: 6px 10px; font-size: 11px; border-bottom: 0.5px solid var(--mac-separator); }
   .fi:last-child { border-bottom: none; }
-  .fi:hover { background: var(--apple-secondary-bg); }
+  .fi:hover { background: var(--mac-secondary-bg); }
   .fi-ext {
-    font-size: 9px;
-    background: var(--apple-secondary-bg);
-    border: 0.5px solid var(--apple-separator);
-    border-radius: 4px;
-    padding: 1px 5px;
-    color: var(--apple-label);
+    font-size: 8px;
+    background: var(--mac-secondary-bg);
+    border: 0.5px solid var(--mac-separator);
+    border-radius: 3px;
+    padding: 1px 4px;
+    color: var(--mac-label);
     font-family: monospace;
     flex-shrink: 0;
   }
-  .fi-old { flex: 1; color: var(--apple-label); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .fi-new { color: var(--apple-green); font-weight: 500; white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+  .fi-old { flex: 1; color: var(--mac-label); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fi-new { color: var(--mac-green); font-weight: 500; white-space: nowrap; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
 
-  /* Extension chips */
+  /* ===== Extension chips ===== */
   .ext-chip {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    background: var(--apple-secondary-bg);
-    border: 0.5px solid var(--apple-separator);
+    gap: 3px;
+    background: var(--mac-row-bg);
+    border: 0.5px solid var(--mac-separator);
     border-radius: 99px;
-    padding: 3px 10px;
-    font-size: 11px;
-    color: var(--apple-blue);
-    margin: 3px;
+    padding: 2px 8px;
+    font-size: 10px;
+    color: var(--mac-blue);
+    margin: 2px;
   }
-  .ext-chip button { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--apple-blue); line-height: 1; padding: 0; }
+  .ext-chip button { background: none; border: none; cursor: pointer; font-size: 11px; color: var(--mac-label); line-height: 1; padding: 0; }
 
-  /* Divider */
-  .divider { border: none; border-top: 0.5px solid var(--apple-separator); margin: 16px 0; }
+  .divider { border: none; border-top: 0.5px solid var(--mac-separator); margin: 16px 20px; }
 
-  /* Buttons */
+  /* ===== Buttons ===== */
   .btn-p {
     width: 100%;
-    padding: 15px;
-    background: var(--apple-blue);
-    color: #fff;
+    padding: 11px 20px;
+    background: var(--mac-blue);
+    color: white;
     border: none;
-    border-radius: var(--apple-radius-lg);
-    font-size: 16px;
+    border-radius: 99px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     font-family: inherit;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    gap: 6px;
+    letter-spacing: -0.1px;
     transition: background 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
   }
-  .btn-p:hover { background: var(--apple-blue-dark); }
-  .btn-p:active { transform: scale(.98); }
-  .btn-p:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-p:hover { background: var(--mac-blue-hover); }
+  .btn-p:active { transform: scale(.97); }
+  .btn-p:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-p svg { width: 14px; height: 14px; }
 
   .btn-s {
     width: 100%;
-    padding: 12px;
-    background: var(--apple-secondary-bg);
-    color: var(--apple-text);
-    border: 0.5px solid var(--apple-separator);
-    border-radius: var(--apple-radius);
-    font-size: 14px;
+    padding: 9px 14px;
+    background: var(--mac-secondary-bg);
+    color: var(--mac-text);
+    border: 0.5px solid var(--mac-separator);
+    border-radius: 99px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     font-family: inherit;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
     transition: background 0.15s;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
-  .btn-s:hover { background: var(--apple-separator); }
-  .btn-s:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-s:hover { background: var(--mac-separator); }
+  .btn-s:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-s svg { width: 12px; height: 12px; }
 
   .btn-undo {
-    background: var(--apple-secondary-bg);
-    border: 0.5px solid var(--apple-separator);
-    border-radius: var(--apple-radius);
-    padding: 12px 16px;
-    font-size: 14px;
-    color: var(--apple-text);
+    background: var(--mac-secondary-bg);
+    border: 0.5px solid var(--mac-separator);
+    border-radius: 99px;
+    padding: 9px 14px;
+    font-size: 12px;
+    color: var(--mac-text);
     cursor: pointer;
     font-family: inherit;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     transition: background 0.15s;
     white-space: nowrap;
   }
-  .btn-undo:hover { background: var(--apple-separator); }
+  .btn-undo:hover { background: var(--mac-separator); }
   .btn-undo:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-undo svg { width: 12px; height: 12px; }
 
-  .undo-stack { font-size: 11px; color: var(--apple-label); text-align: center; margin-top: 6px; }
+  .undo-stack { font-size: 10px; color: var(--mac-label); text-align: center; margin-top: 5px; }
 
-  /* Alert */
+  /* ===== Alert ===== */
   .alert {
-    font-size: 13px;
+    font-size: 12px;
     text-align: center;
-    padding: 10px 14px;
-    border-radius: 12px;
-    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: var(--mac-radius);
+    margin-top: 8px;
     display: none;
     border: 0.5px solid transparent;
   }
   .alert.ok { background: #eaf3de; color: #3B6D11; border-color: #c0dd97; display: block; }
   .alert.err { background: #fcebeb; color: #A32D2D; border-color: #f09595; display: block; }
 
-  .zprog { display: none; margin-top: 10px; }
-  .zinfo { font-size: 12px; color: var(--apple-label); margin-bottom: 4px; text-align: center; }
+  .zprog { display: none; margin-top: 8px; }
+  .zinfo { font-size: 11px; color: var(--mac-label); margin-bottom: 3px; text-align: center; }
 </style>
+<script>
+  (function() {
+    try {
+      var p = window.parent.document.documentElement;
+      if (p.classList.contains('dark')) { document.documentElement.classList.add('dark'); }
+      else { document.documentElement.classList.add('light'); }
+    } catch(e) { document.documentElement.classList.add('light'); }
+    var lang = new URLSearchParams(window.location.search).get('lang');
+    window.__initialLang = lang === 'en' ? 'en' : 'id';
+  })();
+</script>
 
 <div class="app" id="app">
-<div class="container">
 
-  <div class="page-header">
-    <div class="page-icon"><i class="ti ti-photo-edit" aria-hidden="true"></i></div>
-    <h1 class="page-title">Pengganti Nama File Pro</h1>
-    <p class="page-subtitle">Ubah nama banyak file dengan mudah dan cepat</p>
-  </div>
-
-
-    <div class="lbl">Pilih File</div>
-    <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
-      <input type="file" id="fi" multiple style="display:none">
-      <div class="drop-icon"><i class="ti ti-files" aria-hidden="true"></i></div>
-      <div class="drop-t">Semua format didukung — tanpa batasan</div>
-      <div class="drop-s">Seret & lepas atau klik untuk memilih</div>
-      <div class="badges">
-        <span class="badge">JPG PNG WEBP GIF</span><span class="badge">RAW CR2 NEF ARW DNG</span>
-        <span class="badge">HEIC HEIF AVIF</span><span class="badge">PSD TIFF BMP SVG</span><span class="badge">+ Semua format lain</span>
-      </div>
-    </div>
-
-    <div id="statsSection" style="display:none">
-      <div class="stat-row">
-        <div class="stat"><div class="stat-n" id="stTotal">0</div><div class="stat-l">Total File</div></div>
-        <div class="stat"><div class="stat-n" id="stSize">-</div><div class="stat-l">Ukuran</div></div>
-        <div class="stat"><div class="stat-n" id="stExt">0</div><div class="stat-l">Format</div></div>
-        <div class="stat"><div class="stat-n" id="stUndo">0</div><div class="stat-l">Riwayat Undo</div></div>
-      </div>
-      <div class="fc" id="fc"></div>
-      <div class="prog-w"><div class="prog-f" id="pf"></div></div>
-      <div class="flist" id="fl"></div>
-    </div>
-
-    <hr class="divider">
-
-    <div class="lbl">Urutan & Sortir</div>
-    <div class="card">
-      <div class="lbl" style="margin-bottom:6px">Urutkan file berdasarkan</div>
-      <div class="sort-row">
-        <button class="sort-btn active" id="sb-name" onclick="setSort('name')"><i class="ti ti-sort-az" aria-hidden="true"></i> Nama A–Z</button>
-        <button class="sort-btn" id="sb-name-d" onclick="setSort('name-d')"><i class="ti ti-sort-za" aria-hidden="true"></i> Nama Z–A</button>
-        <button class="sort-btn" id="sb-size" onclick="setSort('size')"><i class="ti ti-arrow-up" aria-hidden="true"></i> Ukuran ↑</button>
-        <button class="sort-btn" id="sb-size-d" onclick="setSort('size-d')"><i class="ti ti-arrow-down" aria-hidden="true"></i> Ukuran ↓</button>
-        <button class="sort-btn" id="sb-ext" onclick="setSort('ext')"><i class="ti ti-file" aria-hidden="true"></i> Format</button>
-        <button class="sort-btn" id="sb-orig" onclick="setSort('orig')"><i class="ti ti-upload" aria-hidden="true"></i> Urutan Asli</button>
-      </div>
-    </div>
-
-    <div class="lbl">Pengaturan Nama</div>
-    <div class="card">
-      <div class="row2" style="margin-bottom:9px">
-        <div class="field"><label>Nama Dasar</label><input class="inp" type="text" id="base" value="yusjul" oninput="update()"></div>
-        <div class="field"><label>Awalan (opsional)</label><input class="inp" type="text" id="pre" placeholder="foto_" oninput="update()"></div>
-      </div>
-      <div class="row3" style="margin-bottom:9px">
-        <div class="field"><label>Nomor Mulai</label><input class="inp" type="number" id="sn" value="1" min="0" oninput="update()"></div>
-        <div class="field"><label>Nomor Akhir</label><input class="inp" type="number" id="en" value="1000" min="1" oninput="update()"></div>
-        <div class="field"><label>Step (loncat)</label><input class="inp" type="number" id="step" value="1" min="1" oninput="update()"></div>
-      </div>
-
-      <div class="seq-box">
-        <div class="seq-title"><i class="ti ti-list-numbers" aria-hidden="true" style="font-size:12px;margin-right:4px"></i>Preview urutan angka</div>
-        <div class="seq-chips" id="seqChips"></div>
-      </div>
-
-      <hr style="border:none;border-top:.5px solid var(--bd);margin:10px 0">
-
-      <div class="lbl" style="margin-bottom:6px">Ekstensi Output</div>
-      <select class="inp" id="extMode" onchange="toggleExtMode()" style="margin-bottom:9px">
-        <option value="original">Pertahankan ekstensi asli</option>
-        <option value="single">Ganti semua ke satu ekstensi</option>
-        <option value="manual">Pemetaan manual per-format</option>
-      </select>
-      <div id="singleExt" style="display:none;margin-bottom:9px">
-        <div class="field"><label>Ekstensi baru</label><input class="inp" type="text" id="singleV" placeholder=".jpg" oninput="update()"></div>
-      </div>
-      <div id="manualExt" style="display:none;margin-bottom:9px">
-        <div style="display:flex;gap:6px;margin-bottom:7px;align-items:flex-end">
-          <input class="inp" type="text" id="mf" placeholder=".heic" style="flex:1">
-          <span style="font-size:16px;color:var(--tx2);padding-bottom:9px">→</span>
-          <input class="inp" type="text" id="mt" placeholder=".jpg" style="flex:1">
-          <button onclick="addMap()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 11px;cursor:pointer;font-size:12px;font-family:inherit;white-space:nowrap">Tambah</button>
+    <!-- Pilih File -->
+    <section class="mac-section">
+      <div class="mac-section-header">Pilih File</div>
+      <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
+        <input type="file" id="fi" multiple style="display:none">
+        <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3v4a1 1 0 0 0 1 1h4"/><path d="M18 17h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h4l5 5v7a2 2 0 0 1 -2 2z"/><path d="M16 17v2a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2"/></svg></div>
+        <div class="drop-t">Semua format didukung — tanpa batasan</div>
+        <div class="drop-s">Seret & lepas atau klik untuk memilih</div>
+        <div class="badges">
+          <span class="badge">JPG PNG WEBP GIF</span><span class="badge">RAW CR2 NEF ARW DNG</span>
+          <span class="badge">HEIC HEIF AVIF</span><span class="badge">PSD TIFF BMP SVG</span><span class="badge">+ Semua format lain</span>
         </div>
-        <div id="mapChips"></div>
       </div>
 
-      <div class="lbl" style="margin-bottom:5px">Pratinjau nama</div>
-      <div class="pvstrip">
-        <span class="pv-old" id="pvOld">gambar.cr2</span>
-        <span class="pv-arr"><i class="ti ti-arrow-right" aria-hidden="true"></i></span>
-        <span class="pv-new" id="pvNew">yusjul1.cr2</span>
+      <div id="statsSection" style="display:none">
+        <div class="stat-row">
+          <div class="stat"><div class="stat-n" id="stTotal">0</div><div class="stat-l">Total File</div></div>
+          <div class="stat"><div class="stat-n" id="stSize">-</div><div class="stat-l">Ukuran</div></div>
+          <div class="stat"><div class="stat-n" id="stExt">0</div><div class="stat-l">Format</div></div>
+          <div class="stat"><div class="stat-n" id="stUndo">0</div><div class="stat-l">Riwayat Undo</div></div>
+        </div>
+        <div class="fc" id="fc"></div>
+        <div class="prog-w"><div class="prog-f" id="pf"></div></div>
+        <div class="flist" id="fl"></div>
       </div>
-    </div>
+    </section>
 
-    <div class="lbl">Opsi Lanjutan</div>
-    <div class="card">
-      <div class="tgl-row">
-        <div class="tgl-info"><div class="tgl-lbl">Pad angka dengan nol</div><div class="tgl-sub">yusjul001 bukan yusjul1</div></div>
-        <label class="tgl"><input type="checkbox" id="pad" onchange="update()"><span class="tsl"></span></label>
+    <!-- Urutan & Sortir -->
+    <section class="mac-section">
+      <div class="mac-section-header">Urutan & Sortir</div>
+      <div class="settings-group">
+        <div class="setting-row column" style="padding:14px 16px">
+          <div style="font-size:11px;font-weight:500;color:var(--mac-label)">Urutkan file berdasarkan</div>
+          <div class="sort-row">
+            <button class="sort-btn active" id="sb-name" onclick="setSort('name')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l7 0"/><path d="M4 12l7 0"/><path d="M4 18l9 0"/><path d="M15 9l3 -3l3 3"/><path d="M18 6l0 12"/></svg> Nama A–Z</button>
+            <button class="sort-btn" id="sb-name-d" onclick="setSort('name-d')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l9 0"/><path d="M4 12l7 0"/><path d="M4 18l7 0"/><path d="M15 15l3 3l3 -3"/><path d="M18 6l0 12"/></svg> Nama Z–A</button>
+            <button class="sort-btn" id="sb-size" onclick="setSort('size')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M18 11l-6 -6"/><path d="M6 11l6 -6"/></svg> Ukuran ↑</button>
+            <button class="sort-btn" id="sb-size-d" onclick="setSort('size-d')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/></svg> Ukuran ↓</button>
+            <button class="sort-btn" id="sb-ext" onclick="setSort('ext')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/></svg> Format</button>
+            <button class="sort-btn" id="sb-orig" onclick="setSort('orig')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 9l5 -5l5 5"/><path d="M12 4l0 12"/></svg> Urutan Asli</button>
+          </div>
+        </div>
       </div>
-      <div class="tgl-row">
-        <div class="tgl-info"><div class="tgl-lbl">Lowercase ekstensi</div><div class="tgl-sub">.JPG .CR2 → .jpg .cr2</div></div>
-        <label class="tgl"><input type="checkbox" id="lc" checked onchange="update()"><span class="tsl"></span></label>
-      </div>
-      <div class="tgl-row">
-        <div class="tgl-info"><div class="tgl-lbl">Laporan CSV hasil rename</div><div class="tgl-sub">Ikut tersimpan di dalam ZIP</div></div>
-        <label class="tgl"><input type="checkbox" id="csv" checked><span class="tsl"></span></label>
-      </div>
-    </div>
+    </section>
 
-    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start">
+    <!-- Pengaturan Nama -->
+    <section class="mac-section">
+      <div class="mac-section-header">Pengaturan Nama</div>
+      <div class="settings-group">
+        <div class="setting-row column">
+          <div class="field-row">
+            <div class="field"><label>Nama Dasar</label><input class="inp" type="text" id="base" value="yusjul" oninput="update()"></div>
+            <div class="field"><label>Awalan (opsional)</label><input class="inp" type="text" id="pre" placeholder="foto_" oninput="update()"></div>
+          </div>
+          <div class="field-row field-row-3">
+            <div class="field"><label>Nomor Mulai</label><input class="inp" type="number" id="sn" value="1" min="0" oninput="update()"></div>
+            <div class="field"><label>Nomor Akhir</label><input class="inp" type="number" id="en" value="1000" min="1" oninput="update()"></div>
+            <div class="field"><label>Step (loncat)</label><input class="inp" type="number" id="step" value="1" min="1" oninput="update()"></div>
+          </div>
+        </div>
+
+        <div class="setting-row column">
+          <div class="seq-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6h9"/><path d="M11 12h9"/><path d="M12 18h8"/><path d="M4 16a2 2 0 1 1 4 0c0 .591 -.5 1 -1 1.5l-3 2.5h4"/><path d="M6 10v-6l-2 2"/></svg>Preview urutan angka</div>
+          <div class="seq-chips" id="seqChips"></div>
+        </div>
+
+        <div class="setting-row column">
+          <div style="font-size:12px;font-weight:500;color:var(--mac-label);margin-bottom:2px">Ekstensi Output</div>
+          <select class="apple-select" id="extMode" onchange="toggleExtMode()">
+            <option value="original">Pertahankan ekstensi asli</option>
+            <option value="single">Ganti semua ke satu ekstensi</option>
+            <option value="manual">Pemetaan manual per-format</option>
+          </select>
+          <div id="singleExt" style="display:none;margin-top:6px">
+            <div class="field"><label>Ekstensi baru</label><input class="inp" type="text" id="singleV" placeholder=".jpg" oninput="update()"></div>
+          </div>
+          <div id="manualExt" style="display:none;margin-top:6px">
+            <div style="display:flex;gap:6px;align-items:flex-end">
+              <input class="inp" type="text" id="mf" placeholder=".heic" style="flex:1">
+              <span style="font-size:14px;color:var(--mac-label);padding-bottom:7px">→</span>
+              <input class="inp" type="text" id="mt" placeholder=".jpg" style="flex:1">
+              <button onclick="addMap()" style="background:var(--mac-blue);color:#fff;border:none;border-radius:99px;padding:7px 10px;cursor:pointer;font-size:11px;font-family:inherit;white-space:nowrap">Tambah</button>
+            </div>
+            <div id="mapChips" style="margin-top:6px"></div>
+          </div>
+        </div>
+
+        <div class="setting-row column">
+          <div style="font-size:12px;font-weight:500;color:var(--mac-label);margin-bottom:2px">Pratinjau nama</div>
+          <div class="pvstrip" style="width:100%">
+            <span class="pv-old" id="pvOld">gambar.cr2</span>
+            <span class="pv-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l14 0"/><path d="M15 16l4 -4"/><path d="M15 8l4 4"/></svg></span>
+            <span class="pv-new" id="pvNew">yusjul1.cr2</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Opsi Lanjutan -->
+    <section class="mac-section">
+      <div class="mac-section-header">Opsi Lanjutan</div>
+      <div class="settings-group">
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#5856D6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6h9"/><path d="M11 12h9"/><path d="M12 18h8"/><path d="M4 16a2 2 0 1 1 4 0c0 .591 -.5 1 -1 1.5l-3 2.5h4"/><path d="M6 10v-6l-2 2"/></svg></div>
+          <div class="setting-text">
+            <div class="setting-title">Pad angka dengan nol</div>
+            <div class="setting-desc">yusjul001 bukan yusjul1</div>
+          </div>
+          <button class="apple-toggle" id="pad" onclick="toggleOpt(this);update();" role="switch" aria-checked="false"></button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#007AFF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></div>
+          <div class="setting-text">
+            <div class="setting-title">Lowercase ekstensi</div>
+            <div class="setting-desc">.JPG .CR2 → .jpg .cr2</div>
+          </div>
+          <button class="apple-toggle on" id="lc" onclick="toggleOpt(this);update();" role="switch" aria-checked="true"></button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#34C759"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M8 11h8v7h-8z"/><path d="M8 15h8"/><path d="M11 11v7"/></svg></div>
+          <div class="setting-text">
+            <div class="setting-title">Laporan CSV hasil rename</div>
+            <div class="setting-desc">Ikut tersimpan di dalam ZIP</div>
+          </div>
+          <button class="apple-toggle on" id="csv" onclick="toggleOpt(this);" role="switch" aria-checked="true"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:4px">
       <button class="btn-p" id="zipBtn" onclick="doZip()">
-        <i class="ti ti-file-zip" aria-hidden="true"></i> Download ZIP
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20.735a2 2 0 0 1 -1 -1.735v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-1"/><path d="M11 17a2 2 0 0 1 2 2v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-2a2 2 0 0 1 2 -2z"/></svg> Download ZIP
       </button>
       <button class="btn-undo" id="undoBtn" onclick="doUndo()" disabled title="Undo pengaturan terakhir">
-        <i class="ti ti-arrow-back-up" aria-hidden="true"></i> Undo
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14l-4 -4l4 -4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/></svg> Undo
       </button>
     </div>
     <div class="undo-stack" id="undoStack">Belum ada riwayat undo</div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-      <button class="btn-s" onclick="resetFiles()"><i class="ti ti-file-x" aria-hidden="true"></i> Hapus File</button>
-      <button class="btn-s" onclick="resetAll()"><i class="ti ti-refresh" aria-hidden="true"></i> Reset Semua</button>
+      <button class="btn-s" onclick="resetFiles()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M10 12l4 4m0 -4l-4 4"/></svg> Hapus File</button>
+      <button class="btn-s" onclick="resetAll()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg> Reset Semua</button>
     </div>
 
     <div class="zprog" id="zprog">
@@ -540,11 +552,17 @@
 
   </div>
 </div>
+</div>
 
 <script>
 let files=[], sortMode='name', extMap={}, undoHistory=[];
 
 const $ = id => document.getElementById(id);
+
+function toggleOpt(btn) {
+  btn.classList.toggle('on');
+  btn.setAttribute('aria-checked', btn.classList.contains('on'));
+}
 
 function applyTheme(dark) {
   if (dark) {
@@ -571,7 +589,7 @@ drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over'
 function toggleDark(){
   isDark=!isDark;
   $('app').classList.toggle('dark',isDark);
-  $('dmBtn').innerHTML=isDark?'<i class="ti ti-sun" aria-hidden="true"></i> Light':'<i class="ti ti-moon" aria-hidden="true"></i> Dark';
+  $('dmBtn').innerHTML=isDark?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3h.393a7.5 7.5 0 0 0 7.92 12.4A7.5 7.5 0 1 1 12 3z"/></svg> Light':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M12 2l0 2"/><path d="M12 20l0 2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12l2 0"/><path d="M20 12l2 0"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M17.66 6.34l1.41 -1.41"/></svg> Dark';
 }
 
 function loadFiles(f){
@@ -624,8 +642,8 @@ function genName(i){
   const sn=parseInt($('sn').value)||1;
   const en=parseInt($('en').value)||1000;
   const step=parseInt($('step').value)||1;
-  const pad=$('pad').checked;
-  const lc=$('lc').checked;
+  const pad=$('pad').classList.contains('on');
+  const lc=$('lc').classList.contains('on');
   const mode=$('extMode').value;
   const num=sn+i*step;
   const digits=String(en).length;
@@ -672,12 +690,12 @@ function renderList(){
     const d=document.createElement('div');
     d.className='fi';
     const e=getExt(files[i].name).toUpperCase().replace('.','')||'?';
-    d.innerHTML=`<span class="fi-ext">${e}</span><span class="fi-old">${files[i].name}</span><i class="ti ti-arrow-right" aria-hidden="true" style="color:var(--tx2);font-size:11px;flex-shrink:0"></i><span class="fi-new">${genName(i)}</span>`;
+    d.innerHTML=`<span class="fi-ext">${e}</span><span class="fi-old">${files[i].name}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mac-label);width:11px;height:11px;flex-shrink:0"><path d="M5 12l14 0"/><path d="M15 16l4 -4"/><path d="M15 8l4 4"/></svg><span class="fi-new">${genName(i)}</span>`;
     list.appendChild(d);
   }
   if(files.length>12){
     const m=document.createElement('div');
-    m.style.cssText='padding:5px 10px;font-size:11px;color:var(--tx2);text-align:center';
+    m.style.cssText='padding:5px 10px;font-size:11px;color:var(--mac-label);text-align:center';
     m.textContent='+ '+(files.length-12)+' file lainnya';
     list.appendChild(m);
   }
@@ -731,8 +749,8 @@ function pushUndo(type){
     sn:$('sn').value,
     en:$('en').value,
     step:$('step').value,
-    pad:$('pad').checked,
-    lc:$('lc').checked,
+    pad:$('pad').classList.contains('on'),
+    lc:$('lc').classList.contains('on'),
     extMode:$('extMode').value,
     singleV:$('singleV').value,
     extMap:{...extMap},
@@ -755,8 +773,8 @@ function doUndo(){
   $('sn').value=s.sn;
   $('en').value=s.en;
   $('step').value=s.step;
-  $('pad').checked=s.pad;
-  $('lc').checked=s.lc;
+  $('pad').classList.toggle('on',s.pad);$('pad').setAttribute('aria-checked',s.pad);
+  $('lc').classList.toggle('on',s.lc);$('lc').setAttribute('aria-checked',s.lc);
   $('extMode').value=s.extMode;
   $('singleV').value=s.singleV;
   extMap={...s.extMap};
@@ -781,7 +799,7 @@ async function doZip(){
   if(!files.length){showAlert('Pilih file terlebih dahulu.','err');return;}
   const btn=$('zipBtn');
   btn.disabled=true;
-  btn.innerHTML='<i class="ti ti-loader" aria-hidden="true"></i> Memproses...';
+  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6l0 -3"/><path d="M16.25 7.75l2.15 -2.15"/><path d="M18 12l3 0"/><path d="M16.25 16.25l2.15 2.15"/><path d="M12 18l0 3"/><path d="M7.75 16.25l-2.15 2.15"/><path d="M6 12l-3 0"/><path d="M7.75 7.75l-2.15 -2.15"/></svg> Memproses...';
   $('zprog').style.display='block';
   const zpf=$('zpf'),zinfo=$('zinfo');
   const zip=new JSZip();
@@ -795,7 +813,7 @@ async function doZip(){
     zinfo.textContent='Menambahkan '+(i+1)+' / '+files.length+' file...';
     if(i%15===0)await new Promise(r=>setTimeout(r,0));
   }
-  if($('csv').checked) zip.file('laporan_rename.csv',csv.join('\n'));
+  if($('csv').classList.contains('on')) zip.file('laporan_rename.csv',csv.join('\n'));
   zinfo.textContent='Mengompresi...';
   const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'},m=>{zpf.style.width=Math.round(80+m.percent*.2)+'%'});
   zpf.style.width='100%';
@@ -807,7 +825,7 @@ async function doZip(){
   URL.revokeObjectURL(a.href);
   showAlert('✓ '+files.length+' file direname & dikemas dalam ZIP!','ok');
   btn.disabled=false;
-  btn.innerHTML='<i class="ti ti-file-zip" aria-hidden="true"></i> Download ZIP';
+  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20.735a2 2 0 0 1 -1 -1.735v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-1"/><path d="M11 17a2 2 0 0 1 2 2v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-2a2 2 0 0 1 2 -2z"/></svg> Download ZIP';
   setTimeout(()=>{$('zprog').style.display='none';zpf.style.width='0%'},4000);
 }
 
@@ -829,7 +847,9 @@ function resetAll(){
   files=[];$('fi').value='';
   $('base').value='yusjul';$('pre').value='';
   $('sn').value='1';$('en').value='1000';$('step').value='1';
-  $('pad').checked=false;$('lc').checked=true;$('csv').checked=true;
+  $('pad').classList.remove('on');$('pad').setAttribute('aria-checked','false');
+  $('lc').classList.add('on');$('lc').setAttribute('aria-checked','true');
+  $('csv').classList.add('on');$('csv').setAttribute('aria-checked','true');
   $('extMode').value='original';$('singleV').value='';
   extMap={};renderChips();
   sortMode='name';
@@ -847,8 +867,6 @@ update();
 window.syncLang = function(lang) {
   const t = {
     id: {
-      pageTitle:     'Pengganti Nama File Pro',
-      pageSubtitle:  'Ubah nama banyak file dengan mudah dan cepat',
       lblPickFile:   'Pilih File',
       dropTitle:     'Semua format didukung — tanpa batasan',
       dropSub:       'Seret & lepas atau klik untuk memilih',
@@ -894,8 +912,6 @@ window.syncLang = function(lang) {
       preparing:     'Menyiapkan ZIP...',
     },
     en: {
-      pageTitle:     'Batch Renamer Pro',
-      pageSubtitle:  'Rename multiple files easily and quickly',
       lblPickFile:   'Pick Files',
       dropTitle:     'All formats supported — no limits',
       dropSub:       'Drag & drop or click to select',
@@ -945,23 +961,19 @@ window.syncLang = function(lang) {
   const d = t[lang];
   if (!d) return;
 
-  // Page title and subtitle
-  const pTitle = document.querySelector('.page-title');
-  const sub = document.querySelector('.page-subtitle');
-  if (pTitle) pTitle.textContent = d.pageTitle;
-  if (sub) sub.textContent = d.pageSubtitle;
-
-  // Section labels (by class .lbl — map by order)
-  const lbls = document.querySelectorAll('.lbl');
-  const lblMap = [d.lblPickFile, d.lblSort, null, d.lblNaming, null, d.lblExt, d.lblPreview, d.lblAdvanced];
-  // Use data-i18n instead — manually target specific ones
-  document.querySelectorAll('.lbl').forEach(el => {
+  // Section headers
+  document.querySelectorAll('.mac-section-header').forEach(el => {
     const txt = el.textContent.trim();
     if (['Pilih File','Pick Files'].includes(txt))              el.textContent = d.lblPickFile;
     else if (['Urutan & Sortir','Order & Sort'].includes(txt))  el.textContent = d.lblSort;
     else if (['Pengaturan Nama','Naming Settings'].includes(txt)) el.textContent = d.lblNaming;
     else if (['Opsi Lanjutan','Advanced Options'].includes(txt)) el.textContent = d.lblAdvanced;
-    else if (['Pratinjau nama','Name preview'].includes(txt))   el.textContent = d.lblPreview;
+  });
+
+  // Inline labels (text content match)
+  document.querySelectorAll('.setting-row.column > div:first-child').forEach(el => {
+    const txt = el.textContent.trim();
+    if (['Pratinjau nama','Name preview'].includes(txt))   el.textContent = d.lblPreview;
     else if (['Ekstensi Output','Output Extension'].includes(txt)) el.textContent = d.lblExt;
     else if (['Urutkan file berdasarkan','Sort files by'].includes(txt)) el.textContent = d.sortBy;
   });
@@ -982,12 +994,12 @@ window.syncLang = function(lang) {
   statLbls.forEach((el,i) => { if (statKeys[i]) el.textContent = d[statKeys[i]]; });
 
   // Sort buttons
-  $('sb-name').innerHTML    = `<i class="ti ti-sort-az" aria-hidden="true"></i> ${d.sortNameAZ}`;
-  $('sb-name-d').innerHTML  = `<i class="ti ti-sort-za" aria-hidden="true"></i> ${d.sortNameZA}`;
-  $('sb-size').innerHTML    = `<i class="ti ti-arrow-up" aria-hidden="true"></i> ${d.sortSizeAsc}`;
-  $('sb-size-d').innerHTML  = `<i class="ti ti-arrow-down" aria-hidden="true"></i> ${d.sortSizeDesc}`;
-  $('sb-ext').innerHTML     = `<i class="ti ti-file" aria-hidden="true"></i> ${d.sortExt}`;
-  $('sb-orig').innerHTML    = `<i class="ti ti-upload" aria-hidden="true"></i> ${d.sortOrig}`;
+  $('sb-name').innerHTML    = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l7 0"/><path d="M4 12l7 0"/><path d="M4 18l9 0"/><path d="M15 9l3 -3l3 3"/><path d="M18 6l0 12"/></svg> ${d.sortNameAZ}`;
+  $('sb-name-d').innerHTML  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l9 0"/><path d="M4 12l7 0"/><path d="M4 18l7 0"/><path d="M15 15l3 3l3 -3"/><path d="M18 6l0 12"/></svg> ${d.sortNameZA}`;
+  $('sb-size').innerHTML    = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M18 11l-6 -6"/><path d="M6 11l6 -6"/></svg> ${d.sortSizeAsc}`;
+  $('sb-size-d').innerHTML  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/></svg> ${d.sortSizeDesc}`;
+  $('sb-ext').innerHTML     = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/></svg> ${d.sortExt}`;
+  $('sb-orig').innerHTML    = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 9l5 -5l5 5"/><path d="M12 4l0 12"/></svg> ${d.sortOrig}`;
 
   // Form field labels
   document.querySelectorAll('.field label').forEach(el => {
@@ -1002,7 +1014,7 @@ window.syncLang = function(lang) {
 
   // Seq title
   const seqTitle = document.querySelector('.seq-title');
-  if (seqTitle) seqTitle.innerHTML = `<i class="ti ti-list-numbers" aria-hidden="true" style="font-size:12px;margin-right:4px"></i>${d.seqPreview}`;
+  if (seqTitle) seqTitle.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6h9"/><path d="M11 12h9"/><path d="M12 18h8"/><path d="M4 16a2 2 0 1 1 4 0c0 .591 -.5 1 -1 1.5l-3 2.5h4"/><path d="M6 10v-6l-2 2"/></svg>${d.seqPreview}`;
 
   // Ext dropdown options
   const extMode = $('extMode');
@@ -1016,14 +1028,14 @@ window.syncLang = function(lang) {
   const addBtn = document.querySelector('#manualExt button');
   if (addBtn) addBtn.textContent = d.addMapBtn;
 
-  // Toggle labels
-  document.querySelectorAll('.tgl-lbl').forEach(el => {
+  // Setting rows labels
+  document.querySelectorAll('.setting-title').forEach(el => {
     const txt = el.textContent.trim();
     if (['Pad angka dengan nol','Pad numbers with zeros'].includes(txt))  el.textContent = d.padLabel;
     else if (['Lowercase ekstensi','Lowercase extensions'].includes(txt))  el.textContent = d.lcLabel;
     else if (['Laporan CSV hasil rename','CSV rename report'].includes(txt)) el.textContent = d.csvLabel;
   });
-  document.querySelectorAll('.tgl-sub').forEach(el => {
+  document.querySelectorAll('.setting-desc').forEach(el => {
     const txt = el.textContent.trim();
     if (['yusjul001 bukan yusjul1','yusjul001 instead of yusjul1'].includes(txt)) el.textContent = d.padSub;
     else if (['.JPG .CR2 → .jpg .cr2'].includes(txt))                             el.textContent = d.lcSub;
@@ -1031,12 +1043,12 @@ window.syncLang = function(lang) {
   });
 
   // Main buttons
-  $('zipBtn').innerHTML  = `<i class="ti ti-file-zip" aria-hidden="true"></i> ${d.downloadBtn}`;
-  $('undoBtn').innerHTML = `<i class="ti ti-arrow-back-up" aria-hidden="true"></i> ${d.undoBtn}`;
+  $('zipBtn').innerHTML  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20.735a2 2 0 0 1 -1 -1.735v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-1"/><path d="M11 17a2 2 0 0 1 2 2v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-2a2 2 0 0 1 2 -2z"/></svg> ${d.downloadBtn}`;
+  $('undoBtn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14l-4 -4l4 -4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/></svg> ${d.undoBtn}`;
 
   const resetBtns = document.querySelectorAll('.btn-s');
-  if (resetBtns[0]) resetBtns[0].innerHTML = `<i class="ti ti-file-x" aria-hidden="true"></i> ${d.deleteFiles}`;
-  if (resetBtns[1]) resetBtns[1].innerHTML = `<i class="ti ti-refresh" aria-hidden="true"></i> ${d.resetAll}`;
+  if (resetBtns[0]) resetBtns[0].innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M10 12l4 4m0 -4l-4 4"/></svg> ${d.deleteFiles}`;
+  if (resetBtns[1]) resetBtns[1].innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg> ${d.resetAll}`;
 
   // Undo stack empty text
   const undoStack = $('undoStack');
@@ -1053,4 +1065,14 @@ window.syncLang = function(lang) {
     $('fc').textContent = files.length + (lang === 'id' ? ' file dipilih' : ' files selected');
   }
 };
+// Listen for postMessage from parent dashboard
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'syncTheme') {
+    if (typeof applyTheme === 'function') applyTheme(e.data.dark);
+  }
+  if (e.data && e.data.type === 'syncLang') {
+    if (typeof window.syncLang === 'function') window.syncLang(e.data.lang);
+  }
+});
+if (window.__initialLang) syncLang(window.__initialLang);
 </script>
