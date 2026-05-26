@@ -226,3 +226,58 @@ html.dark .checkerboard-bg {
 }
 .alert.ok { background: #eaf3de; color: #3B6D11; border-color: #c0dd97; display: block; }
 .alert.err { background: #fcebeb; color: #A32D2D; border-color: #f09595; display: block; }
+
+/* Mobile optimizations for Background Remover */
+@media (max-width: 480px) {
+  .container {
+    padding: 16px 12px 24px;
+  }
+  .header {
+    margin-bottom: 20px;
+  }
+  .header-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    margin-bottom: 10px;
+  }
+  .header-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  .drop {
+    padding: 20px 12px;
+  }
+  .drop-t {
+    font-size: 13px;
+  }
+  .drop-s {
+    font-size: 11px;
+  }
+  .setting-row {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+  .setting-title {
+    font-size: 13px;
+  }
+  .setting-desc {
+    font-size: 11px;
+  }
+  .btn-p, .btn-s {
+    padding: 12px;
+    font-size: 13px;
+  }
+  .btn-p svg, .btn-s svg {
+    width: 14px;
+    height: 14px;
+  }
+  .cmp-empty {
+    padding: 24px 12px;
+    font-size: 12px;
+  }
+  .cmp-labels {
+    font-size: 10px;
+    padding: 8px 10px;
+  }
+}

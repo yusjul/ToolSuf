@@ -898,7 +898,7 @@ html.dark .hero-canvas {
   opacity: 0.8;
 }
 
-/* iOS-style 2-column grid layout for smartphones */
+/* iOS-style 2-column grid layout for smartphones & Mobile Viewport Modals */
 @media (max-width: 520px) {
   .tools-grid, .features-grid {
     gap: 12px;
@@ -945,5 +945,23 @@ html.dark .hero-canvas {
   .card-action svg {
     width: 12px;
     height: 12px;
+  }
+}
+
+/* Make iframe window cover 100% viewport on mobile to give maximum breathing room */
+@media (max-width: 600px) {
+  .modal-overlay {
+    padding: 0 !important;
+  }
+  .mac-window {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+  .mac-body {
+    height: calc(100vh - 48px) !important;
   }
 }

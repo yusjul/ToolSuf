@@ -505,3 +505,138 @@ input[type="range"]::-webkit-slider-thumb {
   background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   margin-top: -10px; cursor: pointer; border: 0.5px solid rgba(0,0,0,0.1);
 }
+
+/* Mobile optimizations for Batch Renamer */
+@media (max-width: 480px) {
+  .app {
+    padding: 16px 12px 24px;
+  }
+  .header {
+    margin-bottom: 20px;
+  }
+  .header-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    margin-bottom: 10px;
+  }
+  .header-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  .drop {
+    padding: 20px 12px;
+    border-radius: var(--apple-radius);
+  }
+  .drop-t {
+    font-size: 13px;
+  }
+  .drop-s {
+    font-size: 11px;
+  }
+  .badges {
+    gap: 4px;
+  }
+  .badge {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+  .mac-section-header {
+    font-size: 11px;
+    padding: 0 4px 6px;
+  }
+  
+  /* Squeeze the Segmented control (sort-row & sort-btn) */
+  .sort-row {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 4px !important;
+  }
+  .sort-btn {
+    font-size: 10px !important;
+    padding: 6px 2px !important;
+    gap: 2px !important;
+    flex-direction: column !important; /* Stack SVG on top of text on mobile to avoid overflow! */
+    text-align: center !important;
+    justify-content: center !important;
+    min-height: 48px !important;
+  }
+  .sort-btn svg {
+    width: 14px !important;
+    height: 14px !important;
+    margin-right: 0 !important;
+  }
+  
+  /* Field row */
+  .field-row {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .field-row-3 {
+    flex-direction: row !important; /* keep 3-col fields but smaller spacing */
+    gap: 6px !important;
+  }
+  .field label {
+    font-size: 11px !important;
+  }
+  .inp {
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+  }
+  
+  .pvstrip {
+    padding: 10px !important;
+    font-size: 11px !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+  }
+  
+  .setting-row {
+    padding: 10px 12px !important;
+  }
+  .setting-row.column {
+    padding: 12px !important;
+  }
+  .setting-title {
+    font-size: 13px !important;
+  }
+  .setting-desc {
+    font-size: 11px !important;
+  }
+  .setting-icon {
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 6px !important;
+  }
+  .setting-icon svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  /* Buttons */
+  .btn-p, .btn-undo, .btn-s {
+    padding: 10px 14px !important;
+    font-size: 12px !important;
+    border-radius: 12px !important;
+  }
+  .btn-p svg, .btn-undo svg, .btn-s svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  /* Stat row */
+  .stat-row {
+    gap: 6px !important;
+    margin-bottom: 12px !important;
+  }
+  .stat {
+    padding: 8px 4px !important;
+    border-radius: 10px !important;
+  }
+  .stat-n {
+    font-size: 14px !important;
+  }
+  .stat-l {
+    font-size: 9px !important;
+  }
+}
