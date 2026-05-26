@@ -1,389 +1,365 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+﻿<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-  /* ===== macOS Native Utility Design ===== */
   @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&display=swap');
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --mac-blue: #007AFF;
-    --mac-blue-hover: #0056CC;
-    --mac-bg: #F5F5F7;
-    --mac-row-bg: rgba(255,255,255,0.75);
-    --mac-separator: rgba(60,60,67,0.06);
-    --mac-label: rgba(60,60,67,0.4);
-    --mac-text: #1C1C1E;
-    --mac-secondary-bg: rgba(255,255,255,0.6);
-    --mac-green: #34C759;
-    --mac-red: #FF3B30;
-    --mac-radius: 10px;
-    --mac-window-radius: 22px;
+    --apple-blue: #007AFF;
+    --apple-blue-dark: #0056CC;
+    --apple-bg: #F2F2F7;
+    --apple-card: #FFFFFF;
+    --apple-separator: rgba(60,60,67,0.18);
+    --apple-label: rgba(60,60,67,0.6);
+    --apple-text: #1C1C1E;
+    --apple-secondary-bg: #EFEFF4;
+    --apple-green: #34C759;
+    --apple-orange: #FF9500;
+    --apple-red: #FF3B30;
+    --apple-radius: 16px;
+    --apple-radius-lg: 22px;
   }
 
   html.dark {
-    --mac-bg: #1C1C1E;
-    --mac-row-bg: rgba(44,44,46,0.75);
-    --mac-separator: rgba(84,84,88,0.15);
-    --mac-label: rgba(235,235,245,0.4);
-    --mac-text: #FFFFFF;
-    --mac-secondary-bg: rgba(44,44,46,0.6);
+    --apple-bg: #000000;
+    --apple-card: #1C1C1E;
+    --apple-separator: rgba(84,84,88,0.6);
+    --apple-label: rgba(235,235,245,0.6);
+    --apple-text: #FFFFFF;
+    --apple-secondary-bg: #2C2C2E;
+  }
+  html.light {
+    --apple-bg: #F2F2F7;
+    --apple-card: #FFFFFF;
+    --apple-separator: rgba(60,60,67,0.18);
+    --apple-label: rgba(60,60,67,0.6);
+    --apple-text: #1C1C1E;
+    --apple-secondary-bg: #EFEFF4;
   }
 
-  html, body {
-    overflow-x: hidden;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
+  html, body { overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; }
   body {
     font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-    background: var(--mac-bg);
+    background: var(--apple-bg);
     -webkit-font-smoothing: antialiased;
     overflow-y: auto;
   }
-
-  html::-webkit-scrollbar,
-  body::-webkit-scrollbar { display: none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
   .app {
-    max-width: 540px;
+    max-width: 520px;
     margin: 0 auto;
-    padding: 20px 20px 32px;
+    padding: 32px 20px 40px;
   }
 
-  /* ===== macOS Grouped Sections ===== */
-  .mac-section { margin-bottom: 18px; }
+  /* ===== Header ===== */
+  .header { text-align: center; margin-bottom: 32px; }
+  .header-icon {
+    width: 72px; height: 72px;
+    background: linear-gradient(145deg, #007AFF, #34AADC);
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 8px 24px rgba(0,122,255,0.35);
+  }
+  .header-icon svg { width: 36px; height: 36px; stroke: white; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .header-title { font-size: 22px; font-weight: 700; color: var(--apple-text); letter-spacing: -0.4px; }
+  .header-sub { font-size: 13px; color: var(--apple-label); margin-top: 4px; }
+
+  /* ===== Section Headers ===== */
+  .mac-section { margin-bottom: 16px; }
   .mac-section-header {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--mac-label);
-    padding: 0 2px 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
+    font-size: 13px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--apple-label);
+    padding: 0 4px 8px;
   }
 
-  /* ===== Dropzone - Finder/Preview style ===== */
+  /* ===== Drop Zone ===== */
   .drop {
-    border: 1px dashed var(--mac-separator);
-    border-radius: var(--mac-radius);
-    padding: 32px 20px;
+    background: var(--apple-card);
+    border-radius: var(--apple-radius-lg);
+    padding: 28px 20px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
+    border: 1.5px dashed var(--apple-separator);
   }
   .drop:hover, .drop.over {
-    background: var(--mac-secondary-bg);
-    border-color: var(--mac-blue);
+    background: var(--apple-secondary-bg);
+    border-color: var(--apple-blue);
   }
-  .drop-icon { color: var(--mac-blue); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; }
-  .drop-icon svg { width: 24px; height: 24px; }
-  .drop-t { font-size: 13px; font-weight: 500; color: var(--mac-text); margin-bottom: 4px; }
-  .drop-s { font-size: 11px; color: var(--mac-label); }
-  .badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; justify-content: center; }
+  .drop-icon { color: var(--apple-blue); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; }
+  .drop-icon svg { width: 32px; height: 32px; }
+  .drop-t { font-size: 15px; font-weight: 600; color: var(--apple-text); margin-bottom: 4px; }
+  .drop-s { font-size: 13px; color: var(--apple-label); }
+  .badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; justify-content: center; }
   .badge {
-    font-size: 9px;
-    background: var(--mac-secondary-bg);
-    border: 0.5px solid var(--mac-separator);
-    border-radius: 4px;
-    padding: 2px 6px;
-    color: var(--mac-label);
+    font-size: 10px; background: var(--apple-secondary-bg);
+    border: 0.5px solid var(--apple-separator); border-radius: 6px;
+    padding: 3px 8px; color: var(--apple-label);
   }
 
-  /* ===== Stats row ===== */
-  .stat-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; margin: 0 0 0; padding: 12px 0; }
-  .stat { text-align: center; }
-  .stat-n { font-size: 17px; font-weight: 500; color: var(--mac-text); }
-  .stat-l { font-size: 9px; color: var(--mac-label); margin-top: 1px; text-transform: uppercase; letter-spacing: 0.3px; }
+  /* ===== Stats ===== */
+  .stat-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin: 12px 0 0; }
+  .stat {
+    background: var(--apple-card); border-radius: 14px; padding: 10px;
+    text-align: center; border: 0.5px solid var(--apple-separator);
+  }
+  .stat-n { font-size: 20px; font-weight: 600; color: var(--apple-text); }
+  .stat-l { font-size: 10px; color: var(--apple-label); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.3px; }
 
-  /* ===== Grouped Setting Rows ===== */
+  /* ===== Settings Card ===== */
   .settings-group {
-    border-radius: var(--mac-radius);
+    background: var(--apple-card);
+    border-radius: var(--apple-radius-lg);
     overflow: hidden;
-    background: var(--mac-row-bg);
-    border: 0.5px solid var(--mac-separator);
+    margin-bottom: 0;
   }
   .setting-row {
-    display: flex;
-    align-items: center;
-    padding: 12px 16px;
-    gap: 12px;
+    display: flex; align-items: center;
+    padding: 14px 20px; gap: 14px;
   }
-  .setting-row.column { flex-direction: column; align-items: stretch; gap: 8px; }
-  .setting-row:not(:last-child) { border-bottom: 0.5px solid var(--mac-separator); }
+  .setting-row.column { flex-direction: column; align-items: stretch; gap: 10px; }
+  .setting-row:not(:last-child) { border-bottom: 0.5px solid var(--apple-separator); }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .field-row-3 { grid-template-columns: 1fr 1fr 1fr; }
-  .field { display: flex; flex-direction: column; gap: 3px; }
-  .field label { font-size: 11px; color: var(--mac-label); font-weight: 500; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--apple-label); font-weight: 500; }
 
   .setting-icon {
-    width: 26px; height: 26px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .setting-icon svg { width: 14px; height: 14px; color: white; stroke-width: 1.5; }
+  .setting-icon svg { width: 16px; height: 16px; stroke: white; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .setting-text { flex: 1; }
-  .setting-title { font-size: 14px; font-weight: 500; color: var(--mac-text); line-height: 1.3; }
-  .setting-desc { font-size: 11px; color: var(--mac-label); margin-top: 1px; }
+  .setting-title { font-size: 15px; font-weight: 500; color: var(--apple-text); line-height: 1.3; }
+  .setting-desc { font-size: 12px; color: var(--apple-label); margin-top: 2px; }
 
-  /* ===== macOS Native Inputs ===== */
+  /* ===== Inputs ===== */
   .inp {
-    background: var(--mac-secondary-bg);
-    border: 0.5px solid var(--mac-separator);
-    border-radius: var(--mac-radius);
-    padding: 8px 12px;
-    font-size: 14px;
-    color: var(--mac-text);
+    background: var(--apple-secondary-bg);
+    border: 1px solid var(--apple-separator);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 15px;
+    color: var(--apple-text);
     outline: none;
     font-family: inherit;
     width: 100%;
-    transition: background 0.15s, border-color 0.15s;
+    transition: background 0.2s, border-color 0.2s;
   }
-  .inp:focus { border-color: var(--mac-blue); box-shadow: 0 0 0 3px rgba(0,122,255,.12); }
+  .inp:focus { border-color: var(--apple-blue); box-shadow: 0 0 0 3px rgba(0,122,255,.15); }
   select.inp { cursor: pointer; }
 
   .apple-select {
-    background: var(--mac-secondary-bg);
-    border: 0.5px solid var(--mac-separator);
-    border-radius: var(--mac-radius);
-    padding: 7px 10px;
-    font-size: 13px;
-    color: var(--mac-text);
+    background: var(--apple-secondary-bg);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 14px;
+    color: var(--apple-text);
     font-family: inherit;
     cursor: pointer;
     outline: none;
     -webkit-appearance: none;
     appearance: none;
-    transition: background 0.15s, border-color 0.15s;
+    transition: background 0.2s, border-color 0.2s;
+    width: 100%;
   }
-  .apple-select:focus { border-color: var(--mac-blue); box-shadow: 0 0 0 3px rgba(0,122,255,.12); }
-  .apple-select.sm { padding: 4px 8px; font-size: 12px; }
-  .apple-select-w {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-  }
+  .apple-select:focus { border-color: var(--apple-blue); box-shadow: 0 0 0 3px rgba(0,122,255,.15); }
+  .apple-select.sm { padding: 6px 10px; font-size: 13px; width: auto; }
+  .apple-select-w { position: relative; display: flex; align-items: center; }
   .apple-select-w::after {
-    content: '';
-    position: absolute;
-    right: 8px;
-    pointer-events: none;
+    content: ''; position: absolute; right: 12px; pointer-events: none;
     width: 0; height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 4px solid var(--mac-label);
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 5px solid var(--apple-label);
   }
 
-  /* ===== Sequence preview ===== */
-  .seq-title { font-size: 10px; color: var(--mac-label); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
-  .seq-title svg { width: 9px; height: 9px; }
-  .seq-chips { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  /* ===== Sequence Preview ===== */
+  .seq-title { font-size: 11px; color: var(--apple-label); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; font-weight: 500; }
+  .seq-title svg { width: 11px; height: 11px; stroke: var(--apple-label); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .seq-chips { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
   .seq-chip {
-    font-size: 11px;
-    background: var(--mac-row-bg);
-    border: 0.5px solid var(--mac-separator);
-    border-radius: 6px;
-    padding: 2px 8px;
-    color: var(--mac-text);
+    font-size: 12px; background: var(--apple-secondary-bg);
+    border: 0.5px solid var(--apple-separator); border-radius: 8px;
+    padding: 3px 10px; color: var(--apple-text);
     font-family: 'SF Mono', Menlo, monospace;
   }
-  .seq-more { font-size: 10px; color: var(--mac-label); }
+  .seq-more { font-size: 11px; color: var(--apple-label); }
 
   /* ===== Segmented Control (Sort) ===== */
-  .sort-row { display: flex; gap: 0; border: 0.5px solid var(--mac-separator); border-radius: 7px; overflow: hidden; background: var(--mac-secondary-bg); }
+  .sort-row {
+    display: flex; gap: 0;
+    border: 0.5px solid var(--apple-separator);
+    border-radius: 10px; overflow: hidden;
+    background: var(--apple-secondary-bg);
+  }
   .sort-btn {
-    flex: 1;
-    font-size: 10px;
-    padding: 6px 4px;
-    border: none;
-    border-right: 0.5px solid var(--mac-separator);
-    background: transparent;
-    color: var(--mac-label);
-    cursor: pointer;
-    font-family: inherit;
+    flex: 1; font-size: 10px; padding: 7px 4px;
+    border: none; border-right: 0.5px solid var(--apple-separator);
+    background: transparent; color: var(--apple-label);
+    cursor: pointer; font-family: inherit;
     transition: all 0.12s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
+    display: flex; align-items: center; justify-content: center; gap: 3px;
     white-space: nowrap;
   }
   .sort-btn:last-child { border-right: none; }
-  .sort-btn.active { background: var(--mac-blue); color: #fff; }
-  .sort-btn:hover:not(.active) { background: var(--mac-separator); color: var(--mac-text); }
-  .sort-btn svg { width: 7px; height: 7px; }
+  .sort-btn.active { background: var(--apple-blue); color: #fff; }
+  .sort-btn:hover:not(.active) { background: var(--apple-separator); color: var(--apple-text); }
+  .sort-btn svg { width: 8px; height: 8px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* ===== macOS Toggle Switch ===== */
+  /* ===== Toggle Switch ===== */
   .apple-toggle {
-    width: 42px; height: 24px;
-    border-radius: 12px;
-    background: #E5E5EA;
-    position: relative;
-    cursor: pointer;
-    transition: background 0.2s ease;
-    flex-shrink: 0;
-    border: none;
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
+    width: 50px; height: 30px; border-radius: 15px;
+    background: #E5E5EA; position: relative; cursor: pointer;
+    transition: background 0.25s ease; flex-shrink: 0;
+    border: none; outline: none; -webkit-tap-highlight-color: transparent;
   }
-  .apple-toggle.on { background: var(--mac-blue); }
+  .apple-toggle.on { background: var(--apple-green); }
   .apple-toggle::after {
-    content: '';
-    position: absolute;
-    top: 2px; left: 2px;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: white;
-    transition: left 0.2s ease;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: white; transition: left 0.25s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
   }
-  .apple-toggle.on::after { left: 20px; }
+  .apple-toggle.on::after { left: 23px; }
   html.dark .apple-toggle { background: #3A3A3C; }
-  html.dark .apple-toggle.on { background: var(--mac-blue); }
+  html.dark .apple-toggle.on { background: var(--apple-green); }
 
-  /* ===== Preview strip ===== */
+  /* ===== Preview Strip ===== */
   .pvstrip {
-    background: var(--mac-secondary-bg);
-    border-radius: 7px;
-    padding: 8px 12px;
-    font-size: 12px;
+    background: var(--apple-secondary-bg);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
     font-family: 'SF Mono', Menlo, monospace;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   }
-  .pv-old { color: var(--mac-label); }
-  .pv-arr { color: var(--mac-blue); }
-  .pv-arr svg { width: 10px; height: 10px; }
-  .pv-new { color: var(--mac-green); font-weight: 600; }
+  .pv-old { color: var(--apple-label); }
+  .pv-arr { color: var(--apple-blue); }
+  .pv-arr svg { width: 12px; height: 12px; stroke: var(--apple-blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .pv-new { color: var(--apple-green); font-weight: 600; }
 
   /* ===== Progress ===== */
-  .fc { font-size: 11px; color: var(--mac-label); margin: 8px 0 4px; }
-  .prog-w { height: 3px; background: var(--mac-secondary-bg); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
-  .prog-f { height: 100%; width: 0%; background: var(--mac-blue); border-radius: 99px; transition: width 0.15s; }
+  .fc { font-size: 12px; color: var(--apple-label); margin: 10px 0 5px; }
+  .prog-w { height: 4px; background: var(--apple-secondary-bg); border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
+  .prog-f { height: 100%; width: 0%; background: var(--apple-blue); border-radius: 99px; transition: width 0.15s; }
 
-  /* ===== File list ===== */
-  .flist { max-height: 130px; overflow-y: auto; border: 0.5px solid var(--mac-separator); border-radius: var(--mac-radius); }
-  .fi { display: flex; align-items: center; gap: 6px; padding: 6px 10px; font-size: 11px; border-bottom: 0.5px solid var(--mac-separator); }
+  /* ===== File List ===== */
+  .flist { max-height: 140px; overflow-y: auto; border-top: 0.5px solid var(--apple-separator); border-radius: 0 0 var(--apple-radius-lg) var(--apple-radius-lg); }
+  .fi {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; font-size: 12px;
+    border-bottom: 0.5px solid var(--apple-separator);
+    transition: background 0.15s;
+  }
   .fi:last-child { border-bottom: none; }
-  .fi:hover { background: var(--mac-secondary-bg); }
+  .fi:hover { background: var(--apple-secondary-bg); }
   .fi-ext {
-    font-size: 8px;
-    background: var(--mac-secondary-bg);
-    border: 0.5px solid var(--mac-separator);
-    border-radius: 3px;
-    padding: 1px 4px;
-    color: var(--mac-label);
-    font-family: monospace;
-    flex-shrink: 0;
+    font-size: 9px; background: var(--apple-secondary-bg);
+    border: 0.5px solid var(--apple-separator); border-radius: 4px;
+    padding: 2px 5px; color: var(--apple-label); font-family: monospace; flex-shrink: 0;
   }
-  .fi-old { flex: 1; color: var(--mac-label); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .fi-new { color: var(--mac-green); font-weight: 500; white-space: nowrap; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+  .fi-old { flex: 1; color: var(--apple-label); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fi-new { color: var(--apple-green); font-weight: 500; white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
 
-  /* ===== Extension chips ===== */
+  /* ===== Extension Chips ===== */
   .ext-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    background: var(--mac-row-bg);
-    border: 0.5px solid var(--mac-separator);
-    border-radius: 99px;
-    padding: 2px 8px;
-    font-size: 10px;
-    color: var(--mac-blue);
-    margin: 2px;
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--apple-secondary-bg);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: 99px; padding: 3px 10px;
+    font-size: 11px; color: var(--apple-blue); margin: 2px;
   }
-  .ext-chip button { background: none; border: none; cursor: pointer; font-size: 11px; color: var(--mac-label); line-height: 1; padding: 0; }
-
-  .divider { border: none; border-top: 0.5px solid var(--mac-separator); margin: 16px 20px; }
+  .ext-chip button { background: none; border: none; cursor: pointer; font-size: 12px; color: var(--apple-label); line-height: 1; padding: 0; }
 
   /* ===== Buttons ===== */
   .btn-p {
-    width: 100%;
-    padding: 11px 20px;
-    background: var(--mac-blue);
-    color: white;
-    border: none;
-    border-radius: 99px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    letter-spacing: -0.1px;
+    width: 100%; padding: 17px;
+    background: var(--apple-blue); color: white;
+    border: none; border-radius: var(--apple-radius-lg);
+    font-size: 17px; font-weight: 600; cursor: pointer;
+    font-family: inherit; letter-spacing: -0.2px;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
     transition: background 0.15s, transform 0.1s;
     -webkit-tap-highlight-color: transparent;
   }
-  .btn-p:hover { background: var(--mac-blue-hover); }
-  .btn-p:active { transform: scale(.97); }
-  .btn-p:disabled { opacity: .35; cursor: not-allowed; }
-  .btn-p svg { width: 14px; height: 14px; }
+  .btn-p:hover { background: var(--apple-blue-dark); }
+  .btn-p:active { transform: scale(.98); }
+  .btn-p:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-p svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
   .btn-s {
-    width: 100%;
-    padding: 9px 14px;
-    background: var(--mac-secondary-bg);
-    color: var(--mac-text);
-    border: 0.5px solid var(--mac-separator);
-    border-radius: 99px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
+    width: 100%; padding: 13px;
+    background: var(--apple-card); color: var(--apple-text);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: var(--apple-radius);
+    font-size: 14px; font-weight: 500; cursor: pointer;
     font-family: inherit;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
     transition: background 0.15s;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
   }
-  .btn-s:hover { background: var(--mac-separator); }
-  .btn-s:disabled { opacity: .35; cursor: not-allowed; }
-  .btn-s svg { width: 12px; height: 12px; }
+  .btn-s:hover { background: var(--apple-secondary-bg); }
+  .btn-s:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-s svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
   .btn-undo {
-    background: var(--mac-secondary-bg);
-    border: 0.5px solid var(--mac-separator);
-    border-radius: 99px;
-    padding: 9px 14px;
-    font-size: 12px;
-    color: var(--mac-text);
-    cursor: pointer;
-    font-family: inherit;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: background 0.15s;
-    white-space: nowrap;
+    background: var(--apple-card);
+    border: 0.5px solid var(--apple-separator);
+    border-radius: var(--apple-radius);
+    padding: 13px 18px;
+    font-size: 14px; font-weight: 500;
+    color: var(--apple-text);
+    cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; gap: 6px;
+    transition: background 0.15s; white-space: nowrap;
   }
-  .btn-undo:hover { background: var(--mac-separator); }
-  .btn-undo:disabled { opacity: .35; cursor: not-allowed; }
-  .btn-undo svg { width: 12px; height: 12px; }
+  .btn-undo:hover { background: var(--apple-secondary-bg); }
+  .btn-undo:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-undo svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  .undo-stack { font-size: 10px; color: var(--mac-label); text-align: center; margin-top: 5px; }
+  .undo-stack { font-size: 11px; color: var(--apple-label); text-align: center; margin-top: 6px; }
 
   /* ===== Alert ===== */
   .alert {
-    font-size: 12px;
-    text-align: center;
-    padding: 8px 12px;
-    border-radius: var(--mac-radius);
-    margin-top: 8px;
-    display: none;
+    font-size: 13px; text-align: center;
+    padding: 10px 14px; border-radius: 12px;
+    margin-top: 10px; display: none;
     border: 0.5px solid transparent;
   }
   .alert.ok { background: #eaf3de; color: #3B6D11; border-color: #c0dd97; display: block; }
   .alert.err { background: #fcebeb; color: #A32D2D; border-color: #f09595; display: block; }
 
-  .zprog { display: none; margin-top: 8px; }
-  .zinfo { font-size: 11px; color: var(--mac-label); margin-bottom: 3px; text-align: center; }
+  .zprog { display: none; margin-top: 10px; }
+  .zinfo { font-size: 12px; color: var(--apple-label); margin-bottom: 4px; text-align: center; }
+
+  /* ===== Stats section spacing ===== */
+  #statsSection { margin-top: 12px; }
+
+  /* Flist inside card ===== */
+  .file-card {
+    background: var(--apple-card);
+    border-radius: var(--apple-radius-lg);
+    overflow: hidden;
+    margin-top: 0;
+  }
+  .file-card .flist { border-top: none; border-radius: 0; max-height: 140px; }
+
+  /* slider ===== */
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 4px; border-radius: 2px;
+    background: var(--apple-secondary-bg); outline: none; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%;
+    background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    margin-top: -10px; cursor: pointer; border: 0.5px solid rgba(0,0,0,0.1);
+  }
 </style>
 <script>
   (function() {
@@ -399,14 +375,25 @@
 
 <div class="app" id="app">
 
+  <!-- Header -->
+  <div class="header">
+    <div class="header-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M15 3v4a1 1 0 0 0 1 1h4"/>
+        <path d="M18 17h-7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4l5 5v7a2 2 0 0 1-2 2z"/>
+        <path d="M16 17v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h2"/>
+      </svg>
+    </div>
+  </div>
+
     <!-- Pilih File -->
     <section class="mac-section">
       <div class="mac-section-header">Pilih File</div>
       <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
         <input type="file" id="fi" multiple style="display:none">
         <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3v4a1 1 0 0 0 1 1h4"/><path d="M18 17h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h4l5 5v7a2 2 0 0 1 -2 2z"/><path d="M16 17v2a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2"/></svg></div>
-        <div class="drop-t">Semua format didukung — tanpa batasan</div>
-        <div class="drop-s">Seret & lepas atau klik untuk memilih</div>
+        <div class="drop-t">Semua format didukung â€” tanpa batasan</div>
+        <div class="drop-s">Seret &amp; lepas atau klik untuk memilih</div>
         <div class="badges">
           <span class="badge">JPG PNG WEBP GIF</span><span class="badge">RAW CR2 NEF ARW DNG</span>
           <span class="badge">HEIC HEIF AVIF</span><span class="badge">PSD TIFF BMP SVG</span><span class="badge">+ Semua format lain</span>
@@ -422,7 +409,7 @@
         </div>
         <div class="fc" id="fc"></div>
         <div class="prog-w"><div class="prog-f" id="pf"></div></div>
-        <div class="flist" id="fl"></div>
+        <div class="flist" id="fl" style="border-top:0.5px solid var(--apple-separator);border-radius:0 0 var(--apple-radius-lg) var(--apple-radius-lg)"></div>
       </div>
     </section>
 
@@ -433,10 +420,10 @@
         <div class="setting-row column" style="padding:14px 16px">
           <div style="font-size:11px;font-weight:500;color:var(--mac-label)">Urutkan file berdasarkan</div>
           <div class="sort-row">
-            <button class="sort-btn active" id="sb-name" onclick="setSort('name')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l7 0"/><path d="M4 12l7 0"/><path d="M4 18l9 0"/><path d="M15 9l3 -3l3 3"/><path d="M18 6l0 12"/></svg> Nama A–Z</button>
-            <button class="sort-btn" id="sb-name-d" onclick="setSort('name-d')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l9 0"/><path d="M4 12l7 0"/><path d="M4 18l7 0"/><path d="M15 15l3 3l3 -3"/><path d="M18 6l0 12"/></svg> Nama Z–A</button>
-            <button class="sort-btn" id="sb-size" onclick="setSort('size')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M18 11l-6 -6"/><path d="M6 11l6 -6"/></svg> Ukuran ↑</button>
-            <button class="sort-btn" id="sb-size-d" onclick="setSort('size-d')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/></svg> Ukuran ↓</button>
+            <button class="sort-btn active" id="sb-name" onclick="setSort('name')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l7 0"/><path d="M4 12l7 0"/><path d="M4 18l9 0"/><path d="M15 9l3 -3l3 3"/><path d="M18 6l0 12"/></svg> Nama Aâ€“Z</button>
+            <button class="sort-btn" id="sb-name-d" onclick="setSort('name-d')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l9 0"/><path d="M4 12l7 0"/><path d="M4 18l7 0"/><path d="M15 15l3 3l3 -3"/><path d="M18 6l0 12"/></svg> Nama Zâ€“A</button>
+            <button class="sort-btn" id="sb-size" onclick="setSort('size')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M18 11l-6 -6"/><path d="M6 11l6 -6"/></svg> Ukuran â†‘</button>
+            <button class="sort-btn" id="sb-size-d" onclick="setSort('size-d')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/></svg> Ukuran â†“</button>
             <button class="sort-btn" id="sb-ext" onclick="setSort('ext')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/></svg> Format</button>
             <button class="sort-btn" id="sb-orig" onclick="setSort('orig')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 9l5 -5l5 5"/><path d="M12 4l0 12"/></svg> Urutan Asli</button>
           </div>
@@ -478,9 +465,9 @@
           <div id="manualExt" style="display:none;margin-top:6px">
             <div style="display:flex;gap:6px;align-items:flex-end">
               <input class="inp" type="text" id="mf" placeholder=".heic" style="flex:1">
-              <span style="font-size:14px;color:var(--mac-label);padding-bottom:7px">→</span>
+              <span style="font-size:14px;color:var(--mac-label);padding-bottom:7px">â†’</span>
               <input class="inp" type="text" id="mt" placeholder=".jpg" style="flex:1">
-              <button onclick="addMap()" style="background:var(--mac-blue);color:#fff;border:none;border-radius:99px;padding:7px 10px;cursor:pointer;font-size:11px;font-family:inherit;white-space:nowrap">Tambah</button>
+              <button onclick="addMap()" style="background:var(--apple-blue);color:#fff;border:none;border-radius:99px;padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;white-space:nowrap">Tambah</button>
             </div>
             <div id="mapChips" style="margin-top:6px"></div>
           </div>
@@ -513,7 +500,7 @@
           <div class="setting-icon" style="background:#007AFF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></div>
           <div class="setting-text">
             <div class="setting-title">Lowercase ekstensi</div>
-            <div class="setting-desc">.JPG .CR2 → .jpg .cr2</div>
+            <div class="setting-desc">.JPG .CR2 â†’ .jpg .cr2</div>
           </div>
           <button class="apple-toggle on" id="lc" onclick="toggleOpt(this);update();" role="switch" aria-checked="true"></button>
         </div>
@@ -677,7 +664,7 @@ function updateSeq(){
     const more=document.createElement('span');
     more.className='seq-more';
     const last=sn+(total-1)*step;
-    more.textContent='… '+last;
+    more.textContent='â€¦ '+last;
     chips.appendChild(more);
   }
 }
@@ -734,7 +721,7 @@ function renderChips(){
   const c=$('mapChips');c.innerHTML='';
   for(const[k,v]of Object.entries(extMap)){
     const s=document.createElement('span');s.className='ext-chip';
-    s.innerHTML=`${k} → ${v} <button onclick="delMap('${k}')">×</button>`;
+    s.innerHTML=`${k} â†’ ${v} <button onclick="delMap('${k}')">Ã—</button>`;
     c.appendChild(s);
   }
 }
@@ -792,7 +779,7 @@ function doUndo(){
   $('stUndo').textContent=undoHistory.length;
   $('undoStack').textContent=undoHistory.length?'Riwayat: '+undoHistory.length+' langkah':'Belum ada riwayat undo';
   update();
-  showAlert('↩ Undo berhasil — kembali ke langkah sebelumnya','ok');
+  showAlert('â†© Undo berhasil â€” kembali ke langkah sebelumnya','ok');
 }
 
 async function doZip(){
@@ -823,7 +810,7 @@ async function doZip(){
   a.download=($('base').value||'renamed')+'_files.zip';
   a.click();
   URL.revokeObjectURL(a.href);
-  showAlert('✓ '+files.length+' file direname & dikemas dalam ZIP!','ok');
+  showAlert('âœ“ '+files.length+' file direname & dikemas dalam ZIP!','ok');
   btn.disabled=false;
   btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20.735a2 2 0 0 1 -1 -1.735v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-1"/><path d="M11 17a2 2 0 0 1 2 2v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-2a2 2 0 0 1 2 -2z"/></svg> Download ZIP';
   setTimeout(()=>{$('zprog').style.display='none';zpf.style.width='0%'},4000);
@@ -868,7 +855,7 @@ window.syncLang = function(lang) {
   const t = {
     id: {
       lblPickFile:   'Pilih File',
-      dropTitle:     'Semua format didukung — tanpa batasan',
+      dropTitle:     'Semua format didukung â€” tanpa batasan',
       dropSub:       'Seret & lepas atau klik untuk memilih',
       badgeMore:     '+ Semua format lain',
       statTotal:     'Total File',
@@ -877,10 +864,10 @@ window.syncLang = function(lang) {
       statUndo:      'Riwayat Undo',
       lblSort:       'Urutan & Sortir',
       sortBy:        'Urutkan file berdasarkan',
-      sortNameAZ:    'Nama A–Z',
-      sortNameZA:    'Nama Z–A',
-      sortSizeAsc:   'Ukuran ↑',
-      sortSizeDesc:  'Ukuran ↓',
+      sortNameAZ:    'Nama Aâ€“Z',
+      sortNameZA:    'Nama Zâ€“A',
+      sortSizeAsc:   'Ukuran â†‘',
+      sortSizeDesc:  'Ukuran â†“',
       sortExt:       'Format',
       sortOrig:      'Urutan Asli',
       lblNaming:     'Pengaturan Nama',
@@ -901,7 +888,7 @@ window.syncLang = function(lang) {
       padLabel:      'Pad angka dengan nol',
       padSub:        'yusjul001 bukan yusjul1',
       lcLabel:       'Lowercase ekstensi',
-      lcSub:         '.JPG .CR2 → .jpg .cr2',
+      lcSub:         '.JPG .CR2 â†’ .jpg .cr2',
       csvLabel:      'Laporan CSV hasil rename',
       csvSub:        'Ikut tersimpan di dalam ZIP',
       downloadBtn:   'Download ZIP',
@@ -913,7 +900,7 @@ window.syncLang = function(lang) {
     },
     en: {
       lblPickFile:   'Pick Files',
-      dropTitle:     'All formats supported — no limits',
+      dropTitle:     'All formats supported â€” no limits',
       dropSub:       'Drag & drop or click to select',
       badgeMore:     '+ All other formats',
       statTotal:     'Total Files',
@@ -922,10 +909,10 @@ window.syncLang = function(lang) {
       statUndo:      'Undo History',
       lblSort:       'Order & Sort',
       sortBy:        'Sort files by',
-      sortNameAZ:    'Name A–Z',
-      sortNameZA:    'Name Z–A',
-      sortSizeAsc:   'Size ↑',
-      sortSizeDesc:  'Size ↓',
+      sortNameAZ:    'Name Aâ€“Z',
+      sortNameZA:    'Name Zâ€“A',
+      sortSizeAsc:   'Size â†‘',
+      sortSizeDesc:  'Size â†“',
       sortExt:       'Format',
       sortOrig:      'Original Order',
       lblNaming:     'Naming Settings',
@@ -946,7 +933,7 @@ window.syncLang = function(lang) {
       padLabel:      'Pad numbers with zeros',
       padSub:        'yusjul001 instead of yusjul1',
       lcLabel:       'Lowercase extensions',
-      lcSub:         '.JPG .CR2 → .jpg .cr2',
+      lcSub:         '.JPG .CR2 â†’ .jpg .cr2',
       csvLabel:      'CSV rename report',
       csvSub:        'Included in the ZIP file',
       downloadBtn:   'Download ZIP',
@@ -984,7 +971,7 @@ window.syncLang = function(lang) {
   if (dropT) dropT.textContent = d.dropTitle;
   if (dropS) dropS.textContent = d.dropSub;
 
-  // Badges — last badge only (dynamic text)
+  // Badges â€” last badge only (dynamic text)
   const badges = document.querySelectorAll('.badge');
   if (badges.length) badges[badges.length-1].textContent = d.badgeMore;
 
@@ -1038,7 +1025,7 @@ window.syncLang = function(lang) {
   document.querySelectorAll('.setting-desc').forEach(el => {
     const txt = el.textContent.trim();
     if (['yusjul001 bukan yusjul1','yusjul001 instead of yusjul1'].includes(txt)) el.textContent = d.padSub;
-    else if (['.JPG .CR2 → .jpg .cr2'].includes(txt))                             el.textContent = d.lcSub;
+    else if (['.JPG .CR2 â†’ .jpg .cr2'].includes(txt))                             el.textContent = d.lcSub;
     else if (['Ikut tersimpan di dalam ZIP','Included in the ZIP file'].includes(txt)) el.textContent = d.csvSub;
   });
 
