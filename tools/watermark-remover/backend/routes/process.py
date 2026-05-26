@@ -2,11 +2,16 @@ import uuid
 import threading
 import json
 import os
+import traceback
+import logging
 from flask import Blueprint, request, jsonify, send_file, Response
 from werkzeug.utils import secure_filename
 from ..services.processing import process_video
 from ..utils.file_utils import allowed_file, get_output_path
 from ..utils.temp_utils import cleanup_temp
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 process_bp = Blueprint('process', __name__)
 
@@ -25,6 +30,9 @@ def _run_task(task_id, video_path, output_path, masks, method, radius):
         def cb(pct, msg):
             _update_task(task_id, progress=pct, message=msg)
 
+        logger.info('Task %s: processing %s -> %s (method=%s radius=%d)',
+                     task_id, video_path, output_path, method, radius)
+
         process_video(
             input_path=video_path,
             output_path=output_path,
@@ -34,7 +42,11 @@ def _run_task(task_id, video_path, output_path, masks, method, radius):
             progress_callback=cb
         )
         _update_task(task_id, progress=100, message='Selesai', done=True)
+        logger.info('Task %s: completed', task_id)
+
     except Exception as e:
+        tb = traceback.format_exc()
+        logger.error('Task %s failed:\n%s', task_id, tb)
         _update_task(task_id, error=str(e), done=True)
     finally:
         if video_path and os.path.exists(video_path):

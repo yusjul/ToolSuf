@@ -84,6 +84,7 @@ const translations = {
 };
 
 let currentLang = 'id';
+const API_BASE = 'http://localhost:5000';
 let videoFile = null;
 let videoMeta = null;
 let masks = [];
@@ -563,11 +564,12 @@ async function processViaServer() {
     fd.append('video', videoFile);
     fd.append('masks', JSON.stringify(masks.map(m => ({ x: m.x, y: m.y, w: m.w, h: m.h }))));
     fd.append('method', 'advanced');
+    fd.append('radius', '3');
 
     // Step 1 — upload & get task_id
     const taskId = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', 'http://localhost:5000/api/process');
+      xhr.open('POST', API_BASE + '/api/process');
       xhr.setRequestHeader('Accept', 'application/json');
 
       xhr.upload.onprogress = (e) => {
@@ -592,7 +594,7 @@ async function processViaServer() {
 
     // Step 2 — SSE progress stream
     const resultBlob = await new Promise((resolve, reject) => {
-      const evtSource = new EventSource('http://localhost:5000/api/status/' + taskId);
+      const evtSource = new EventSource(API_BASE + '/api/status/' + taskId);
 
       evtSource.onmessage = (e) => {
         try {
@@ -634,7 +636,7 @@ async function processViaServer() {
 }
 
 async function fetchBlob(taskId) {
-  const res = await fetch('http://localhost:5000/api/download/' + taskId);
+  const res = await fetch(API_BASE + '/api/download/' + taskId);
   if (!res.ok) throw new Error('Download failed');
   return res.blob();
 }
