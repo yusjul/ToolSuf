@@ -47,11 +47,14 @@ document.addEventListener('DOMContentLoaded', () => {
       toolPassDesc: 'Generate secure passwords with Apple-style UI.',
       toolRenameDesc: 'Rename multiple files with macOS utility style.',
       toolAiDesc: 'Intelligent automation for repetitive tasks.',
+      documentBadge: 'Document',
       mediaBadge: 'Media',
       toolCompressTitle: 'Media Compressor',
       toolCompressDesc: 'Compress images with before/after comparison.',
       toolBgRemoverTitle: 'Background Remover',
       toolBgRemoverDesc: 'Remove image backgrounds fully offline with browser AI.',
+      toolImgToPdfDesc: 'Convert images to PDF with Apple-style UI.',
+      toolPdfToDocsDesc: 'Convert PDF to Word documents with Apple-style UI.',
       copyright: '© 2026 ToolSuf. Precision-crafted for power users.',
       privacy: 'Privacy Policy',
       terms: 'Terms of Service',
@@ -60,6 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
       iframeTitle: 'Integrated Productivity Tool',
       toolPassTitle: 'Password Generator',
       toolRenameTitle: 'Batch Renamer Pro',
+      toolImgToPdfTitle: 'Image to PDF',
+      toolPdfToDocsTitle: 'PDF to Docs',
     },
     id: {
       navHome: 'Beranda',
@@ -95,8 +100,13 @@ document.addEventListener('DOMContentLoaded', () => {
       mediaBadge: 'Media',
       toolCompressTitle: 'Kompresor Media',
       toolCompressDesc: 'Kompres gambar dengan perbandingan sebelum/sesudah.',
+      documentBadge: 'Dokumen',
       toolBgRemoverTitle: 'Penghapus Latar',
+      toolImgToPdfTitle: 'Gambar ke PDF',
+      toolPdfToDocsTitle: 'PDF ke Dokumen',
       toolBgRemoverDesc: 'Hapus latar belakang gambar secara offline dengan AI browser.',
+      toolImgToPdfDesc: 'Konversi gambar ke PDF dengan antarmuka bergaya Apple.',
+      toolPdfToDocsDesc: 'Konversi PDF ke dokumen Word dengan antarmuka bergaya Apple.',
       copyright: '© 2026 ToolSuf. Dibuat presisi untuk pengguna ahli.',
       privacy: 'Kebijakan Privasi',
       terms: 'Ketentuan Layanan',
@@ -301,6 +311,20 @@ document.addEventListener('DOMContentLoaded', () => {
       src: 'tools/background-remover/index.html',
       wide: false,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>`
+    },
+    'image-to-pdf': {
+      titleEn: 'Image to PDF',
+      titleId: 'Gambar ke PDF',
+      src: 'tools/image-to-pdf/index.html',
+      wide: false,
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><rect x="3" y="11" width="18" height="10" rx="1"/><circle cx="8.5" cy="15" r="1.5"/><polyline points="21 19 16 14 11 19"/></svg>`
+    },
+    'pdf-to-docs': {
+      titleEn: 'PDF to Docs',
+      titleId: 'PDF ke Dokumen',
+      src: 'tools/pdf-to-docs/index.html',
+      wide: false,
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M16 18H8"/><path d="M16 12H8"/><path d="M8 6h2"/></svg>`
     }
   };
 

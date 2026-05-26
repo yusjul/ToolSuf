@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF ke Dokumen</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container" id="app">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <path d="M16 18H8"/>
+          <path d="M16 12H8"/>
+          <path d="M8 6h2"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Drop Zone -->
+    <section class="mac-section">
+      <div class="mac-section-header" data-i18n="selectPdf">PILIH PDF</div>
+      <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
+        <input type="file" id="fi" accept=".pdf,application/pdf" style="display:none">
+        <div class="drop-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <path d="M12 18v-6"/>
+            <path d="M9 15l3-3 3 3"/>
+          </svg>
+        </div>
+        <div class="drop-t" data-i18n="dropTitle">Pilih file PDF untuk dikonversi</div>
+        <div class="drop-s" data-i18n="dropSub">Seret & lepas atau klik untuk memilih</div>
+        <div class="badges">
+          <span class="badge">PDF</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- File Info -->
+    <section class="mac-section" id="infoSection" style="display:none">
+      <div class="mac-section-header">
+        <span data-i18n="fileInfo">INFO FILE</span>
+        <span id="pageCount" class="count-badge"></span>
+      </div>
+      <div class="card-info" id="fileInfo">
+        <div class="info-row">
+          <span class="info-l" data-i18n="fileName">Nama File</span>
+          <span class="info-v" id="fileName">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-l" data-i18n="fileSize">Ukuran</span>
+          <span class="info-v" id="fileSize">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-l" data-i18n="pages">Halaman</span>
+          <span class="info-v" id="filePages">-</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Preview Teks -->
+    <section class="mac-section" id="previewSection" style="display:none">
+      <div class="mac-section-header" data-i18n="extractedText">TEKS TEREKSTRAK</div>
+      <div class="preview-box" id="previewBox">
+        <div class="preview-scroll" id="previewScroll"></div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section class="mac-section">
+      <div class="mac-section-header" data-i18n="conversionSettings">PENGATURAN KONVERSI</div>
+      <div class="settings-group">
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#007AFF">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 18H8"/>
+              <path d="M16 12H8"/>
+              <path d="M8 6h2"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title" data-i18n="outputFormat">Format Output</div>
+          </div>
+          <select class="apple-select" id="outputFormat">
+            <option value="docx">DOCX (Word)</option>
+            <option value="txt">TXT (Plain Text)</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <button class="btn-p" id="convBtn" onclick="convertPDF()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <path d="M12 18v-6"/>
+        <path d="M9 15l3-3 3 3"/>
+      </svg>
+      <span data-i18n="convertBtn">Konversi ke DOCX</span>
+    </button>
+
+    <button class="btn-s" style="margin-top:8px" onclick="clearAll()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      </svg>
+      <span data-i18n="clear">Hapus</span>
+    </button>
+
+    <!-- Progress -->
+    <div class="progress-card" id="progressCard" style="display:none">
+      <div class="zinfo" id="progressText" data-i18n="processing">Memproses...</div>
+      <div class="prog-w"><div class="prog-f" id="pf"></div></div>
+    </div>
+
+    <div class="alert" id="alertBox"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
