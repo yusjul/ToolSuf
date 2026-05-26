@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metadata Cleaner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <circle cx="12" cy="14" r="3"/>
+          <line x1="12" y1="14" x2="12" y2="14.01"/>
+        </svg>
+      </div>
+      <h1 class="title" data-i18n="title">Metadata Cleaner</h1>
+      <p class="subtitle" data-i18n="subtitle">Offline EXIF Stripper & Privacy Suite</p>
+    </div>
+
+    <!-- Status Banner (Under Development) -->
+    <section class="mac-section">
+      <div class="status-banner">
+        <div class="status-badge">
+          <span class="pulse-dot"></span>
+          <span data-i18n="statusActive">DIKEMBANGKAN</span>
+        </div>
+        <p class="status-text" data-i18n="statusText">Fitur ini sedang dalam pengembangan aktif dan akan segera hadir dengan fungsionalitas penuh.</p>
+      </div>
+    </section>
+
+    <!-- Visual Mockup Finder Inspector -->
+    <section class="mac-section">
+      <div class="mac-section-header" data-i18n="inspectorPreview">PRATINJAU INSPEKTUR METADATA</div>
+      <div class="inspector-mockup">
+        <div class="mock-file-header">
+          <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <div class="file-name-size">
+            <span class="file-name">IMG_94821.JPG</span>
+            <span class="file-size">4.2 MB</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="info-rows">
+          <div class="info-row">
+            <span class="info-key" data-i18n="lblCamera">Kamera:</span>
+            <span class="info-val">iPhone 15 Pro (24mm, f/1.78)</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key" data-i18n="lblDate">Tanggal:</span>
+            <span class="info-val">25 Mei 2026, 14:32:01</span>
+          </div>
+          <div class="info-row warning">
+            <span class="info-key" data-i18n="lblLocation">Lokasi GPS:</span>
+            <span class="info-val">Jakarta, ID (-6.2088, 106.8456)</span>
+          </div>
+        </div>
+
+        <div class="alert-box">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span data-i18n="warningMsg">GPS terdeteksi! Siap dibersihkan.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Planned Features Grid -->
+    <section class="mac-section">
+      <div class="mac-section-header" data-i18n="plannedFeatures">FITUR YANG DIRENCANAKAN</div>
+      <div class="features-list">
+        
+        <!-- Feature 1 -->
+        <div class="feat-card">
+          <div class="feat-icon" style="background:#FF3B30">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </div>
+          <div class="feat-info">
+            <h3 class="feat-title" data-i18n="feat1Title">Hapus GPS & Info Kamera</h3>
+            <p class="feat-desc" data-i18n="feat1Desc">Hapus koordinat lokasi GPS sensitif, nama kamera, pengaturan ISO, dan tanggal pengambilan gambar secara instan.</p>
+          </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feat-card">
+          <div class="feat-icon" style="background:#34C759">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <div class="feat-info">
+            <h3 class="feat-title" data-i18n="feat2Title">Kompresi Bebas Kerugian</h3>
+            <p class="feat-desc" data-i18n="feat2Desc">Membersihkan file gambar tanpa melakukan kompresi ulang piksel gambar, menjaga kualitas foto 100% utuh.</p>
+          </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feat-card">
+          <div class="feat-icon" style="background:#007AFF">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </div>
+          <div class="feat-info">
+            <h3 class="feat-title" data-i18n="feat3Title">Penghapusan Massal & ZIP</h3>
+            <p class="feat-desc" data-i18n="feat3Desc">Unggah puluhan gambar sekaligus, bersihkan bersama-sama, dan unduh hasilnya dalam satu file ZIP yang ringkas.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Privacy Banner -->
+    <section class="mac-section">
+      <div class="privacy-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span data-i18n="privacyText">Pemrosesan 100% Offline Lokal. Data Anda Aman.</span>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

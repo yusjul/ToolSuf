@@ -61,6 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
       toolWatermarkDesc: 'Remove video watermark with manual or auto detection.',
       toolQrTitle: 'QR Code Master',
       toolQrDesc: 'Generate and scan customized QR codes with premium Apple-style UI.',
+      toolMetaTitle: 'Metadata Cleaner',
+      toolMetaDesc: 'Remove EXIF metadata and GPS locations from images locally.',
       copyright: '© 2026 ToolSuf. Precision-crafted for power users.',
       privacy: 'Privacy Policy',
       terms: 'Terms of Service',
@@ -121,6 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
       toolWatermarkDesc: 'Hapus watermark video dengan deteksi manual atau otomatis.',
       toolQrTitle: 'QR Code Master',
       toolQrDesc: 'Buat dan pindai QR Code kustom dengan antarmuka premium bergaya Apple.',
+      toolMetaTitle: 'Metadata Cleaner',
+      toolMetaDesc: 'Hapus metadata EXIF dan lokasi GPS dari gambar secara lokal.',
       copyright: '© 2026 ToolSuf. Dibuat presisi untuk pengguna ahli.',
       privacy: 'Kebijakan Privasi',
       terms: 'Ketentuan Layanan',
@@ -367,6 +371,13 @@ document.addEventListener('DOMContentLoaded', () => {
       src: 'tools/ai-workflow-assistant/index.html',
       wide: false,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg>`
+    },
+    'metadata-cleaner': {
+      titleEn: 'Metadata Cleaner',
+      titleId: 'Penghapus Metadata',
+      src: 'tools/metadata-cleaner/index.html',
+      wide: false,
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><circle cx="12" cy="14" r="3"></circle><line x1="12" y1="14" x2="12" y2="14.01"></line></svg>`
     }
   };
 
