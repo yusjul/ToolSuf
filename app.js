@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
       toastLangChange: 'Language changed to English',
       toolPassDesc: 'Generate secure passwords with Apple-style UI.',
       toolRenameDesc: 'Rename multiple files with macOS utility style.',
+      toolAiTitle: 'AI Workflow Assistant',
       toolAiDesc: 'Intelligent automation for repetitive tasks.',
       documentBadge: 'Document',
       mediaBadge: 'Media',
@@ -102,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
       toastLangChange: 'Bahasa diubah ke Bahasa Indonesia',
       toolPassDesc: 'Buat kata sandi aman dengan antarmuka bergaya Apple.',
       toolRenameDesc: 'Ubah nama banyak file dengan gaya utilitas macOS.',
+      toolAiTitle: 'AI Workflow Assistant',
       toolAiDesc: 'Otomatisasi cerdas untuk tugas-tugas berulang.',
       mediaBadge: 'Media',
       toolCompressTitle: 'Kompresor Media',
@@ -358,6 +360,13 @@ document.addEventListener('DOMContentLoaded', () => {
       src: 'tools/qr-code-master/index.html',
       wide: false,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><rect x="15" y="3" width="6" height="6"></rect><rect x="3" y="15" width="6" height="6"></rect></svg>`
+    },
+    'ai-workflow-assistant': {
+      titleEn: 'AI Workflow Assistant',
+      titleId: 'AI Workflow Assistant',
+      src: 'tools/ai-workflow-assistant/index.html',
+      wide: false,
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg>`
     }
   };
 
