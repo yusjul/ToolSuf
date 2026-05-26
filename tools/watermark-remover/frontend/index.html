@@ -98,6 +98,41 @@
     <section class="mac-section" id="settingsSection" style="display:none">
       <div class="mac-section-header" data-i18n="settings">PENGATURAN</div>
       <div class="settings-group">
+
+        <!-- Inpaint Strength -->
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#FF3B30">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title">Kekuatan Penghapusan</div>
+            <div class="setting-desc" id="radiusLabel">8 px</div>
+          </div>
+          <input type="range" id="inpaintRadius" min="5" max="20" value="8" step="1"
+            oninput="document.getElementById('radiusLabel').textContent=this.value+' px'"
+            style="width:90px;flex-shrink:0">
+        </div>
+
+        <!-- Algorithm -->
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#5856D6">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title">Mode Pemrosesan</div>
+          </div>
+          <select class="apple-select" id="qualityLevel">
+            <option value="advanced" selected>Lanjutan (lambat)</option>
+            <option value="fast">Cepat</option>
+          </select>
+        </div>
+
+        <!-- Output Resolution -->
         <div class="setting-row">
           <div class="setting-icon" style="background:#007AFF">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -113,35 +148,7 @@
             <option value="1280x720">720p (1280×720)</option>
           </select>
         </div>
-        <div class="setting-row">
-          <div class="setting-icon" style="background:#007AFF">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
-            </svg>
-          </div>
-          <div class="setting-text">
-            <div class="setting-title" data-i18n="quality">Kualitas</div>
-          </div>
-          <select class="apple-select" id="qualityLevel">
-            <option value="5" data-i18n="qhigh">Tinggi</option>
-            <option value="10" data-i18n="qmid">Sedang</option>
-            <option value="20" data-i18n="qlow">Rendah</option>
-          </select>
-        </div>
-        <div class="setting-row">
-          <div class="setting-icon" style="background:#007AFF">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-            </svg>
-          </div>
-          <div class="setting-text">
-            <div class="setting-title" data-i18n="format">Format Output</div>
-          </div>
-          <select class="apple-select" id="outFormat">
-            <option value="webm">WebM</option>
-            <option value="mp4">MP4</option>
-          </select>
-        </div>
+
       </div>
     </section>
 

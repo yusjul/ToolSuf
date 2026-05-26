@@ -554,8 +554,11 @@ async function processViaServer() {
     const fd = new FormData();
     fd.append('video', videoFile);
     fd.append('masks', JSON.stringify(masks.map(m => ({ x: m.x, y: m.y, w: m.w, h: m.h }))));
-    fd.append('method', 'advanced');
-    fd.append('radius', '3');
+    // Read from UI controls
+    const method = (document.getElementById('qualityLevel') || {}).value || 'advanced';
+    const radius = (document.getElementById('inpaintRadius') || {}).value || '8';
+    fd.append('method', method);
+    fd.append('radius', radius);
 
     // Use XHR so we can track upload progress
     const taskId = await new Promise((resolve, reject) => {
