@@ -1,4 +1,5 @@
-﻿<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<meta charset="UTF-8">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&display=swap');
 
@@ -360,7 +361,6 @@
     background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
     margin-top: -10px; cursor: pointer; border: 0.5px solid rgba(0,0,0,0.1);
   }
-</style>
 <script>
   (function() {
     try {
@@ -392,8 +392,8 @@
       <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
         <input type="file" id="fi" multiple style="display:none">
         <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3v4a1 1 0 0 0 1 1h4"/><path d="M18 17h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h4l5 5v7a2 2 0 0 1 -2 2z"/><path d="M16 17v2a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2"/></svg></div>
-        <div class="drop-t">Semua format didukung â€” tanpa batasan</div>
-        <div class="drop-s">Seret &amp; lepas atau klik untuk memilih</div>
+        <div class="drop-t">Semua format didukung &#x2014; tanpa batasan</div>
+        <div class="drop-s">Seret & lepas atau klik untuk memilih</div>
         <div class="badges">
           <span class="badge">JPG PNG WEBP GIF</span><span class="badge">RAW CR2 NEF ARW DNG</span>
           <span class="badge">HEIC HEIF AVIF</span><span class="badge">PSD TIFF BMP SVG</span><span class="badge">+ Semua format lain</span>
@@ -409,7 +409,7 @@
         </div>
         <div class="fc" id="fc"></div>
         <div class="prog-w"><div class="prog-f" id="pf"></div></div>
-        <div class="flist" id="fl" style="border-top:0.5px solid var(--apple-separator);border-radius:0 0 var(--apple-radius-lg) var(--apple-radius-lg)"></div>
+        <div class="flist" id="fl"></div>
       </div>
     </section>
 
@@ -420,10 +420,10 @@
         <div class="setting-row column" style="padding:14px 16px">
           <div style="font-size:11px;font-weight:500;color:var(--mac-label)">Urutkan file berdasarkan</div>
           <div class="sort-row">
-            <button class="sort-btn active" id="sb-name" onclick="setSort('name')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l7 0"/><path d="M4 12l7 0"/><path d="M4 18l9 0"/><path d="M15 9l3 -3l3 3"/><path d="M18 6l0 12"/></svg> Nama Aâ€“Z</button>
-            <button class="sort-btn" id="sb-name-d" onclick="setSort('name-d')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l9 0"/><path d="M4 12l7 0"/><path d="M4 18l7 0"/><path d="M15 15l3 3l3 -3"/><path d="M18 6l0 12"/></svg> Nama Zâ€“A</button>
-            <button class="sort-btn" id="sb-size" onclick="setSort('size')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M18 11l-6 -6"/><path d="M6 11l6 -6"/></svg> Ukuran â†‘</button>
-            <button class="sort-btn" id="sb-size-d" onclick="setSort('size-d')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/></svg> Ukuran â†“</button>
+            <button class="sort-btn active" id="sb-name" onclick="setSort('name')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l7 0"/><path d="M4 12l7 0"/><path d="M4 18l9 0"/><path d="M15 9l3 -3l3 3"/><path d="M18 6l0 12"/></svg> Nama AΓÇôZ</button>
+            <button class="sort-btn" id="sb-name-d" onclick="setSort('name-d')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l9 0"/><path d="M4 12l7 0"/><path d="M4 18l7 0"/><path d="M15 15l3 3l3 -3"/><path d="M18 6l0 12"/></svg> Nama ZΓÇôA</button>
+            <button class="sort-btn" id="sb-size" onclick="setSort('size')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M18 11l-6 -6"/><path d="M6 11l6 -6"/></svg> Ukuran Γåæ</button>
+            <button class="sort-btn" id="sb-size-d" onclick="setSort('size-d')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/></svg> Ukuran Γåô</button>
             <button class="sort-btn" id="sb-ext" onclick="setSort('ext')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/></svg> Format</button>
             <button class="sort-btn" id="sb-orig" onclick="setSort('orig')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 9l5 -5l5 5"/><path d="M12 4l0 12"/></svg> Urutan Asli</button>
           </div>
@@ -465,9 +465,9 @@
           <div id="manualExt" style="display:none;margin-top:6px">
             <div style="display:flex;gap:6px;align-items:flex-end">
               <input class="inp" type="text" id="mf" placeholder=".heic" style="flex:1">
-              <span style="font-size:14px;color:var(--mac-label);padding-bottom:7px">â†’</span>
+              <span style="font-size:14px;color:var(--mac-label);padding-bottom:7px">ΓåÆ</span>
               <input class="inp" type="text" id="mt" placeholder=".jpg" style="flex:1">
-              <button onclick="addMap()" style="background:var(--apple-blue);color:#fff;border:none;border-radius:99px;padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;white-space:nowrap">Tambah</button>
+              <button onclick="addMap()" style="background:var(--mac-blue);color:#fff;border:none;border-radius:99px;padding:7px 10px;cursor:pointer;font-size:11px;font-family:inherit;white-space:nowrap">Tambah</button>
             </div>
             <div id="mapChips" style="margin-top:6px"></div>
           </div>
@@ -500,7 +500,7 @@
           <div class="setting-icon" style="background:#007AFF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></div>
           <div class="setting-text">
             <div class="setting-title">Lowercase ekstensi</div>
-            <div class="setting-desc">.JPG .CR2 â†’ .jpg .cr2</div>
+            <div class="setting-desc">.JPG .CR2 ΓåÆ .jpg .cr2</div>
           </div>
           <button class="apple-toggle on" id="lc" onclick="toggleOpt(this);update();" role="switch" aria-checked="true"></button>
         </div>
@@ -664,7 +664,7 @@ function updateSeq(){
     const more=document.createElement('span');
     more.className='seq-more';
     const last=sn+(total-1)*step;
-    more.textContent='â€¦ '+last;
+    more.textContent='ΓÇª '+last;
     chips.appendChild(more);
   }
 }
@@ -721,7 +721,7 @@ function renderChips(){
   const c=$('mapChips');c.innerHTML='';
   for(const[k,v]of Object.entries(extMap)){
     const s=document.createElement('span');s.className='ext-chip';
-    s.innerHTML=`${k} â†’ ${v} <button onclick="delMap('${k}')">Ã—</button>`;
+    s.innerHTML=`${k} ΓåÆ ${v} <button onclick="delMap('${k}')">├ù</button>`;
     c.appendChild(s);
   }
 }
@@ -779,7 +779,7 @@ function doUndo(){
   $('stUndo').textContent=undoHistory.length;
   $('undoStack').textContent=undoHistory.length?'Riwayat: '+undoHistory.length+' langkah':'Belum ada riwayat undo';
   update();
-  showAlert('â†© Undo berhasil â€” kembali ke langkah sebelumnya','ok');
+  showAlert('Γå⌐ Undo berhasil ΓÇö kembali ke langkah sebelumnya','ok');
 }
 
 async function doZip(){
@@ -810,7 +810,7 @@ async function doZip(){
   a.download=($('base').value||'renamed')+'_files.zip';
   a.click();
   URL.revokeObjectURL(a.href);
-  showAlert('âœ“ '+files.length+' file direname & dikemas dalam ZIP!','ok');
+  showAlert('Γ£ô '+files.length+' file direname & dikemas dalam ZIP!','ok');
   btn.disabled=false;
   btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20.735a2 2 0 0 1 -1 -1.735v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-1"/><path d="M11 17a2 2 0 0 1 2 2v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-2a2 2 0 0 1 2 -2z"/></svg> Download ZIP';
   setTimeout(()=>{$('zprog').style.display='none';zpf.style.width='0%'},4000);
@@ -855,7 +855,7 @@ window.syncLang = function(lang) {
   const t = {
     id: {
       lblPickFile:   'Pilih File',
-      dropTitle:     'Semua format didukung â€” tanpa batasan',
+      dropTitle:     'Semua format didukung ΓÇö tanpa batasan',
       dropSub:       'Seret & lepas atau klik untuk memilih',
       badgeMore:     '+ Semua format lain',
       statTotal:     'Total File',
@@ -864,10 +864,10 @@ window.syncLang = function(lang) {
       statUndo:      'Riwayat Undo',
       lblSort:       'Urutan & Sortir',
       sortBy:        'Urutkan file berdasarkan',
-      sortNameAZ:    'Nama Aâ€“Z',
-      sortNameZA:    'Nama Zâ€“A',
-      sortSizeAsc:   'Ukuran â†‘',
-      sortSizeDesc:  'Ukuran â†“',
+      sortNameAZ:    'Nama AΓÇôZ',
+      sortNameZA:    'Nama ZΓÇôA',
+      sortSizeAsc:   'Ukuran Γåæ',
+      sortSizeDesc:  'Ukuran Γåô',
       sortExt:       'Format',
       sortOrig:      'Urutan Asli',
       lblNaming:     'Pengaturan Nama',
@@ -888,7 +888,7 @@ window.syncLang = function(lang) {
       padLabel:      'Pad angka dengan nol',
       padSub:        'yusjul001 bukan yusjul1',
       lcLabel:       'Lowercase ekstensi',
-      lcSub:         '.JPG .CR2 â†’ .jpg .cr2',
+      lcSub:         '.JPG .CR2 ΓåÆ .jpg .cr2',
       csvLabel:      'Laporan CSV hasil rename',
       csvSub:        'Ikut tersimpan di dalam ZIP',
       downloadBtn:   'Download ZIP',
@@ -900,7 +900,7 @@ window.syncLang = function(lang) {
     },
     en: {
       lblPickFile:   'Pick Files',
-      dropTitle:     'All formats supported â€” no limits',
+      dropTitle:     'All formats supported ΓÇö no limits',
       dropSub:       'Drag & drop or click to select',
       badgeMore:     '+ All other formats',
       statTotal:     'Total Files',
@@ -909,10 +909,10 @@ window.syncLang = function(lang) {
       statUndo:      'Undo History',
       lblSort:       'Order & Sort',
       sortBy:        'Sort files by',
-      sortNameAZ:    'Name Aâ€“Z',
-      sortNameZA:    'Name Zâ€“A',
-      sortSizeAsc:   'Size â†‘',
-      sortSizeDesc:  'Size â†“',
+      sortNameAZ:    'Name AΓÇôZ',
+      sortNameZA:    'Name ZΓÇôA',
+      sortSizeAsc:   'Size Γåæ',
+      sortSizeDesc:  'Size Γåô',
       sortExt:       'Format',
       sortOrig:      'Original Order',
       lblNaming:     'Naming Settings',
@@ -933,7 +933,7 @@ window.syncLang = function(lang) {
       padLabel:      'Pad numbers with zeros',
       padSub:        'yusjul001 instead of yusjul1',
       lcLabel:       'Lowercase extensions',
-      lcSub:         '.JPG .CR2 â†’ .jpg .cr2',
+      lcSub:         '.JPG .CR2 ΓåÆ .jpg .cr2',
       csvLabel:      'CSV rename report',
       csvSub:        'Included in the ZIP file',
       downloadBtn:   'Download ZIP',
@@ -971,7 +971,7 @@ window.syncLang = function(lang) {
   if (dropT) dropT.textContent = d.dropTitle;
   if (dropS) dropS.textContent = d.dropSub;
 
-  // Badges â€” last badge only (dynamic text)
+  // Badges ΓÇö last badge only (dynamic text)
   const badges = document.querySelectorAll('.badge');
   if (badges.length) badges[badges.length-1].textContent = d.badgeMore;
 
@@ -1025,7 +1025,7 @@ window.syncLang = function(lang) {
   document.querySelectorAll('.setting-desc').forEach(el => {
     const txt = el.textContent.trim();
     if (['yusjul001 bukan yusjul1','yusjul001 instead of yusjul1'].includes(txt)) el.textContent = d.padSub;
-    else if (['.JPG .CR2 â†’ .jpg .cr2'].includes(txt))                             el.textContent = d.lcSub;
+    else if (['.JPG .CR2 ΓåÆ .jpg .cr2'].includes(txt))                             el.textContent = d.lcSub;
     else if (['Ikut tersimpan di dalam ZIP','Included in the ZIP file'].includes(txt)) el.textContent = d.csvSub;
   });
 
