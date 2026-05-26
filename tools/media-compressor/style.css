@@ -31,14 +31,39 @@ html.light {
   --apple-text: #1C1C1E;
   --apple-secondary-bg: #EFEFF4;
 }
-html, body { overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; }
+html, body {
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+
+/* Custom premium scrollbar style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 128, 0.25);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 120, 128, 0.4);
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 body {
   font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
   background: var(--apple-bg);
   -webkit-font-smoothing: antialiased;
   overflow-y: auto;
 }
-html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 .container { max-width: 520px; margin: 0 auto; padding: 32px 20px 40px; }
 
 .header { text-align: center; margin-bottom: 32px; }

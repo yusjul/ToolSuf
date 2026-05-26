@@ -957,15 +957,20 @@ html.dark .hero-canvas {
     padding: 0 !important;
   }
   .mac-window {
-    height: 100vh !important;
-    max-height: 100vh !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    max-height: 100% !important;
+    max-height: 100dvh !important;
+    width: 100% !important;
+    max-width: 100% !important;
     border-radius: 0 !important;
     border: none !important;
+    padding-top: env(safe-area-inset-top) !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
   }
   .mac-body {
-    height: calc(100vh - 56px) !important;
+    flex-grow: 1 !important;
+    height: auto !important;
   }
 
   /* Taller titlebar on mobile for easier touch */

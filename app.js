@@ -446,15 +446,15 @@ function initHeroThreeJS() {
   const getThemeConfig = () => {
     const isDark = document.documentElement.classList.contains('dark');
     return {
-      meshColor: isDark ? 0x1C1C1E : 0xD1D1D6,
-      opacity: isDark ? 0.2 : 0.26,
+      meshColor: isDark ? 0x636366 : 0xD1D1D6, // Medium gray in dark mode to reflect light beautifully
+      opacity: isDark ? 0.32 : 0.26, // Slightly higher opacity in dark mode
       light1Color: isDark ? 0x0A84FF : 0x0056CC, // Neon Blue / Deep Blue
       light2Color: isDark ? 0x30D158 : 0x5856D6, // Neon Green / Purple
       light3Color: isDark ? 0xBF5AF2 : 0xFF2D55, // Purple / Pink
-      ambientIntensity: isDark ? 0.3 : 0.8,
-      light1Intensity: isDark ? 14 : 7,
-      light2Intensity: isDark ? 11 : 6,
-      light3Intensity: isDark ? 9 : 4
+      ambientIntensity: isDark ? 0.45 : 0.8, // Brighter ambient in dark mode
+      light1Intensity: isDark ? 16 : 7, // Higher point light intensities to illuminate wireframe
+      light2Intensity: isDark ? 13 : 6,
+      light3Intensity: isDark ? 11 : 4
     };
   };
 
@@ -675,9 +675,13 @@ function initHeroThreeJS() {
     box.rotation.y = frame * 0.005 + scrollRotation;
     cone.rotation.y = frame * 0.006 + scrollRotation;
 
-    // Smooth camera ease for parallax effect (Mouse + Scroll)
-    camera.position.x += ((targetCameraX + scrollXOffset) - camera.position.x) * 0.04;
-    camera.position.y += ((targetCameraY + scrollYOffset) - camera.position.y) * 0.04;
+    // Slow camera auto-drift for mobile and static desktop viewports
+    const autoDriftX = Math.sin(frame * 0.4) * 20;
+    const autoDriftY = Math.cos(frame * 0.3) * 12;
+
+    // Smooth camera ease for parallax effect (Mouse + Drift + Scroll)
+    camera.position.x += ((targetCameraX + autoDriftX + scrollXOffset) - camera.position.x) * 0.04;
+    camera.position.y += ((targetCameraY + autoDriftY + scrollYOffset) - camera.position.y) * 0.04;
     camera.position.z += ((240 + scrollZOffset) - camera.position.z) * 0.04;
     camera.lookAt(0, scrollYOffset * 0.5, 0);
 
