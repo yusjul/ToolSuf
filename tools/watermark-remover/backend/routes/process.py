@@ -110,34 +110,33 @@ def process_start():
 
 @process_bp.route('/api/status/<task_id>')
 def process_status(task_id):
-    def generate():
-        while True:
-            with _lock:
-                info = tasks.get(task_id)
+    """Supports both SSE (text/event-stream) and plain JSON polling.
 
-            if info is None:
-                yield f"data: {json.dumps({'error': 'Task not found'})}\n\n"
-                break
+    The frontend now uses plain JSON polling (fetch) which is simpler and
+    works reliably inside iframes without SSE connection issues.
+    """
+    with _lock:
+        info = tasks.get(task_id)
 
-            data = {
-                'progress': info.get('progress', 0),
-                'message': info.get('message', ''),
-            }
-            if info.get('error'):
-                data['error'] = info['error']
-                data['done'] = True
-            elif info.get('done'):
-                data['done'] = True
+    if info is None:
+        return jsonify({'error': 'Task not found'}), 404
 
-            yield f"data: {json.dumps(data)}\n\n"
+    data = {
+        'progress': info.get('progress', 0),
+        'message': info.get('message', ''),
+        'done': bool(info.get('done', False)),
+    }
+    if info.get('error'):
+        data['error'] = info['error']
+        data['done'] = True
 
-            if info.get('done', False):
-                break
-
-            import time
-            time.sleep(0.5)
-
-    return Response(generate(), mimetype='text/event-stream')
+    # SSE format — wraps in "data: ...\n\n" so both SSE clients and
+    # fetch().text() regex can parse the same response.
+    sse_body = 'data: ' + json.dumps(data) + '\n\n'
+    resp = Response(sse_body, mimetype='text/event-stream')
+    resp.headers['Cache-Control'] = 'no-cache'
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 
 @process_bp.route('/api/download/<task_id>')
