@@ -1,0 +1,228 @@
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --apple-blue: #007AFF;
+  --apple-blue-dark: #0056CC;
+  --apple-bg: #F2F2F7;
+  --apple-card: #FFFFFF;
+  --apple-separator: rgba(60,60,67,0.18);
+  --apple-label: rgba(60,60,67,0.6);
+  --apple-text: #1C1C1E;
+  --apple-secondary-bg: #EFEFF4;
+  --apple-green: #34C759;
+  --apple-orange: #FF9500;
+  --apple-red: #FF3B30;
+  --apple-radius: 16px;
+  --apple-radius-lg: 22px;
+}
+html.dark {
+  --apple-bg: #000000;
+  --apple-card: #1C1C1E;
+  --apple-separator: rgba(84,84,88,0.6);
+  --apple-label: rgba(235,235,245,0.6);
+  --apple-text: #FFFFFF;
+  --apple-secondary-bg: #2C2C2E;
+}
+html.light {
+  --apple-bg: #F2F2F7;
+  --apple-card: #FFFFFF;
+  --apple-separator: rgba(60,60,67,0.18);
+  --apple-label: rgba(60,60,67,0.6);
+  --apple-text: #1C1C1E;
+  --apple-secondary-bg: #EFEFF4;
+}
+html, body { overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; }
+body {
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  background: var(--apple-bg);
+  -webkit-font-smoothing: antialiased;
+  overflow-y: auto;
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+.container { max-width: 520px; margin: 0 auto; padding: 32px 20px 40px; }
+
+.header { text-align: center; margin-bottom: 32px; }
+.header-icon {
+  width: 72px; height: 72px;
+  background: linear-gradient(145deg, #007AFF, #34AADC);
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 8px 24px rgba(0,122,255,0.35);
+}
+.header-icon svg { width: 36px; height: 36px; stroke: white; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.section-title {
+  font-size: 13px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--apple-label); padding: 0 4px 8px;
+}
+
+.drop {
+  border: 1.5px dashed var(--apple-separator);
+  border-radius: var(--apple-radius);
+  padding: 28px 16px; text-align: center; cursor: pointer;
+  background: var(--apple-card);
+  transition: all 0.2s ease; margin-bottom: 16px;
+}
+.drop:hover, .drop.over { background: var(--apple-secondary-bg); border-color: var(--apple-blue); }
+.drop-icon { color: var(--apple-blue); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; }
+.drop-icon svg { width: 32px; height: 32px; }
+.drop-t { font-size: 15px; font-weight: 600; color: var(--apple-text); margin-bottom: 4px; }
+.drop-s { font-size: 13px; color: var(--apple-label); }
+
+/* ===== Progress Bar Card ===== */
+.progress-card {
+  background: var(--apple-card);
+  border-radius: var(--apple-radius);
+  padding: 16px 20px;
+  border: 0.5px solid var(--apple-separator);
+  margin-bottom: 16px;
+}
+.zinfo { font-size: 13px; font-weight: 500; color: var(--apple-text); margin-bottom: 8px; text-align: center; }
+.prog-w { height: 6px; background: var(--apple-secondary-bg); border-radius: 99px; overflow: hidden; }
+.prog-f { height: 100%; width: 0%; background: var(--apple-blue); border-radius: 99px; transition: width .15s ease-out; }
+
+/* ===== Settings Card & Color Buttons ===== */
+.settings-card {
+  background: var(--apple-card);
+  border-radius: var(--apple-radius-lg);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; gap: 14px;
+}
+.setting-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.setting-icon svg { width: 16px; height: 16px; color: white; stroke-width: 1.8; }
+.setting-text { flex: 1; }
+.setting-title { font-size: 15px; font-weight: 500; color: var(--apple-text); line-height: 1.3; }
+.setting-desc { font-size: 12px; color: var(--apple-label); margin-top: 2px; }
+
+.color-options {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.color-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 0.5px solid var(--apple-separator);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.color-btn:hover {
+  transform: scale(1.15);
+}
+.color-btn.active {
+  box-shadow: 0 0 0 2.5px var(--apple-blue);
+  transform: scale(1.15);
+}
+
+.card {
+  background: var(--apple-card);
+  border-radius: var(--apple-radius-lg);
+  padding: 0; overflow: hidden;
+  margin-bottom: 16px;
+}
+
+/* ===== Comparison Image Area ===== */
+.cmp { position: relative; width: 100%; user-select: none; }
+.cmp img { display: block; width: 100%; height: auto; }
+.cmp-after { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; }
+.cmp-handle {
+  position: absolute; top: 0; bottom: 0; width: 3px;
+  background: white; cursor: ew-resize; z-index: 2;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+}
+.cmp-handle-knob {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 32px; height: 32px; border-radius: 50%;
+  background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  display: flex; align-items: center; justify-content: center;
+}
+.cmp-handle-knob svg { width: 16px; height: 16px; stroke: var(--apple-blue); fill: none; stroke-width: 1.5; }
+.cmp-empty {
+  padding: 40px 20px; text-align: center;
+  color: var(--apple-label); font-size: 14px;
+}
+.cmp-labels {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: flex; justify-content: space-between;
+  padding: 10px 14px; pointer-events: none;
+  font-size: 11px; font-weight: 600; color: white;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  z-index: 3;
+}
+
+/* ===== Transparent Checkerboard Background Pattern ===== */
+.checkerboard-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #FFFFFF;
+  background-image: linear-gradient(45deg, #EBEBEB 25%, transparent 25%),
+                    linear-gradient(-45deg, #EBEBEB 25%, transparent 25%),
+                    linear-gradient(45deg, transparent 75%, #EBEBEB 75%),
+                    linear-gradient(-45deg, transparent 75%, #EBEBEB 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  z-index: 0;
+}
+html.dark .checkerboard-bg {
+  background-color: #121212;
+  background-image: linear-gradient(45deg, #222 25%, transparent 25%),
+                    linear-gradient(-45deg, #222 25%, transparent 25%),
+                    linear-gradient(45deg, transparent 75%, #222 75%),
+                    linear-gradient(-45deg, transparent 75%, #222 75%);
+}
+
+#cmpResult {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+}
+
+/* ===== Buttons ===== */
+.btn-p {
+  width: 100%; padding: 17px;
+  background: var(--apple-blue); color: white;
+  border: none; border-radius: var(--apple-radius-lg);
+  font-size: 17px; font-weight: 600; cursor: pointer;
+  font-family: inherit; letter-spacing: -0.2px;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: background 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-p:hover { background: var(--apple-blue-dark); }
+.btn-p:active { transform: scale(.98); }
+.btn-p:disabled { opacity: .4; cursor: not-allowed; }
+.btn-p svg { width: 18px; height: 18px; }
+
+.btn-s {
+  width: 100%; padding: 12px;
+  background: var(--apple-secondary-bg); color: var(--apple-text);
+  border: 0.5px solid var(--apple-separator);
+  border-radius: var(--apple-radius);
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  font-family: inherit;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: background 0.15s;
+}
+.btn-s:hover { background: var(--apple-separator); }
+.btn-s:disabled { opacity: .4; cursor: not-allowed; }
+.btn-s svg { width: 14px; height: 14px; }
+
+.alert {
+  font-size: 13px; text-align: center;
+  padding: 10px 14px; border-radius: 12px;
+  margin-top: 10px; display: none;
+  border: 0.5px solid transparent;
+}
+.alert.ok { background: #eaf3de; color: #3B6D11; border-color: #c0dd97; display: block; }
+.alert.err { background: #fcebeb; color: #A32D2D; border-color: #f09595; display: block; }

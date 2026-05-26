@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Media Compressor</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="script.js"></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="container">
+      <div class="header" aria-hidden="true">
+        <div class="header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 8h.01"/>
+            <path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z"/>
+            <path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/>
+            <path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="section-title" id="lblPickFile">Pilih File</div>
+      <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
+        <input type="file" id="fi" multiple accept="image/*" style="display:none">
+        <div class="drop-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3v4a1 1 0 0 0 1 1h4"/>
+            <path d="M18 17h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h4l5 5v7a2 2 0 0 1 -2 2z"/>
+            <path d="M16 17v2a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2"/>
+          </svg>
+        </div>
+        <div class="drop-t" id="dropTitle">Seret & lepas gambar di sini</div>
+        <div class="drop-s" id="dropSub">Atau klik untuk memilih file</div>
+        <div class="badges">
+          <span class="badge">JPG</span><span class="badge">PNG</span><span class="badge">WebP</span>
+          <span class="badge">GIF</span><span class="badge">BMP</span><span class="badge">TIFF</span>
+          <span class="badge">AVIF</span>
+        </div>
+      </div>
+
+      <div id="statsSection" style="display:none">
+        <div class="stat-row">
+          <div class="stat"><div class="stat-n" id="stTotal">0</div><div class="stat-l" id="lblStatTotal">Total File</div></div>
+          <div class="stat"><div class="stat-n" id="stSize">-</div><div class="stat-l" id="lblStatSize">Ukuran</div></div>
+          <div class="stat"><div class="stat-n" id="stFormat">0</div><div class="stat-l" id="lblStatFormat">Format</div></div>
+          <div class="stat"><div class="stat-n" id="stEst">-</div><div class="stat-l" id="lblStatEst">Estimasi</div></div>
+        </div>
+        <div class="fc" id="fc"></div>
+        <div class="prog-w"><div class="prog-f" id="pf" style="width:100%"></div></div>
+      </div>
+
+      <div class="section-title" id="lblSettings">Pengaturan Kompresi</div>
+      <div class="settings-card">
+        <div class="setting-row slider-row">
+          <div class="slider-header">
+            <div class="setting-icon" style="background:#007AFF">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M4 6l8 0"/><path d="M16 6l4 0"/>
+                <path d="M8 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M4 12l2 0"/><path d="M10 12l10 0"/>
+                <path d="M17 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M4 18l11 0"/><path d="M19 18l1 0"/>
+              </svg>
+            </div>
+            <div class="setting-text"><div class="setting-title" id="lblQuality">Kualitas</div></div>
+            <span class="slider-val" id="qualityVal">80</span>
+          </div>
+          <input type="range" id="qualitySlider" min="1" max="100" value="80" oninput="updateQuality(this.value)">
+        </div>
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#34C759">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 8v-2a2 2 0 0 1 2 -2h2"/><path d="M4 16v2a2 2 0 0 0 2 2h2"/>
+              <path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M16 20h2a2 2 0 0 0 2 -2v-2"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title" id="lblResize">Resize</div>
+            <div class="setting-desc" id="lblResizeDesc">Ubah dimensi gambar</div>
+          </div>
+          <button class="apple-toggle" id="resizeToggle" onclick="toggleResize()" role="switch" aria-checked="false"></button>
+        </div>
+        <div class="resize-opt" id="resizeOptions">
+          <div class="resize-row">
+            <div class="field"><label id="lblMaxWidth">Max Width</label><input class="inp" type="number" id="resizeW" value="1920" min="1"></div>
+            <div class="field"><label id="lblMaxHeight">Max Height</label><input class="inp" type="number" id="resizeH" value="1080" min="1"></div>
+          </div>
+          <label class="chk-row" id="lblAspectLock"><input type="checkbox" id="aspectLock" checked> Pertahankan aspek rasio</label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#5856D6">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M11.5 21h-4.5a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v5m-5 6h7m-3 -3l3 3l-3 3"/>
+            </svg>
+          </div>
+          <div class="setting-text"><div class="setting-title" id="lblFormat">Format Output</div></div>
+          <select class="apple-select sm" id="formatSelect" onchange="updatePreview()">
+            <option value="original" id="optOriginal">Original</option>
+            <option value="jpeg">JPEG</option>
+            <option value="png">PNG</option>
+            <option value="webp" selected>WebP</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title" id="lblPreview">Pratinjau</div>
+      <div class="card">
+        <div class="cmp" id="cmpContainer">
+          <div class="cmp-empty" id="cmpEmpty">Pilih gambar untuk melihat perbandingan</div>
+          <div id="cmpImages" style="display:none">
+            <img id="cmpOriginal" alt="Original">
+            <div class="cmp-after" id="cmpAfter">
+              <img id="cmpCompressed" alt="Compressed">
+            </div>
+            <div class="cmp-handle" id="cmpHandle">
+              <div class="cmp-handle-knob">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 8l-4 4l4 4"/><path d="M17 8l4 4l-4 4"/><path d="M3 12l18 0"/>
+                </svg>
+              </div>
+            </div>
+            <div class="cmp-labels">
+              <span id="lblCmpOriginal">Asli</span>
+              <span id="lblCmpResult">Hasil</span>
+            </div>
+          </div>
+        </div>
+        <div class="cmp-info" id="cmpInfo" style="display:none">
+          <span class="cmp-info-old" id="cmpOldSize"></span>
+          <span class="cmp-info-new" id="cmpNewSize"></span>
+          <span class="cmp-info-save" id="cmpSave"></span>
+        </div>
+        <div class="flist" id="fl"></div>
+      </div>
+
+      <button class="btn-p" id="zipBtn" onclick="doZip()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 20.735a2 2 0 0 1 -1 -1.735v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-1"/>
+          <path d="M11 17a2 2 0 0 1 2 2v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-2a2 2 0 0 1 2 -2z"/>
+        </svg> Download ZIP
+      </button>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <button class="btn-s" onclick="resetFiles()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+            <path d="M10 12l4 4m0 -4l-4 4"/>
+          </svg> Hapus File
+        </button>
+        <button class="btn-s" onclick="resetAll()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/>
+            <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>
+          </svg> Reset Semua
+        </button>
+      </div>
+
+      <div class="zprog" id="zprog">
+        <div class="zinfo" id="zinfo">Menyiapkan ZIP...</div>
+        <div class="prog-w"><div class="prog-f" id="zpf"></div></div>
+      </div>
+      <div class="alert" id="alertBox"></div>
+    </div>
+  </div>
+</body>
+</html>

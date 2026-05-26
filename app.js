@@ -50,6 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
       mediaBadge: 'Media',
       toolCompressTitle: 'Media Compressor',
       toolCompressDesc: 'Compress images with before/after comparison.',
+      toolBgRemoverTitle: 'Background Remover',
+      toolBgRemoverDesc: 'Remove image backgrounds fully offline with browser AI.',
       copyright: '© 2026 ToolSuf. Precision-crafted for power users.',
       privacy: 'Privacy Policy',
       terms: 'Terms of Service',
@@ -91,8 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
       toolRenameDesc: 'Ubah nama banyak file dengan gaya utilitas macOS.',
       toolAiDesc: 'Otomatisasi cerdas untuk tugas-tugas berulang.',
       mediaBadge: 'Media',
-      toolCompressTitle: 'Media Compressor',
+      toolCompressTitle: 'Kompresor Media',
       toolCompressDesc: 'Kompres gambar dengan perbandingan sebelum/sesudah.',
+      toolBgRemoverTitle: 'Penghapus Latar',
+      toolBgRemoverDesc: 'Hapus latar belakang gambar secara offline dengan AI browser.',
       copyright: '© 2026 ToolSuf. Dibuat presisi untuk pengguna ahli.',
       privacy: 'Kebijakan Privasi',
       terms: 'Ketentuan Layanan',
@@ -138,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('theme', darkState ? 'dark' : 'light');
     isDark = darkState;
     syncIframeTheme();
+    window.dispatchEvent(new Event('theme-changed'));
   };
 
   // Sync theme inside iframe via postMessage (reliable cross-origin)
@@ -178,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Apply initial theme
   applyTheme(isDark);
 
-  // Sync theme AND language on iframe loaded
+  // Sync theme and language on iframe loaded
   toolFrame.addEventListener('load', () => {
     syncIframeTheme();
     syncIframeLang();
@@ -272,23 +277,30 @@ document.addEventListener('DOMContentLoaded', () => {
     password: {
       titleEn: 'Password Generator',
       titleId: 'Generator Kata Sandi',
-      src: 'apple_password_generator.html',
+      src: 'tools/password-generator/index.html',
       wide: false,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`
     },
     renamer: {
       titleEn: 'Batch Renamer Pro',
       titleId: 'Pengganti Nama File Pro',
-      src: 'batch_renamer_v3_full.html',
+      src: 'tools/batch-renamer/index.html',
       wide: true,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`
     },
     compressor: {
       titleEn: 'Media Compressor',
-      titleId: 'Media Compressor',
-      src: 'media_compressor.html',
+      titleId: 'Kompresor Media',
+      src: 'tools/media-compressor/index.html',
       wide: false,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`
+    },
+    'bg-remover': {
+      titleEn: 'Background Remover',
+      titleId: 'Penghapus Latar Belakang',
+      src: 'tools/background-remover/index.html',
+      wide: false,
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>`
     }
   };
 
@@ -357,4 +369,330 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(translations[currentLang].toastComingSoon);
     });
   });
+
+  // Add 3D Tilt Effect to Folder Cards
+  const folderCards = document.querySelectorAll('.tool-card, .feature-item');
+  folderCards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      // Calculate tilt angles (max 10 degrees)
+      const tiltX = ((centerY - y) / centerY) * 10;
+      const tiltY = ((x - centerX) / centerX) * -10; // Invert to follow cursor correctly
+      
+      card.style.transform = `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-4px) scale(1.02)`;
+    });
+    
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1)';
+    });
+  });
+
+  // Initialize Three.js Parallax Background
+  if (typeof THREE !== 'undefined') {
+    initHeroThreeJS();
+  }
 });
+
+function initHeroThreeJS() {
+  const canvas = document.getElementById('heroCanvas');
+  if (!canvas) return;
+
+  // Since canvas is fixed at viewport level, size it to the window
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+
+  // Scene
+  const scene = new THREE.Scene();
+
+  // Camera
+  const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+  camera.position.z = 240;
+  camera.position.y = 80;
+  camera.lookAt(0, 0, 0);
+
+  // Renderer
+  const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  // Lights
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
+  scene.add(ambientLight);
+
+  const light1 = new THREE.PointLight(0x007AFF, 8, 450); // Blue
+  const light2 = new THREE.PointLight(0x30D158, 6, 450); // Green/Purple
+  const light3 = new THREE.PointLight(0xBF5AF2, 4, 350); // Pink/Purple
+  
+  scene.add(light1);
+  scene.add(light2);
+  scene.add(light3);
+
+  // 3D Wave Mesh Geometry (Topographical waves)
+  const planeWidth = 1000;
+  const planeHeight = 1000;
+  const segments = 60;
+  const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight, segments, segments);
+  
+  // Rotate plane so it lies horizontally
+  geometry.rotateX(-Math.PI / 2.2);
+
+  // Material setup based on theme
+  const getThemeConfig = () => {
+    const isDark = document.documentElement.classList.contains('dark');
+    return {
+      meshColor: isDark ? 0x1C1C1E : 0xD1D1D6,
+      opacity: isDark ? 0.2 : 0.26,
+      light1Color: isDark ? 0x0A84FF : 0x0056CC, // Neon Blue / Deep Blue
+      light2Color: isDark ? 0x30D158 : 0x5856D6, // Neon Green / Purple
+      light3Color: isDark ? 0xBF5AF2 : 0xFF2D55, // Purple / Pink
+      ambientIntensity: isDark ? 0.3 : 0.8,
+      light1Intensity: isDark ? 14 : 7,
+      light2Intensity: isDark ? 11 : 6,
+      light3Intensity: isDark ? 9 : 4
+    };
+  };
+
+  let themeConfig = getThemeConfig();
+
+  // Mesh Material (Standard wireframe responding to PointLights)
+  const waveMaterial = new THREE.MeshStandardMaterial({
+    color: themeConfig.meshColor,
+    wireframe: true,
+    transparent: true,
+    opacity: themeConfig.opacity,
+    roughness: 0.15,
+    metalness: 0.95
+  });
+
+  const waveMesh = new THREE.Mesh(geometry, waveMaterial);
+  waveMesh.position.y = -60;
+  scene.add(waveMesh);
+
+  // --- Theme-related floating wireframe shapes (Representing personal tools) ---
+  const shapeMaterial = new THREE.MeshStandardMaterial({
+    color: themeConfig.meshColor,
+    wireframe: true,
+    transparent: true,
+    opacity: themeConfig.opacity * 0.9,
+    roughness: 0.2,
+    metalness: 0.9
+  });
+
+  // Torus/Gear -> representing settings, operations, tools
+  const torusGeo = new THREE.TorusGeometry(38, 9, 8, 24);
+  const torus = new THREE.Mesh(torusGeo, shapeMaterial);
+  torus.position.set(-240, 20, -120);
+  scene.add(torus);
+
+  // Octahedron/Diamond -> representing AI algorithms, precision
+  const octaGeo = new THREE.OctahedronGeometry(28);
+  const octa = new THREE.Mesh(octaGeo, shapeMaterial);
+  octa.position.set(220, 60, -80);
+  scene.add(octa);
+
+  // Box/Cube -> representing folders, renamer, file blocks
+  const boxGeo = new THREE.BoxGeometry(45, 45, 45);
+  const box = new THREE.Mesh(boxGeo, shapeMaterial);
+  box.position.set(-180, 90, 60);
+  scene.add(box);
+
+  // Cylinder/Cone -> representing compression, media filters
+  const coneGeo = new THREE.ConeGeometry(24, 48, 4);
+  const cone = new THREE.Mesh(coneGeo, shapeMaterial);
+  cone.position.set(200, -10, 40);
+  scene.add(cone);
+
+  // Floating Stars (Particles)
+  const starCount = 140;
+  const starPositions = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount; i++) {
+    starPositions[i * 3] = (Math.random() - 0.5) * 900;      // X
+    starPositions[i * 3 + 1] = Math.random() * 160 - 30;     // Y (floating above wave)
+    starPositions[i * 3 + 2] = (Math.random() - 0.5) * 900;  // Z
+  }
+
+  const starGeometry = new THREE.BufferGeometry();
+  starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+
+  const createCircleTexture = () => {
+    const size = 16;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    grad.addColorStop(0.4, 'rgba(255, 255, 255, 0.4)');
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+    return new THREE.CanvasTexture(canvas);
+  };
+
+  const starMaterial = new THREE.PointsMaterial({
+    size: 4.5,
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.55,
+    map: createCircleTexture(),
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+
+  const stars = new THREE.Points(starGeometry, starMaterial);
+  scene.add(stars);
+
+  // Set light & material properties from theme configuration
+  const applyThemeSettings = (config) => {
+    ambientLight.intensity = config.ambientIntensity;
+    light1.color.setHex(config.light1Color);
+    light1.intensity = config.light1Intensity;
+    light2.color.setHex(config.light2Color);
+    light2.intensity = config.light2Intensity;
+    light3.color.setHex(config.light3Color);
+    light3.intensity = config.light3Intensity;
+    
+    // Update materials
+    waveMaterial.color.setHex(config.meshColor);
+    waveMaterial.opacity = config.opacity;
+    shapeMaterial.color.setHex(config.meshColor);
+    shapeMaterial.opacity = config.opacity * 0.9;
+  };
+
+  applyThemeSettings(themeConfig);
+
+  // Mouse Interaction Parallax variables
+  let mouseX = 0;
+  let mouseY = 0;
+  let targetCameraX = 0;
+  let targetCameraY = 80;
+
+  const onMouseMove = (e) => {
+    const normX = (e.clientX / window.innerWidth) * 2 - 1;
+    const normY = (e.clientY / window.innerHeight) * 2 - 1;
+
+    targetCameraX = normX * 90;
+    targetCameraY = 80 + normY * 45;
+  };
+
+  window.addEventListener('mousemove', onMouseMove);
+
+  // Scroll Parallax Logic
+  let scrollPercent = 0;
+  const onScroll = () => {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    scrollPercent = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+  };
+  window.addEventListener('scroll', onScroll);
+
+  // Dynamic Theme Switch Listener
+  window.addEventListener('theme-changed', () => {
+    themeConfig = getThemeConfig();
+    applyThemeSettings(themeConfig);
+  });
+
+  // Animation Loop
+  let frame = 0;
+  const animate = () => {
+    requestAnimationFrame(animate);
+
+    frame += 0.006; // wave propagation speed
+
+    // Update Plane vertices (undulating topography)
+    const pos = geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      const y = pos.getY(i);
+      
+      // Multi-frequency wave calculation (sine & cosine combination)
+      const zValue = Math.sin(x * 0.007 + frame) * 28 + 
+                     Math.cos(y * 0.007 + frame * 0.75) * 28 + 
+                     Math.sin((x + y) * 0.004 + frame * 1.2) * 14;
+      
+      pos.setZ(i, zValue);
+    }
+    pos.needsUpdate = true;
+
+    // Orbit point lights around center to cast sweeping glowing colors
+    light1.position.x = Math.sin(frame * 0.6) * 380;
+    light1.position.z = Math.cos(frame * 0.4) * 380;
+    light1.position.y = 50 + Math.sin(frame * 0.2) * 40;
+
+    light2.position.x = Math.cos(frame * 0.5) * 380;
+    light2.position.z = Math.sin(frame * 0.8) * 380;
+    light2.position.y = 40 + Math.cos(frame * 0.3) * 30;
+
+    light3.position.x = Math.sin(frame * 0.3) * 280;
+    light3.position.z = Math.cos(frame * 0.6) * 280;
+    light3.position.y = 30 + Math.sin(frame * 0.7) * 30;
+
+    // Rotate and drift floating "tools theme" wireframe shapes
+    torus.rotation.x += 0.004;
+    torus.rotation.y += 0.008;
+    torus.position.y = 20 + Math.sin(frame * 0.4) * 12;
+
+    octa.rotation.y += 0.006;
+    octa.rotation.z += 0.003;
+    octa.position.y = 60 + Math.cos(frame * 0.3) * 15;
+
+    box.rotation.x += 0.005;
+    box.rotation.y += 0.005;
+    box.position.y = 90 + Math.sin(frame * 0.5) * 10;
+
+    cone.rotation.x += 0.003;
+    cone.rotation.z += 0.006;
+    cone.position.y = -10 + Math.cos(frame * 0.2) * 8;
+
+    // Slowly drift the stars (particles)
+    const starPos = starGeometry.attributes.position.array;
+    for (let i = 0; i < starCount; i++) {
+      starPos[i * 3 + 1] += Math.sin(frame * 0.4 + i) * 0.05; // Y drift
+      starPos[i * 3] += Math.cos(frame * 0.15 + i) * 0.02;    // X drift
+    }
+    starGeometry.attributes.position.needsUpdate = true;
+
+    // Rotate systems
+    stars.rotation.y = frame * 0.015;
+
+    // Scroll parallax translation offsets
+    // Camera travels deeper (Z reduces) and tilts down (Y reduces) on scroll down
+    const scrollZOffset = scrollPercent * -130;  // zooms camera forward
+    const scrollYOffset = scrollPercent * -70;   // translates camera downward
+    const scrollXOffset = scrollPercent * 30;    // slight horizontal pan
+    const scrollRotation = scrollPercent * Math.PI * 0.15; // rotate scene on scroll
+
+    // Apply scroll rotation to the waves and shapes
+    waveMesh.rotation.y = frame * 0.005 + scrollRotation;
+    torus.rotation.y = frame * 0.008 + scrollRotation;
+    octa.rotation.y = frame * 0.006 + scrollRotation;
+    box.rotation.y = frame * 0.005 + scrollRotation;
+    cone.rotation.y = frame * 0.006 + scrollRotation;
+
+    // Smooth camera ease for parallax effect (Mouse + Scroll)
+    camera.position.x += ((targetCameraX + scrollXOffset) - camera.position.x) * 0.04;
+    camera.position.y += ((targetCameraY + scrollYOffset) - camera.position.y) * 0.04;
+    camera.position.z += ((240 + scrollZOffset) - camera.position.z) * 0.04;
+    camera.lookAt(0, scrollYOffset * 0.5, 0);
+
+    renderer.render(scene, camera);
+  };
+
+  // Resize Handler
+  const onResize = () => {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+  };
+  window.addEventListener('resize', onResize);
+
+  animate();
+}

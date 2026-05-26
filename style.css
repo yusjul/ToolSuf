@@ -16,8 +16,8 @@
   --border-color: rgba(0, 0, 0, 0.08);
   --border-hover: rgba(0, 0, 0, 0.16);
   --card-bg: #FFFFFF;
-  --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
-  --card-hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(0, 0, 0, 0.02);
+  --card-hover-shadow: 0 24px 48px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(0, 0, 0, 0.02);
   
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(0, 0, 0, 0.06);
@@ -49,8 +49,8 @@ html.dark {
   --border-color: rgba(255, 255, 255, 0.08);
   --border-hover: rgba(255, 255, 255, 0.16);
   --card-bg: #121215;
-  --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1);
-  --card-hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.1);
+  --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  --card-hover-shadow: 0 24px 48px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   
   --glass-bg: rgba(10, 10, 12, 0.7);
   --glass-border: rgba(255, 255, 255, 0.06);
@@ -65,8 +65,12 @@ html.dark {
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-body {
+html {
   background-color: var(--bg-primary);
+}
+
+body {
+  background-color: transparent;
   color: var(--text-primary);
   font-family: var(--font-body);
   font-size: 15px;
@@ -212,6 +216,12 @@ a {
   padding: 96px 0 64px;
   text-align: center;
   position: relative;
+  overflow: hidden;
+}
+.hero-section .container {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .hero-section::before {
@@ -352,9 +362,52 @@ html.dark .hero-title {
   position: relative;
   cursor: pointer;
   box-shadow: var(--card-shadow);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+  transform-style: preserve-3d;
+  margin-top: 15px; /* Give room for folder tab */
+  transition: transform 0.15s ease, 
               box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
               border-color 0.3s ease;
+}
+
+/* 3D Folder Tab */
+.tool-card::before, .feature-item::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 24px;
+  width: 65px;
+  height: 13px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--card-bg); /* Merge tab with card body */
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  z-index: 2;
+  transform: translateZ(1px);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Specific styling for coming soon folder tab */
+.tool-card.coming-soon::before {
+  border-style: dashed;
+  border-bottom: 1px solid var(--bg-primary); /* coming-soon uses transparent, so match section background */
+}
+
+/* 3D pop out layers for inner components */
+.tool-card .card-icon, .feature-item .feature-icon {
+  transform: translateZ(25px);
+}
+.tool-card .card-title, .feature-item .feature-title {
+  transform: translateZ(20px);
+}
+.tool-card .card-desc, .feature-item .feature-desc {
+  transform: translateZ(15px);
+}
+.tool-card .card-action {
+  transform: translateZ(20px);
+}
+.tool-card .card-badge {
+  transform: translateZ(25px);
 }
 
 .tool-card:hover {
@@ -460,9 +513,8 @@ html.dark .hero-title {
 /* --- Features Section ("The Interface of Less") --- */
 .features-section {
   padding: 64px 0 96px;
-  background-color: var(--bg-secondary);
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
+  background: transparent;
+  border: none;
 }
 
 .features-grid {
@@ -475,43 +527,58 @@ html.dark .hero-title {
 .feature-item {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 24px;
-  text-align: center;
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
   box-shadow: var(--card-shadow);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+  margin-top: 15px; /* Give room for folder tab */
+  transition: transform 0.15s ease, 
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.3s ease;
 }
 
 .feature-item:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: var(--card-hover-shadow);
+  border-color: var(--border-hover);
 }
 
 .feature-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background-color: var(--accent-light);
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background-color: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--accent-color);
-  margin: 0 auto 16px;
+  margin-bottom: 24px;
+  transition: background-color 0.2s;
 }
 
 .feature-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
+}
+
+.feature-item:hover .feature-icon {
+  background-color: var(--accent-light);
 }
 
 .feature-title {
-  font-size: 15px;
+  font-size: 19px;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
 }
 
 .feature-desc {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 /* Custom premium visual icon */
@@ -525,7 +592,7 @@ html.dark .hero-title {
 /* --- Footer --- */
 footer {
   padding: 48px 0;
-  background-color: var(--bg-primary);
+  background-color: transparent;
   border-top: 1px solid var(--border-color);
   font-size: 13px;
   color: var(--text-secondary);
@@ -620,31 +687,42 @@ html.dark .modal-overlay {
   user-select: none;
 }
 
-.mac-dots {
-  display: flex;
-  gap: 8px;
+.mac-close-btn {
   position: absolute;
-  left: 18px;
-}
-
-.mac-dot {
-  width: 12px;
-  height: 12px;
+  right: 14px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
+  background-color: rgba(120, 120, 128, 0.12);
+  color: var(--text-secondary);
   border: none;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: filter 0.1s;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.mac-dot-close { background-color: var(--win-dot-red); }
-.mac-dot-minimize { background-color: var(--win-dot-yellow); }
-.mac-dot-maximize { background-color: var(--win-dot-green); }
+.mac-close-btn:hover {
+  background-color: rgba(120, 120, 128, 0.24);
+  color: var(--text-primary);
+  transform: scale(1.05);
+}
 
-.mac-dot:hover {
-  filter: brightness(0.85);
+.mac-close-btn:active {
+  transform: scale(0.95);
+}
+
+/* Dark Mode adaptation for titlebar close button */
+html.dark .mac-close-btn {
+  background-color: rgba(120, 120, 128, 0.24);
+  color: var(--text-secondary);
+}
+
+html.dark .mac-close-btn:hover {
+  background-color: rgba(120, 120, 128, 0.36);
+  color: var(--text-primary);
 }
 
 .mac-title {
@@ -717,8 +795,9 @@ html.dark .toast-notif {
   .mac-window {
     height: 95vh;
   }
-  .features-grid {
-    grid-template-columns: 1fr;
+  .tools-grid, .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
   }
   .footer-container {
     flex-direction: column;
@@ -802,4 +881,69 @@ html.dark .lang-opt:hover {
 .lang-opt.active:hover {
   background: var(--accent-color);
   color: #FFFFFF;
+}
+
+/* Three.js Parallax Canvas styling */
+.hero-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.7;
+}
+html.dark .hero-canvas {
+  opacity: 0.8;
+}
+
+/* iOS-style 2-column grid layout for smartphones */
+@media (max-width: 520px) {
+  .tools-grid, .features-grid {
+    gap: 12px;
+  }
+  .tool-card, .feature-item {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .card-top {
+    margin-bottom: 12px;
+  }
+  .card-icon, .feature-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    margin-bottom: 0;
+  }
+  .feature-icon {
+    margin-bottom: 12px;
+  }
+  .card-icon svg, .feature-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .card-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+  .card-title, .feature-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .card-desc, .feature-desc {
+    font-size: 11px;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .card-action {
+    font-size: 11px;
+    gap: 2px;
+  }
+  .card-action svg {
+    width: 12px;
+    height: 12px;
+  }
 }

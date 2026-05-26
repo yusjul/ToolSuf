@@ -1,0 +1,9 @@
+{
+  "name": "toolsuf",
+  "version": "1.0.0",
+  "description": "Premium, Fast & Simple Productivity Tools",
+  "scripts": {
+    "dev": "npx -y vite",
+    "serve": "npx -y http-server -p 8080"
+  }
+}

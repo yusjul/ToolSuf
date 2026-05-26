@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batch Renamer Pro</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="script.js"></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <!-- Header -->
+    <div class="header" aria-hidden="true">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M15 3v4a1 1 0 0 0 1 1h4"/>
+          <path d="M18 17h-7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4l5 5v7a2 2 0 0 1-2 2z"/>
+          <path d="M16 17v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h2"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Pilih File -->
+    <section class="mac-section">
+      <div class="mac-section-header">Pilih File</div>
+      <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
+        <input type="file" id="fi" multiple style="display:none">
+        <div class="drop-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3v4a1 1 0 0 0 1 1h4"/>
+            <path d="M18 17h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h4l5 5v7a2 2 0 0 1 -2 2z"/>
+            <path d="M16 17v2a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2"/>
+          </svg>
+        </div>
+        <div class="drop-t">Semua format didukung — tanpa batasan</div>
+        <div class="drop-s">Seret & lepas atau klik untuk memilih</div>
+        <div class="badges">
+          <span class="badge">JPG PNG WEBP GIF</span>
+          <span class="badge">RAW CR2 NEF ARW DNG</span>
+          <span class="badge">HEIC HEIF AVIF</span>
+          <span class="badge">PSD TIFF BMP SVG</span>
+          <span class="badge">+ Semua format lain</span>
+        </div>
+      </div>
+
+      <div id="statsSection" style="display:none">
+        <div class="stat-row">
+          <div class="stat"><div class="stat-n" id="stTotal">0</div><div class="stat-l">Total File</div></div>
+          <div class="stat"><div class="stat-n" id="stSize">-</div><div class="stat-l">Ukuran</div></div>
+          <div class="stat"><div class="stat-n" id="stExt">0</div><div class="stat-l">Format</div></div>
+          <div class="stat"><div class="stat-n" id="stUndo">0</div><div class="stat-l">Riwayat Undo</div></div>
+        </div>
+        <div class="fc" id="fc"></div>
+        <div class="prog-w"><div class="prog-f" id="pf"></div></div>
+        <div class="flist" id="fl"></div>
+      </div>
+    </section>
+
+    <!-- Urutan & Sortir -->
+    <section class="mac-section">
+      <div class="mac-section-header">Urutan & Sortir</div>
+      <div class="settings-group">
+        <div class="setting-row column" style="padding:14px 16px">
+          <div style="font-size:11px;font-weight:500;color:var(--apple-label)">Urutkan file berdasarkan</div>
+          <div class="sort-row">
+            <button class="sort-btn active" id="sb-name" onclick="setSort('name')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 6l7 0"/><path d="M4 12l7 0"/><path d="M4 18l9 0"/><path d="M15 9l3 -3l3 3"/><path d="M18 6l0 12"/>
+              </svg> Nama A–Z
+            </button>
+            <button class="sort-btn" id="sb-name-d" onclick="setSort('name-d')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 6l9 0"/><path d="M4 12l7 0"/><path d="M4 18l7 0"/><path d="M15 15l3 3l3 -3"/><path d="M18 6l0 12"/>
+              </svg> Nama Z–A
+            </button>
+            <button class="sort-btn" id="sb-size" onclick="setSort('size')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5l0 14"/><path d="M18 11l-6 -6"/><path d="M6 11l6 -6"/>
+              </svg> Ukuran ↑
+            </button>
+            <button class="sort-btn" id="sb-size-d" onclick="setSort('size-d')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/>
+              </svg> Ukuran ↓
+            </button>
+            <button class="sort-btn" id="sb-ext" onclick="setSort('ext')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+              </svg> Format
+            </button>
+            <button class="sort-btn" id="sb-orig" onclick="setSort('orig')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 9l5 -5l5 5"/><path d="M12 4l0 12"/>
+              </svg> Urutan Asli
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pengaturan Nama -->
+    <section class="mac-section">
+      <div class="mac-section-header">Pengaturan Nama</div>
+      <div class="settings-group">
+        <div class="setting-row column">
+          <div class="field-row">
+            <div class="field"><label>Nama Dasar</label><input class="inp" type="text" id="base" value="yusjul" oninput="update()"></div>
+            <div class="field"><label>Awalan (opsional)</label><input class="inp" type="text" id="pre" placeholder="foto_" oninput="update()"></div>
+          </div>
+          <div class="field-row field-row-3">
+            <div class="field"><label>Nomor Mulai</label><input class="inp" type="number" id="sn" value="1" min="0" oninput="update()"></div>
+            <div class="field"><label>Nomor Akhir</label><input class="inp" type="number" id="en" value="1000" min="1" oninput="update()"></div>
+            <div class="field"><label>Step (loncat)</label><input class="inp" type="number" id="step" value="1" min="1" oninput="update()"></div>
+          </div>
+        </div>
+
+        <div class="setting-row column">
+          <div class="seq-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 6h9"/><path d="M11 12h9"/><path d="M12 18h8"/>
+              <path d="M4 16a2 2 0 1 1 4 0c0 .591 -.5 1 -1 1.5l-3 2.5h4"/>
+              <path d="M6 10v-6l-2 2"/>
+            </svg>Preview urutan angka
+          </div>
+          <div class="seq-chips" id="seqChips"></div>
+        </div>
+
+        <div class="setting-row column">
+          <div style="font-size:12px;font-weight:500;color:var(--apple-label);margin-bottom:2px">Ekstensi Output</div>
+          <select class="apple-select" id="extMode" onchange="toggleExtMode()">
+            <option value="original">Pertahankan ekstensi asli</option>
+            <option value="single">Ganti semua ke satu ekstensi</option>
+            <option value="manual">Pemetaan manual per-format</option>
+          </select>
+          <div id="singleExt" style="display:none;margin-top:6px">
+            <div class="field"><label>Ekstensi baru</label><input class="inp" type="text" id="singleV" placeholder=".jpg" oninput="update()"></div>
+          </div>
+          <div id="manualExt" style="display:none;margin-top:6px">
+            <div style="display:flex;gap:6px;align-items:flex-end">
+              <input class="inp" type="text" id="mf" placeholder=".heic" style="flex:1">
+              <span style="font-size:14px;color:var(--apple-label);padding-bottom:7px">→</span>
+              <input class="inp" type="text" id="mt" placeholder=".jpg" style="flex:1">
+              <button onclick="addMap()" style="background:var(--apple-blue);color:#fff;border:none;border-radius:99px;padding:7px 10px;cursor:pointer;font-size:11px;font-family:inherit;white-space:nowrap">Tambah</button>
+            </div>
+            <div id="mapChips" style="margin-top:6px"></div>
+          </div>
+        </div>
+
+        <div class="setting-row column">
+          <div style="font-size:12px;font-weight:500;color:var(--apple-label);margin-bottom:2px">Pratinjau nama</div>
+          <div class="pvstrip" style="width:100%">
+            <span class="pv-old" id="pvOld">gambar.cr2</span>
+            <span class="pv-arr">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12l14 0"/><path d="M15 16l4 -4"/><path d="M15 8l4 4"/>
+              </svg>
+            </span>
+            <span class="pv-new" id="pvNew">yusjul1.cr2</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Opsi Lanjutan -->
+    <section class="mac-section">
+      <div class="mac-section-header">Opsi Lanjutan</div>
+      <div class="settings-group">
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#5856D6">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 6h9"/><path d="M11 12h9"/><path d="M12 18h8"/>
+              <path d="M4 16a2 2 0 1 1 4 0c0 .591 -.5 1 -1 1.5l-3 2.5h4"/>
+              <path d="M6 10v-6l-2 2"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title">Pad angka dengan nol</div>
+            <div class="setting-desc">yusjul001 bukan yusjul1</div>
+          </div>
+          <button class="apple-toggle" id="pad" onclick="toggleOpt(this);update();" role="switch" aria-checked="false"></button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#007AFF">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 7 4 4 20 4 20 7"/>
+              <line x1="9" y1="20" x2="15" y2="20"/>
+              <line x1="12" y1="4" x2="12" y2="20"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title">Lowercase ekstensi</div>
+            <div class="setting-desc">.JPG .CR2 → .jpg .cr2</div>
+          </div>
+          <button class="apple-toggle on" id="lc" onclick="toggleOpt(this);update();" role="switch" aria-checked="true"></button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#34C759">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+              <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+              <path d="M8 11h8v7h-8z"/><path d="M8 15h8"/><path d="M11 11v7"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title">Laporan CSV hasil rename</div>
+            <div class="setting-desc">Ikut tersimpan di dalam ZIP</div>
+          </div>
+          <button class="apple-toggle on" id="csv" onclick="toggleOpt(this);" role="switch" aria-checked="true"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:4px">
+      <button class="btn-p" id="zipBtn" onclick="doZip()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 20.735a2 2 0 0 1 -1 -1.735v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-1"/>
+          <path d="M11 17a2 2 0 0 1 2 2v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-2a2 2 0 0 1 2 -2z"/>
+        </svg> Download ZIP
+      </button>
+      <button class="btn-undo" id="undoBtn" onclick="doUndo()" disabled title="Undo pengaturan terakhir">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 14l-4 -4l4 -4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+        </svg> Undo
+      </button>
+    </div>
+    <div class="undo-stack" id="undoStack">Belum ada riwayat undo</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <button class="btn-s" onclick="resetFiles()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+          <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+          <path d="M10 12l4 4m0 -4l-4 4"/>
+        </svg> Hapus File
+      </button>
+      <button class="btn-s" onclick="resetAll()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/>
+          <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>
+        </svg> Reset Semua
+      </button>
+    </div>
+
+    <div class="zprog" id="zprog">
+      <div class="zinfo" id="zinfo">Menyiapkan ZIP...</div>
+      <div class="prog-w"><div class="prog-f" id="zpf"></div></div>
+    </div>
+    <div class="alert" id="alertBox"></div>
+  </div>
+</body>
+</html>
