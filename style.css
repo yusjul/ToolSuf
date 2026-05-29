@@ -710,6 +710,18 @@ html.dark .modal-overlay {
   max-height: 900px;
 }
 
+/* Ultrawide layout for multi-column tools (AI Workflow Assistant) */
+.mac-window.ultrawide {
+  max-width: 1140px;
+  max-height: 90vh;
+  height: 90vh;
+}
+@media (max-width: 1200px) {
+  .mac-window.ultrawide {
+    max-width: 95vw;
+  }
+}
+
 .modal-overlay.active .mac-window {
   transform: scale(1) translateY(0);
 }
