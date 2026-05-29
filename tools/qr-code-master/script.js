@@ -1098,32 +1098,64 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  let points = [];
+
   function startDrawing(e) {
     if (!sigCtx) return;
     isDrawing = true;
     const pos = getMousePos(sigCanvas, e);
     lastX = pos.x;
     lastY = pos.y;
+    points = [pos];
     hasDrawn = true;
     sigCtx.strokeStyle = state.fgColor || '#1C1C1E';
+    sigCtx.lineWidth = 3;
+    sigCtx.lineCap = 'round';
+    sigCtx.lineJoin = 'round';
+    
+    // Draw initial dot to support single tap/click marks
+    sigCtx.beginPath();
+    sigCtx.arc(pos.x, pos.y, sigCtx.lineWidth / 2, 0, Math.PI * 2);
+    sigCtx.fillStyle = sigCtx.strokeStyle;
+    sigCtx.fill();
   }
 
   function draw(e) {
     if (!isDrawing || !sigCtx) return;
     e.preventDefault();
     const pos = getMousePos(sigCanvas, e);
+    points.push(pos);
     
-    sigCtx.beginPath();
-    sigCtx.moveTo(lastX, lastY);
-    sigCtx.lineTo(pos.x, pos.y);
-    sigCtx.stroke();
-    
-    lastX = pos.x;
-    lastY = pos.y;
+    if (points.length > 2) {
+      const xc = (points[points.length - 2].x + points[points.length - 1].x) / 2;
+      const yc = (points[points.length - 2].y + points[points.length - 1].y) / 2;
+      
+      sigCtx.beginPath();
+      sigCtx.moveTo(lastX, lastY);
+      sigCtx.quadraticCurveTo(points[points.length - 2].x, points[points.length - 2].y, xc, yc);
+      sigCtx.stroke();
+      
+      lastX = xc;
+      lastY = yc;
+    } else if (points.length === 2) {
+      sigCtx.beginPath();
+      sigCtx.moveTo(lastX, lastY);
+      sigCtx.lineTo(pos.x, pos.y);
+      sigCtx.stroke();
+      
+      lastX = pos.x;
+      lastY = pos.y;
+    }
   }
 
   function stopDrawing() {
     if (isDrawing) {
+      if (points.length > 0 && sigCtx) {
+        sigCtx.beginPath();
+        sigCtx.moveTo(lastX, lastY);
+        sigCtx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+        sigCtx.stroke();
+      }
       isDrawing = false;
       updateSignatureLogo();
     }
