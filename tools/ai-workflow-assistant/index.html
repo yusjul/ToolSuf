@@ -9,7 +9,7 @@
 <body>
   <div class="app-container">
     
-    <!-- Top Control Bar -->
+    <!-- Ultra-Slim Minimal Header -->
     <header class="app-header">
       <div class="header-left">
         <button class="btn-toggle-sidebar active" id="toggleLeftSidebar" title="Toggle Library">
@@ -18,30 +18,16 @@
             <line x1="9" y1="3" x2="9" y2="21"/>
           </svg>
         </button>
-        <div class="header-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <line x1="9" y1="9" x2="15" y2="9"/>
-            <line x1="9" y1="13" x2="15" y2="13"/>
-            <line x1="9" y1="17" x2="11" y2="17"/>
-          </svg>
-        </div>
-        <div>
-          <h1 class="app-title" data-i18n="title">AI Workflow Assistant</h1>
-          <p class="app-subtitle" data-i18n="subtitle">Visual Prompt Chains & Local AI Automation</p>
-        </div>
+        <span class="app-title" data-i18n="title">AI Workflow Assistant</span>
       </div>
       <div class="header-right">
-        <button class="btn btn-secondary btn-small" id="btnImport" data-i18n="btnImport">Import</button>
-        <button class="btn btn-secondary btn-small" id="btnExport" data-i18n="btnExport">Export</button>
-        <button class="btn btn-secondary btn-small" id="btnClear" data-i18n="btnClear">Clear Canvas</button>
         <button class="btn btn-primary btn-small btn-run" id="btnRun" data-i18n="btnRun">
           <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
             <polygon points="5 3 19 12 5 21 5 3"/>
           </svg>
-          Run Workflow
+          Run
         </button>
-        <button class="btn-toggle-sidebar active" id="toggleRightSidebar" title="Toggle Inspector" style="margin-left: 8px;">
+        <button class="btn-toggle-sidebar active" id="toggleRightSidebar" title="Toggle Inspector" style="margin-left: 6px;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
             <line x1="15" y1="3" x2="15" y2="21"/>
@@ -51,80 +37,59 @@
     </header>
 
     <div class="workspace-layout">
-      <!-- Left Panel: Node Library -->
+      <!-- Left Panel: Node Library (Minimal Pills) -->
       <aside class="sidebar left-sidebar">
         <div class="sidebar-header" data-i18n="nodeLibrary">Node Library</div>
         <div class="node-library-list">
           
           <div class="library-item" data-node-type="trigger" draggable="true">
             <div class="library-icon icon-trigger">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/>
                 <polygon points="10 8 16 12 10 16 10 8"/>
               </svg>
             </div>
-            <div class="library-info">
-              <div class="library-title" data-i18n="libTriggerTitle">Trigger (Start)</div>
-              <div class="library-desc" data-i18n="libTriggerDesc">Starts the workflow chain.</div>
-            </div>
+            <span class="library-title" data-i18n="libTriggerTitle">Trigger</span>
           </div>
 
           <div class="library-item" data-node-type="file-input" draggable="true">
             <div class="library-icon icon-input">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
               </svg>
             </div>
-            <div class="library-info">
-              <div class="library-title" data-i18n="libFileInputTitle">Document Input</div>
-              <div class="library-desc" data-i18n="libFileInputDesc">Loads files (.txt, .json).</div>
-            </div>
+            <span class="library-title" data-i18n="libFileInputTitle">Document</span>
           </div>
 
           <div class="library-item" data-node-type="prompt-template" draggable="true">
             <div class="library-icon icon-prompt">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
                 <path d="M16 13a4 4 0 0 1-8 0"/>
               </svg>
             </div>
-            <div class="library-info">
-              <div class="library-title" data-i18n="libPromptTitle">Prompt Template</div>
-              <div class="library-desc" data-i18n="libPromptDesc">Combines variables into a prompt.</div>
-            </div>
+            <span class="library-title" data-i18n="libPromptTitle">Prompt</span>
           </div>
 
           <div class="library-item" data-node-type="llm-model" draggable="true">
             <div class="library-icon icon-model">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-                <polyline points="2 17 12 22 22 17"/>
                 <polyline points="2 12 12 17 22 12"/>
               </svg>
             </div>
-            <div class="library-info">
-              <div class="library-title" data-i18n="libModelTitle">AI Model (LLM)</div>
-              <div class="library-desc" data-i18n="libModelDesc">Sends prompt to Ollama or OpenAI.</div>
-            </div>
+            <span class="library-title" data-i18n="libModelTitle">AI Model</span>
           </div>
 
           <div class="library-item" data-node-type="output-formatter" draggable="true">
             <div class="library-icon icon-output">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
             </div>
-            <div class="library-info">
-              <div class="library-title" data-i18n="libOutputTitle">Output Preview</div>
-              <div class="library-desc" data-i18n="libOutputDesc">Displays final Markdown result.</div>
-            </div>
+            <span class="library-title" data-i18n="libOutputTitle">Output</span>
           </div>
 
         </div>
@@ -135,7 +100,7 @@
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <span data-i18n="privacyBadgeText">100% Offline Local Processing. Your Data is Secure.</span>
+            <span data-i18n="privacyBadgeText">Local Processing</span>
           </div>
         </div>
       </aside>
@@ -158,13 +123,13 @@
         </div>
       </main>
 
-      <!-- Right Panel: Inspector / Execution Logs -->
+      <!-- Right Panel: Inspector / Settings -->
       <aside class="sidebar right-sidebar">
         
         <!-- Tab Selectors -->
         <div class="sidebar-tabs">
           <button class="tab-btn active" id="tabInspectorBtn" data-i18n="tabInspector">Inspector</button>
-          <button class="tab-btn" id="tabConsoleBtn" data-i18n="tabConsole">Console Logs</button>
+          <button class="tab-btn" id="tabConsoleBtn" data-i18n="tabConsole">Logs</button>
           <button class="tab-btn" id="tabSettingsBtn" data-i18n="tabSettings">Settings</button>
         </div>
 
@@ -174,7 +139,7 @@
             Select a node on the canvas to configure it.
           </div>
           <div class="inspector-form" id="inspectorForm" style="display:none">
-            <h3 class="inspector-node-type" id="inspectNodeType">Node Properties</h3>
+            <h3 class="inspector-node-type" id="inspectNodeType">Properties</h3>
             <div class="form-group">
               <label for="nodeTitle" data-i18n="nodeTitleLabel">Node Label</label>
               <input type="text" class="apple-input" id="nodeTitle">
@@ -188,7 +153,7 @@
         <!-- Tab 2: Live Console Logs -->
         <div class="tab-content" id="tabConsole" style="display:none">
           <div class="console-box" id="consoleLogs">
-            <span class="console-placeholder" data-i18n="consolePlaceholder">Run workflow to see live execution trace...</span>
+            <span class="console-placeholder" data-i18n="consolePlaceholder">Run workflow to see logs...</span>
           </div>
           <div class="output-preview-container" id="outputPreviewBox" style="display:none">
             <h4 data-i18n="resultPreview">Result Preview</h4>
@@ -200,7 +165,7 @@
           </div>
         </div>
 
-        <!-- Tab 3: API Settings -->
+        <!-- Tab 3: API Settings & Actions -->
         <div class="tab-content" id="tabSettings" style="display:none">
           <div class="settings-group">
             <div class="form-group">
@@ -220,7 +185,7 @@
               </div>
               <div class="form-group">
                 <label for="ollamaModel">Model Name</label>
-                <input type="text" class="apple-input" id="ollamaModel" value="llama3" placeholder="e.g. gemma, qwen, llama3">
+                <input type="text" class="apple-input" id="ollamaModel" value="llama3">
               </div>
             </div>
 
@@ -231,14 +196,28 @@
                 <input type="password" class="apple-input" id="openaiKey" placeholder="sk-...">
               </div>
               <div class="form-group">
-                <label for="openaiUrl">Endpoint Base URL (Optional)</label>
-                <input type="text" class="apple-input" id="openaiUrl" value="https://api.openai.com/v1" placeholder="https://api.openai.com/v1">
+                <label for="openaiUrl">Endpoint Base URL</label>
+                <input type="text" class="apple-input" id="openaiUrl" value="https://api.openai.com/v1">
               </div>
               <div class="form-group">
                 <label for="openaiModel">Model Name</label>
                 <input type="text" class="apple-input" id="openaiModel" value="gpt-4o-mini">
               </div>
             </div>
+
+            <!-- Divider -->
+            <div style="height: 1px; background: var(--border-color); margin: 8px 0;"></div>
+
+            <!-- Workflow File Actions -->
+            <div class="form-group">
+              <label>Workflow Actions</label>
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                <button class="btn btn-secondary btn-small" id="btnImport" data-i18n="btnImport" style="width:100%;">Import JSON</button>
+                <button class="btn btn-secondary btn-small" id="btnExport" data-i18n="btnExport" style="width:100%;">Export JSON</button>
+                <button class="btn btn-secondary btn-small" id="btnClear" data-i18n="btnClear" style="width:100%; color: var(--apple-red);">Clear Canvas</button>
+              </div>
+            </div>
+
           </div>
         </div>
 
