@@ -178,10 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toolFrame && toolFrame.contentWindow) {
       try {
         toolFrame.contentWindow.postMessage({ type: 'syncTheme', dark: isDark }, '*');
-        // Legacy fallback for tools without postMessage listener
-        if (typeof toolFrame.contentWindow.syncTheme === 'function') {
-          toolFrame.contentWindow.syncTheme(isDark);
-        }
       } catch (e) {
         console.warn('Iframe theme sync issue', e);
       }
@@ -193,10 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toolFrame && toolFrame.contentWindow) {
       try {
         toolFrame.contentWindow.postMessage({ type: 'syncLang', lang: currentLang }, '*');
-        // Legacy fallback
-        if (typeof toolFrame.contentWindow.syncLang === 'function') {
-          toolFrame.contentWindow.syncLang(currentLang);
-        }
       } catch (e) {
         console.warn('Iframe lang sync issue', e);
       }
