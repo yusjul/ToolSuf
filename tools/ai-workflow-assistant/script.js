@@ -398,7 +398,7 @@ function setupCanvasEvents() {
   canvasArea.addEventListener('mousedown', (e) => {
     const isBackground = e.target === canvasArea || 
                           e.target === document.getElementById('canvasContent') || 
-                          e.target === connectionsLayer ||
+                          e.target === nodesLayer ||
                           e.target === canvasInstructions;
     if (isBackground) {
       panStart(e.clientX, e.clientY);
@@ -411,7 +411,7 @@ function setupCanvasEvents() {
   canvasArea.addEventListener('touchstart', (e) => {
     const isBackground = e.target === canvasArea || 
                           e.target === document.getElementById('canvasContent') || 
-                          e.target === connectionsLayer ||
+                          e.target === nodesLayer ||
                           e.target === canvasInstructions;
     if (isBackground) {
       const touch = e.touches[0];
