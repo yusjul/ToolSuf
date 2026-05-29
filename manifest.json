@@ -4,8 +4,8 @@
   "description": "Premium, Fast & Simple Productivity Tools",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#FCFCFD",
-  "theme_color": "#007AFF",
+  "background_color": "#0A0A0C",
+  "theme_color": "#0A0A0C",
   "orientation": "portrait",
   "icons": [
     {
