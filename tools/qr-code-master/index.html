@@ -49,6 +49,13 @@
             <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             <span>vCard</span>
           </button>
+          <button class="type-chip" data-type="signature" id="type-signature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 14.66V17c0 .55-.45 1-1 1H4c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1h13c.55 0 1 .45 1 1v3.5"/>
+              <path d="m16 2 4 4-10 10H6v-4L16 2Z"/>
+            </svg>
+            <span data-i18n="typeSignature">Tanda Tangan</span>
+          </button>
           <button class="type-chip" data-type="text" id="type-text">
             <svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
             <span data-i18n="typeText">Teks</span>
@@ -131,6 +138,32 @@
               <label class="field-label" data-i18n="labelText">Teks Bebas</label>
               <textarea id="input-text" class="apple-input apple-textarea" placeholder="Ketik atau tempel teks di sini..." rows="4" spellcheck="false"></textarea>
               <div class="char-count" id="char-count">0 / 900</div>
+            </div>
+          </div>
+
+          <!-- Signature Form -->
+          <div class="form-panel" id="form-signature">
+            <div class="field-group">
+              <label class="field-label" data-i18n="labelSigner">Nama Penandatangan</label>
+              <input type="text" id="input-signer" class="apple-input" placeholder="Nama Lengkap" autocomplete="off">
+            </div>
+            <div class="field-group">
+              <label class="field-label" data-i18n="labelTitle">Jabatan / Keterangan</label>
+              <input type="text" id="input-sigtitle" class="apple-input" placeholder="Kepala Departemen / Direktur" autocomplete="off">
+            </div>
+            <div class="field-group">
+              <label class="field-label" data-i18n="labelDocName">Nama / No. Dokumen</label>
+              <input type="text" id="input-sigdoc" class="apple-input" placeholder="Surat Keputusan No. 01" autocomplete="off">
+            </div>
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label" data-i18n="labelSigDate">Tanggal</label>
+                <input type="date" id="input-sigdate" class="apple-input">
+              </div>
+              <div class="field-group">
+                <label class="field-label" data-i18n="labelSigHash">Kode Unik / Hash (Opsional)</label>
+                <input type="text" id="input-sighash" class="apple-input" placeholder="Auto-generate jika kosong" autocomplete="off">
+              </div>
             </div>
           </div>
 

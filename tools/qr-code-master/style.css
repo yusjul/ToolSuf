@@ -107,7 +107,7 @@ html.dark .tab-btn.active { box-shadow: 0 1px 6px rgba(0,0,0,0.3), inset 0 1px 0
 }
 
 /* ── Type Grid ── */
-.type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.type-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .type-chip {
   display: flex; flex-direction: column; align-items: center;
   gap: 5px; padding: 10px 6px;
@@ -564,6 +564,7 @@ html.dark .lp-canvas-bg {
 .lp-type-badge.wifi { background: rgba(52,199,89,0.1); color: var(--apple-green); }
 .lp-type-badge.vcard { background: rgba(88,86,214,0.1); color: #5856D6; }
 .lp-type-badge.text { background: rgba(255,149,0,0.1); color: var(--apple-orange); }
+.lp-type-badge.signature { background: rgba(255,59,48,0.1); color: var(--apple-red); }
 .lp-scannable {
   display: flex; align-items: center; gap: 4px;
   font-size: 11.5px; font-weight: 600; color: var(--apple-green);
@@ -605,7 +606,7 @@ html.dark .toast { background: rgba(245,245,247,0.92); color: #1C1C1E; }
 /* Responsive */
 @media (max-width: 480px) {
   .container { padding: 16px 12px 40px; }
-  .type-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .type-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .type-chip { padding: 8px 4px; font-size: 10px; }
   .type-chip svg { width: 18px; height: 18px; }
   .apple-slider { width: 100px; }

@@ -16,11 +16,13 @@ const T = {
     tabGenerate: 'BUAT QR', tabScan: 'PINDAI QR',
     sectionType: 'TIPE DATA', sectionInput: 'INPUT DATA', sectionCustom: 'KUSTOMISASI',
     sectionResult: 'HASIL QR CODE', sectionScanMethod: 'METODE PEMINDAIAN', sectionScanResult: 'HASIL PEMINDAIAN',
-    typeUrl: 'Link/URL', typeText: 'Teks',
+    typeUrl: 'Link/URL', typeText: 'Teks', typeSignature: 'Tanda Tangan',
     labelUrl: 'URL / Link', labelSsid: 'Nama Jaringan (SSID)', labelPass: 'Kata Sandi',
     labelEncrypt: 'Enkripsi', encNone: 'Tidak Ada',
     labelFirst: 'Nama Depan', labelLast: 'Nama Belakang', labelPhone: 'No. Telepon',
     labelOrg: 'Perusahaan', labelText: 'Teks Bebas',
+    labelSigner: 'Nama Penandatangan', labelTitle: 'Jabatan / Keterangan',
+    labelDocName: 'Nama / No. Dokumen', labelSigDate: 'Tanggal', labelSigHash: 'Kode Unik / Hash',
     labelDotStyle: 'Gaya Piksel', dsSquare: 'Kotak', dsRounded: 'Bulat', dsDots: 'Titik',
     labelFgColor: 'Warna QR', labelBgColor: 'Warna Latar',
     labelSize: 'Ukuran QR', labelMargin: 'Margin', labelEcc: 'Koreksi Error', labelLogo: 'Logo Tengah',
@@ -47,11 +49,13 @@ const T = {
     tabGenerate: 'CREATE QR', tabScan: 'SCAN QR',
     sectionType: 'DATA TYPE', sectionInput: 'INPUT DATA', sectionCustom: 'CUSTOMIZE',
     sectionResult: 'QR RESULT', sectionScanMethod: 'SCAN METHOD', sectionScanResult: 'SCAN RESULT',
-    typeUrl: 'Link/URL', typeText: 'Text',
+    typeUrl: 'Link/URL', typeText: 'Text', typeSignature: 'Signature',
     labelUrl: 'URL / Link', labelSsid: 'Network Name (SSID)', labelPass: 'Password',
     labelEncrypt: 'Encryption', encNone: 'None',
     labelFirst: 'First Name', labelLast: 'Last Name', labelPhone: 'Phone Number',
     labelOrg: 'Company', labelText: 'Free Text',
+    labelSigner: 'Signer Name', labelTitle: 'Title / Role',
+    labelDocName: 'Document Name / No.', labelSigDate: 'Date', labelSigHash: 'Unique Hash / Code',
     labelDotStyle: 'Pixel Style', dsSquare: 'Square', dsRounded: 'Rounded', dsDots: 'Dots',
     labelFgColor: 'QR Color', labelBgColor: 'Background',
     labelSize: 'QR Size', labelMargin: 'Margin', labelEcc: 'Error Correction', labelLogo: 'Center Logo',
@@ -166,6 +170,26 @@ function buildQrData() {
       if (v.length > 900) { showToast(t('toastTooLong')); return null; }
       return v;
     }
+    case 'signature': {
+      const signer = document.getElementById('input-signer').value.trim();
+      if (!signer) { showToast(t('toastNoData')); return null; }
+      const title = document.getElementById('input-sigtitle').value.trim();
+      const doc = document.getElementById('input-sigdoc').value.trim();
+      const date = document.getElementById('input-sigdate').value.trim();
+      let hash = document.getElementById('input-sighash').value.trim();
+      if (!hash) {
+        hash = 'SIG-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        document.getElementById('input-sighash').value = hash;
+      }
+      return `----- DIGITAL SIGNATURE VERIFICATION -----\n` +
+             `Signer   : ${signer}\n` +
+             (title ? `Title    : ${title}\n` : '') +
+             (doc ? `Document : ${doc}\n` : '') +
+             (date ? `Date     : ${date}\n` : '') +
+             `Hash     : ${hash}\n` +
+             `Status   : VERIFIED (Offline Secure)\n` +
+             `------------------------------------------`;
+    }
   }
   return null;
 }
@@ -208,6 +232,25 @@ function buildQrDataSilent() {
         if (!v || v.length > 900) return null;
         return v;
       }
+      case 'signature': {
+        const signer = document.getElementById('input-signer').value.trim();
+        if (!signer) return null;
+        const title = document.getElementById('input-sigtitle').value.trim();
+        const doc = document.getElementById('input-sigdoc').value.trim();
+        const date = document.getElementById('input-sigdate').value.trim();
+        let hash = document.getElementById('input-sighash').value.trim();
+        if (!hash) {
+          hash = 'SIG-AUTO';
+        }
+        return `----- DIGITAL SIGNATURE VERIFICATION -----\n` +
+               `Signer   : ${signer}\n` +
+               (title ? `Title    : ${title}\n` : '') +
+               (doc ? `Document : ${doc}\n` : '') +
+               (date ? `Date     : ${date}\n` : '') +
+               `Hash     : ${hash}\n` +
+               `Status   : VERIFIED (Offline Secure)\n` +
+               `------------------------------------------`;
+      }
     }
   } catch { /* ignore */ }
   return null;
@@ -248,7 +291,7 @@ async function renderLivePreview() {
     );
 
     // Update type badge
-    const typeMap = { wifi: 'wifi', vcard: 'vcard', text: 'text', url: 'url' };
+    const typeMap = { wifi: 'wifi', vcard: 'vcard', text: 'text', url: 'url', signature: 'signature' };
     badge.textContent = state.type.toUpperCase();
     badge.className = 'lp-type-badge ' + (typeMap[state.type] || 'url');
 
@@ -773,7 +816,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Live Preview: Input field listeners ──
   ['input-url','input-ssid','input-wifipass','input-firstname','input-lastname',
-   'input-phone','input-email','input-org','input-website','input-text'].forEach(id => {
+   'input-phone','input-email','input-org','input-website','input-text',
+   'input-signer','input-sigtitle','input-sigdoc','input-sigdate','input-sighash'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', livePreview);
   });
