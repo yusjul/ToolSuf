@@ -415,10 +415,11 @@ function setupCanvasEvents() {
                           e.target === canvasInstructions;
     if (isBackground) {
       const touch = e.touches[0];
+      e.preventDefault(); // Stop mobile browser scroll/pan gesture
       panStart(touch.clientX, touch.clientY);
       selectNode(null);
     }
-  }, { passive: true });
+  }, { passive: false });
 
   function panStart(clientX, clientY) {
     isPanning = true;
