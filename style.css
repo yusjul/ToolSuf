@@ -1195,3 +1195,53 @@ html:not(.dark) .loader-progress-container {
   70% { width: 65%; }
   100% { width: 100%; }
 }
+
+/* --- Staggered Entrance Animations for Dashboard Content --- */
+.header-nav, .hero-section, .tools-section, .features-section, footer {
+  opacity: 0;
+  transform: translateY(20px);
+  filter: blur(5px);
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header-nav {
+  transform: translateY(-20px);
+}
+
+/* When the app content is loaded */
+body.content-ready .header-nav {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  transition-delay: 0.1s;
+}
+
+body.content-ready .hero-section {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  transition-delay: 0.3s;
+}
+
+body.content-ready .tools-section {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  transition-delay: 0.5s;
+}
+
+body.content-ready .features-section {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  transition-delay: 0.7s;
+}
+
+body.content-ready footer {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  transition-delay: 0.9s;
+}

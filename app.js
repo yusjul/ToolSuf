@@ -834,10 +834,13 @@ window.addEventListener('load', () => {
   if (loader) {
     setTimeout(() => {
       loader.classList.add('fade-out');
+      document.body.classList.add('content-ready'); // Trigger staggered content entrance!
       // Remove from DOM after fade-out transition finishes
       setTimeout(() => {
         loader.remove();
       }, 500);
     }, 1600); // Allow loading animation to complete
+  } else {
+    document.body.classList.add('content-ready');
   }
 });
