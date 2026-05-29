@@ -155,6 +155,7 @@ html.dark .type-chip.active { background: rgba(10,132,255,0.15); }
   transition: border-color 0.2s, box-shadow 0.2s;
   outline: none; resize: none;
   -webkit-appearance: none;
+  appearance: none;
 }
 .apple-input:focus {
   border-color: var(--apple-blue);
