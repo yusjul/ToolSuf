@@ -679,55 +679,80 @@ html, body {
 }
 
 /* Responsive Mobile Layout & Sidebars */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .app-header {
     padding: 0 10px;
   }
   
-  .workspace-layout {
-    height: calc(100vh - 48px);
-    position: relative;
+  #toggleLeftSidebar {
+    display: none !important; /* Hide left toggle since library is a slim persistent dock */
+  }
+
+  .left-sidebar {
+    position: static !important; /* Fixed left sidebar instead of absolute slide drawer */
+    width: 56px !important;
+    display: flex !important;
+    transform: none !important;
+    visibility: visible !important;
+    box-shadow: none !important;
+    border-right: 1px solid var(--border-color);
   }
   
-  .sidebar {
+  .left-sidebar .sidebar-header {
+    display: none !important;
+  }
+  
+  .left-sidebar .node-library-list {
+    padding: 10px 4px;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .left-sidebar .library-item {
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    width: 36px;
+    height: 36px;
+    justify-content: center;
+    border-radius: 8px;
+  }
+  
+  .left-sidebar .library-item:hover {
+    background: var(--bg-secondary);
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .left-sidebar .library-title {
+    display: none !important; /* Hide labels */
+  }
+  
+  .left-sidebar .sidebar-footer {
+    display: none !important;
+  }
+
+  /* Right Sidebar is absolute slide drawer */
+  .right-sidebar {
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 0;
-    width: 250px;
+    right: 0;
+    width: 260px;
     background-color: var(--card-bg);
-    border-right: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color);
+    border-right: none;
     box-shadow: none;
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
                 visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1),
                 box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    transform: translateX(-100%);
+    transform: translateX(100%);
     visibility: hidden;
     display: flex !important;
     z-index: 90;
   }
   
-  .sidebar.collapsed {
-    transform: translateX(-100%);
-    visibility: hidden;
-    box-shadow: none;
-    display: flex !important;
-  }
-
-  .sidebar:not(.collapsed) {
-    transform: translateX(0);
-    visibility: visible;
-    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.08);
-  }
-  
-  .right-sidebar {
-    left: auto;
-    right: 0;
-    border-left: 1px solid var(--border-color);
-    border-right: none;
-    transform: translateX(100%);
-  }
-
   .right-sidebar.collapsed {
     transform: translateX(100%);
     visibility: hidden;
@@ -741,6 +766,11 @@ html, body {
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.08);
   }
   
+  .workspace-layout {
+    height: calc(100vh - 48px);
+    position: relative;
+  }
+  
   .canvas-area {
     width: 100%;
     height: 100%;
@@ -749,7 +779,20 @@ html, body {
   
   /* Make node cards slightly more compact on mobile */
   .node {
-    width: 170px;
+    width: 150px;
   }
+}
+
+/* Touch drag clone styles */
+.library-icon-clone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.library-icon-clone svg {
+  width: 18px;
+  height: 18px;
+  stroke: white;
 }
 

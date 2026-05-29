@@ -799,10 +799,12 @@ html.dark .mac-close-btn:hover {
 /* Iframe Container */
 .mac-body {
   flex-grow: 1;
-  width: 100%;
+  width: 1px;
+  min-width: 100%;
   background-color: var(--bg-primary);
   border: none;
   outline: none;
+  display: block;
 }
 
 /* Toast Notifications */

@@ -186,14 +186,17 @@ document.addEventListener('DOMContentLoaded', () => {
   setupButtonEvents();
 
   // Responsive default sidebar states for mobile/touch screens
-  if (window.innerWidth <= 768) {
+  if (window.innerWidth <= 1024) {
     const leftSidebar = document.querySelector('.left-sidebar');
     const rightSidebar = document.querySelector('.right-sidebar');
     const toggleLeft = document.getElementById('toggleLeftSidebar');
     const toggleRight = document.getElementById('toggleRightSidebar');
     
-    if (leftSidebar) leftSidebar.classList.add('collapsed');
-    if (toggleLeft) toggleLeft.classList.remove('active');
+    // Left sidebar is a persistent slim dock (56px) on mobile, should not be hidden
+    if (leftSidebar) leftSidebar.classList.remove('collapsed');
+    if (toggleLeft) toggleLeft.classList.add('active');
+    
+    // Right sidebar is a collapsible drawer, starts collapsed
     if (rightSidebar) rightSidebar.classList.add('collapsed');
     if (toggleRight) toggleRight.classList.remove('active');
   }
@@ -267,19 +270,107 @@ function toggleSettingsBlocks() {
 
 // Canvas & Drag-and-Drop Operations
 function setupCanvasEvents() {
-  // Library Drag-start
+  // Library Drag-start & Touch-drag
   document.querySelectorAll('.library-item').forEach(item => {
+    const dragType = item.getAttribute('data-node-type');
+
     item.addEventListener('dragstart', (e) => {
-      e.dataTransfer.setData('node-type', item.getAttribute('data-node-type'));
+      e.dataTransfer.setData('node-type', dragType);
     });
-    // UX: allow clicking to spawn too!
+
+    // UX: allow clicking/tapping to spawn too!
     item.addEventListener('click', () => {
-      const type = item.getAttribute('data-node-type');
-      // spawn relative to center of current viewport pan
       const rect = canvasArea.getBoundingClientRect();
-      const spawnX = (rect.width / 2) - 100 - state.panX;
+      const spawnX = (rect.width / 2) - 85 - state.panX;
       const spawnY = (rect.height / 2) - 40 - state.panY;
-      createNode(type, spawnX, spawnY);
+      createNode(dragType, spawnX, spawnY);
+    });
+
+    // Mobile touch drag logic (creates floating clone under finger)
+    let touchClone = null;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchMoved = false;
+
+    item.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchMoved = false;
+      
+      // Create a floating clone of the library icon
+      const innerIcon = item.querySelector('.library-icon');
+      if (!innerIcon) return;
+      
+      touchClone = document.createElement('div');
+      touchClone.className = `library-icon-clone ${innerIcon.className}`;
+      touchClone.innerHTML = innerIcon.innerHTML;
+      
+      // Style floating clone
+      touchClone.style.position = 'fixed';
+      touchClone.style.width = '40px';
+      touchClone.style.height = '40px';
+      touchClone.style.borderRadius = '8px';
+      touchClone.style.display = 'none'; // Hidden until dragging starts to prevent flicker
+      touchClone.style.alignItems = 'center';
+      touchClone.style.justifyContent = 'center';
+      touchClone.style.zIndex = '1000';
+      touchClone.style.pointerEvents = 'none';
+      touchClone.style.opacity = '0.9';
+      touchClone.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)';
+      
+      // Position clone exactly under finger
+      touchClone.style.left = `${touch.clientX - 20}px`;
+      touchClone.style.top = `${touch.clientY - 20}px`;
+      
+      document.body.appendChild(touchClone);
+    }, { passive: true });
+
+    item.addEventListener('touchmove', (e) => {
+      if (!touchClone) return;
+      const touch = e.touches[0];
+      
+      // Check if finger moved enough to distinguish a drag from a simple tap
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+      if (!touchMoved && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+        touchMoved = true;
+        touchClone.style.display = 'flex'; // Show clone now that we are dragging
+      }
+      
+      if (touchMoved) {
+        touchClone.style.left = `${touch.clientX - 20}px`;
+        touchClone.style.top = `${touch.clientY - 20}px`;
+        e.preventDefault(); // prevent scroll
+      }
+    }, { passive: false });
+
+    item.addEventListener('touchend', (e) => {
+      if (!touchClone) return;
+      
+      const touch = e.changedTouches[0];
+      touchClone.remove();
+      touchClone = null;
+      
+      if (!touchMoved) {
+        // It was a quick tap! Spawn node in the center of the canvas
+        const rect = canvasArea.getBoundingClientRect();
+        const spawnX = (rect.width / 2) - 85 - state.panX;
+        const spawnY = (rect.height / 2) - 40 - state.panY;
+        createNode(dragType, spawnX, spawnY);
+      } else {
+        // Check if dropped inside canvasArea boundaries
+        const canvasRect = canvasArea.getBoundingClientRect();
+        const inCanvasX = touch.clientX >= canvasRect.left && touch.clientX <= canvasRect.right;
+        const inCanvasY = touch.clientY >= canvasRect.top && touch.clientY <= canvasRect.bottom;
+        
+        if (inCanvasX && inCanvasY) {
+          const contentRect = document.getElementById('canvasContent').getBoundingClientRect();
+          const x = touch.clientX - contentRect.left - 85; // offset node width
+          const y = touch.clientY - contentRect.top - 20; // offset header
+          createNode(dragType, x, y);
+        }
+      }
     });
   });
 
@@ -407,9 +498,10 @@ function setupPinConnectionDragging() {
     const pin = e.target.closest('.pin');
     if (!pin) return;
     const touch = e.touches[0];
+    e.preventDefault(); // Prevent page scroll/pan when connecting nodes
     dragStart(pin, touch.clientX, touch.clientY);
     e.stopPropagation();
-  }, { passive: true });
+  }, { passive: false });
 
   function dragStart(pin, clientX, clientY) {
     isDragging = true;
@@ -927,13 +1019,14 @@ function setupNodeDragging(nodeEl, node) {
     if (e.touches) {
       document.addEventListener('touchmove', onTouchMove, { passive: false });
       document.addEventListener('touchend', onTouchEnd);
+      e.preventDefault(); // Stop default scroll/pan gesture
     } else {
       document.addEventListener('mousemove', onMouseMove);
       document.addEventListener('mouseup', onMouseUp);
+      e.preventDefault();
     }
     
     selectNode(node.id);
-    if (!e.touches) e.preventDefault();
     e.stopPropagation();
   }
   
