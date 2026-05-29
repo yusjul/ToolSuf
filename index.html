@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ToolSuf — Premium, Fast & Simple Productivity Tools</title>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; frame-src 'self' about:; connect-src 'self' http: https: ws: wss:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob: data:; frame-src 'self' about:; connect-src 'self' http: https: ws: wss:;">
   <meta name="description" content="Welcome to ToolSuf a premium digital space offering simple, secure, and lightning-fast desktop productivity utilities right in your browser.">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="style.css">
@@ -276,7 +276,7 @@
         </article>
 
         <!-- Card 9: QR Code Master -->
-        <article class="tool-card under-dev" data-launch="qr-code-master" tabindex="0" role="button" aria-label="Buka QR Code Master">
+        <article class="tool-card" data-launch="qr-code-master" tabindex="0" role="button" aria-label="Buka QR Code Master">
           <div class="card-top">
             <div class="card-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -286,7 +286,7 @@
                 <rect x="3" y="15" width="6" height="6"/>
               </svg>
             </div>
-            <span class="card-badge" data-i18n="comingSoon">Coming Soon</span>
+            <span class="card-badge" data-i18n="productivityBadge">Productivity</span>
           </div>
           <h3 class="card-title" data-i18n="toolQrTitle">QR Code Master</h3>
           <p class="card-desc" data-i18n="toolQrDesc">Generate and scan customized QR codes with premium Apple-style UI.</p>
@@ -434,7 +434,7 @@
           </svg>
         </button>
       </div>
-      <iframe class="mac-body" id="toolFrame" src="about:blank" data-i18n-title="iframeTitle" sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-popups"></iframe>
+      <iframe class="mac-body" id="toolFrame" src="about:blank" data-i18n-title="iframeTitle" sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-popups allow-modals"></iframe>
     </div>
   </div>
 

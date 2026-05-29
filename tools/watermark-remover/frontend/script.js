@@ -153,8 +153,7 @@ const alertBox = document.getElementById('alertBox');
 const resultSection = document.getElementById('resultSection');
 const resultVideo = document.getElementById('resultVideo');
 
-// ─── File handling ───────────────────────────────────────────────────────────
-drop.addEventListener('click', () => fileInput.click());
+// File input is an overlay — click works natively, no JS click() needed
 
 ['dragover', 'dragleave', 'drop'].forEach(ev => {
   drop.addEventListener(ev, e => e.preventDefault());
@@ -326,7 +325,6 @@ function updatePlayStatus() {
   playStatus.textContent = cur + ' / ' + dur;
 }
 
-// ─── Load file ────────────────────────────────────────────────────────────────
 function handleFile(file) {
   alertBox.style.display = 'none';
   videoFile = file;
@@ -335,11 +333,20 @@ function handleFile(file) {
   progressCard.style.display = 'none';
 
   const url = URL.createObjectURL(file);
+  
+  const onError = (e) => {
+    console.error("Video error:", srcVideo.error);
+    showAlert(tr('error') + ' (Format tidak didukung / Code: ' + (srcVideo.error ? srcVideo.error.code : 'unknown') + ')', 'err');
+    srcVideo.removeEventListener('error', onError);
+  };
+  srcVideo.addEventListener('error', onError);
+
   srcVideo.src = url;
 
   // Remove any existing listener to avoid stacking
   const onMeta = () => {
     srcVideo.removeEventListener('loadedmetadata', onMeta);
+    srcVideo.removeEventListener('error', onError);
     const w = srcVideo.videoWidth;
     const h = srcVideo.videoHeight;
     const dur = srcVideo.duration;

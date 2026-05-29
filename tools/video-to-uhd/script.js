@@ -159,7 +159,7 @@ const infoUhdBitrate = document.getElementById('infoUhdBitrate');
 let isPlaying = false;
 let rafId = null;
 
-drop.addEventListener('click', () => fileInput.click());
+// File input is an overlay — click works natively, no JS click() needed
 
 drop.addEventListener('dragover', (e) => {
   e.preventDefault();
@@ -203,9 +203,18 @@ async function handleFile(file) {
   stopPlayback();
 
   const url = URL.createObjectURL(file);
+  
+  const onError = (e) => {
+    console.error("Video error:", cmpVideo.error);
+    showAlert(t('errorFormat') + ' (Code: ' + (cmpVideo.error ? cmpVideo.error.code : 'unknown') + ')', 'err');
+    cmpVideo.removeEventListener('error', onError);
+  };
+  cmpVideo.addEventListener('error', onError);
+
   cmpVideo.src = url;
 
   cmpVideo.addEventListener('loadedmetadata', () => {
+    cmpVideo.removeEventListener('error', onError);
     const w = cmpVideo.videoWidth;
     const h = cmpVideo.videoHeight;
     const dur = cmpVideo.duration;
