@@ -134,10 +134,37 @@ a {
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.03em;
-  background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-color));
+  background: linear-gradient(135deg, var(--text-primary) 20%, var(--accent-color) 50%, var(--text-primary) 80%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   cursor: pointer;
+  
+  /* Entrance and Shimmer Animation */
+  opacity: 0;
+  animation: logoEntrance 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+             gradientShift 5s ease infinite;
+}
+
+@keyframes logoEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(-6px);
+    letter-spacing: -0.1em;
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    letter-spacing: -0.03em;
+    filter: blur(0);
+  }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .nav-links {

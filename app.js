@@ -169,6 +169,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     localStorage.setItem('theme', darkState ? 'dark' : 'light');
     isDark = darkState;
+    
+    // Update theme-color meta tag for mobile browser status bar to match theme background
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', darkState ? '#0A0A0C' : '#FCFCFD');
+    }
+    
     syncIframeTheme();
     window.dispatchEvent(new Event('theme-changed'));
   };
