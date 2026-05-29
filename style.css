@@ -137,6 +137,7 @@ a {
   background: linear-gradient(135deg, var(--text-primary) 20%, var(--accent-color) 50%, var(--text-primary) 80%);
   background-size: 200% auto;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   cursor: pointer;
   user-select: none;
@@ -273,12 +274,14 @@ html.dark .hero-section::before {
   letter-spacing: -0.04em;
   background: linear-gradient(180deg, var(--text-primary) 60%, rgba(28,28,30,0.7));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 html.dark .hero-title {
   background: linear-gradient(180deg, #FFFFFF 60%, rgba(245,245,247,0.7));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -1132,6 +1135,7 @@ html.dark .hero-canvas {
   background: linear-gradient(135deg, #FFFFFF 20%, var(--accent-color) 50%, #FFFFFF 80%);
   background-size: 200% auto;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   opacity: 0;
   animation: loaderLogoReveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards,
@@ -1165,6 +1169,7 @@ html:not(.dark) .loader-logo {
   background: linear-gradient(135deg, var(--text-primary) 20%, var(--accent-color) 50%, var(--text-primary) 80%);
   background-size: 200% auto;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 html:not(.dark) .loader-progress-container {
