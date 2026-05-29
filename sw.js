@@ -7,7 +7,10 @@ const ASSETS_TO_CACHE = [
   'manifest.json',
   'tools/ai-workflow-assistant/index.html',
   'tools/ai-workflow-assistant/style.css',
-  'tools/ai-workflow-assistant/script.js'
+  'tools/ai-workflow-assistant/script.js',
+  'tools/web-monitor/index.html',
+  'tools/web-monitor/style.css',
+  'tools/web-monitor/script.js'
 ];
 
 // Install Event: cache static assets

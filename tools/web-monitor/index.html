@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Monitor — ToolSuf</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme"> <!-- Controlled dynamically by parent postMessage -->
+  <div class="monitor-container animate-fade-in">
+    
+    <!-- Top Dashboard Header with Stats -->
+    <header class="monitor-header">
+      <div class="header-left">
+        <h1 data-i18n="toolTitle">Pemantau Situs Web</h1>
+        <p class="header-subtitle" data-i18n="toolSubtitle">Monitor ketersediaan & latensi situs secara privat</p>
+      </div>
+      <div class="header-right">
+        <button id="addSiteBtn" class="btn-action primary-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span data-i18n="addSite">Tambah Situs</span>
+        </button>
+        <button id="muteAllBtn" class="btn-action icon-only-btn" title="Mute Alarms">
+          <svg id="muteIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs (Apple Segmented Control Style) -->
+    <nav class="segmented-control">
+      <button class="control-item active" id="tabWebsites" data-i18n="tabWebsites">Pemantau Situs</button>
+      <button class="control-item" id="tabAnalytics" data-i18n="tabAnalytics">Analisis Penggunaan</button>
+    </nav>
+
+    <!-- Sites Metrics Bar -->
+    <section class="metrics-grid" id="sitesMetricsRow">
+      <div class="metric-card">
+        <div class="metric-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+          </svg>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label" data-i18n="metricTotal">Total Situs</span>
+          <span id="metricTotalVal" class="metric-value">0</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label" data-i18n="metricOnline">Online</span>
+          <span id="metricOnlineVal" class="metric-value text-green">0</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label" data-i18n="metricOffline">Offline</span>
+          <span id="metricOfflineVal" class="metric-value text-red">0</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label" data-i18n="metricLatency">Avg Latensi</span>
+          <span id="metricLatencyVal" class="metric-value">0 ms</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Analytics Metrics Bar -->
+    <section class="metrics-grid" id="analyticsMetricsRow" style="display: none;">
+      <div class="metric-card">
+        <div class="metric-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label" data-i18n="metricTotalLaunches">Total Dibuka</span>
+          <span id="metricTotalLaunchesVal" class="metric-value">0</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label" data-i18n="metricPopularTool">Alat Terpopuler</span>
+          <span id="metricPopularToolVal" class="metric-value text-green" style="font-size: 13px; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;" title="-">-</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label" data-i18n="metricLastActiveTool">Terakhir Digunakan</span>
+          <span id="metricLastActiveToolVal" class="metric-value text-orange" style="font-size: 13px; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;" title="-">-</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label" data-i18n="metricTrackingState">Status Pelacakan</span>
+          <span id="metricTrackingStateVal" class="metric-value text-red" data-i18n="trackingLocal">Lokal</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Workspace Layout - Websites -->
+    <main class="monitor-workspace tab-content active" id="workspaceWebsites">
+      <!-- Sites Grid -->
+      <section class="sites-section">
+        <div class="section-title-bar">
+          <h2 data-i18n="monitoredList">Situs yang Dipantau</h2>
+          <div class="title-bar-actions">
+            <button id="exportSitesBtn" class="btn-link" data-i18n="exportSites">Ekspor</button>
+            <button id="importSitesBtn" class="btn-link" data-i18n="importSites">Impor</button>
+            <button id="resetDefaultsBtn" class="btn-link" data-i18n="resetDefaults">Reset ke Contoh</button>
+          </div>
+        </div>
+        <div id="sitesGrid" class="sites-grid">
+          <!-- Site cards will be loaded here dynamically -->
+          <div class="empty-state" id="emptyState">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p data-i18n="noSites">Belum ada situs yang dipantau. Tambahkan situs pertama Anda!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- History & Logs Panel -->
+      <aside class="logs-section">
+        <div class="section-title-bar">
+          <h2 data-i18n="historyLogs">Log Aktivitas</h2>
+          <button id="clearLogsBtn" class="btn-link" data-i18n="clearLogs">Bersihkan</button>
+        </div>
+        <div class="logs-container">
+          <div id="logsList" class="logs-list">
+            <!-- Logs will appear here -->
+            <div class="empty-logs" id="emptyLogs" data-i18n="noLogs">Belum ada aktivitas log.</div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Main Workspace Layout - User Analytics -->
+    <main class="monitor-workspace tab-content" id="workspaceAnalytics" style="display: none;">
+      <!-- Chart Panel -->
+      <section class="sites-section">
+        <div class="section-title-bar">
+          <h2 data-i18n="usageChartTitle">Grafik Penggunaan Alat</h2>
+          <button id="resetAnalyticsBtn" class="btn-link" style="color: var(--color-red);" data-i18n="resetAnalytics">Reset Statistik</button>
+        </div>
+        <div class="chart-card-container">
+          <canvas id="usageChartCanvas"></canvas>
+        </div>
+      </section>
+
+      <!-- Recent Launch History Panel -->
+      <aside class="logs-section">
+        <div class="section-title-bar">
+          <h2 data-i18n="recentToolActivity">Log Penggunaan Alat</h2>
+        </div>
+        <div class="logs-container">
+          <div id="analyticsLogsList" class="logs-list">
+            <!-- Analytics logs will appear here -->
+            <div class="empty-logs" id="emptyAnalyticsLogs" data-i18n="noAnalyticsLogs">Belum ada aktivitas alat.</div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Add/Edit Site Modal Dialog (Apple macOS style sheet) -->
+  <div class="modal-backdrop" id="siteModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 id="modalTitle" data-i18n="addSiteTitle">Tambah Situs</h3>
+        <button id="closeModalBtn" class="modal-close-btn" aria-label="Tutup">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <form id="siteForm" class="modal-body" novalidate>
+        <input type="hidden" id="editSiteId" value="">
+        
+        <div class="form-group">
+          <label for="siteName" data-i18n="labelName">Nama Situs</label>
+          <input type="text" id="siteName" placeholder="Contoh: Google" required autocomplete="off">
+        </div>
+        
+        <div class="form-group">
+          <label for="siteUrl" data-i18n="labelUrl">Alamat URL</label>
+          <input type="url" id="siteUrl" placeholder="https://google.com" required autocomplete="off">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="siteInterval" data-i18n="labelInterval">Interval Cek</label>
+            <select id="siteInterval">
+              <option value="10000" data-i18n="int10s">10 Detik</option>
+              <option value="30000" selected data-i18n="int30s">30 Detik</option>
+              <option value="60000" data-i18n="int1m">1 Menit</option>
+              <option value="300000" data-i18n="int5m">5 Menit</option>
+              <option value="900000" data-i18n="int15m">15 Menit</option>
+            </select>
+          </div>
+          <div class="form-group half">
+            <label for="siteMethod" data-i18n="labelMethod">Metode Cek</label>
+            <select id="siteMethod">
+              <option value="nocors" selected data-i18n="methodNocors">Standar (No-CORS)</option>
+              <option value="proxy" data-i18n="methodProxy">Proksi CORS</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group proxy-input-group hidden" id="proxyInputGroup">
+          <label for="siteProxy" data-i18n="labelProxy">Proksi URL (Opsional)</label>
+          <input type="url" id="siteProxy" placeholder="https://api.allorigins.win/get?url=" autocomplete="off">
+        </div>
+
+        <div class="form-group alerts-checkbox-group">
+          <label data-i18n="labelAlerts">Aktifkan Alarm</label>
+          <div class="checkbox-options">
+            <label class="checkbox-container">
+              <input type="checkbox" id="alertSound" checked>
+              <span class="checkbox-checkmark"></span>
+              <span class="checkbox-text" data-i18n="alertSoundLabel">Alarm Suara</span>
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" id="alertPush" checked>
+              <span class="checkbox-checkmark"></span>
+              <span class="checkbox-text" data-i18n="alertPushLabel">Notifikasi Push</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="cancelModalBtn" class="btn-action secondary-btn" data-i18n="cancelBtn">Batal</button>
+          <button type="submit" class="btn-action primary-btn" data-i18n="saveBtn">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <input type="file" id="importFileInput" accept=".json" style="display: none;">
+  <script src="script.js"></script>
+</body>
+</html>

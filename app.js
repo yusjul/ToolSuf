@@ -384,6 +384,42 @@ document.addEventListener('DOMContentLoaded', () => {
       src: 'tools/metadata-cleaner/index.html',
       wide: false,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><circle cx="12" cy="14" r="3"></circle><line x1="12" y1="14" x2="12" y2="14.01"></line></svg>`
+    },
+    'web-monitor': {
+      titleEn: 'Web Monitor',
+      titleId: 'Pemantau Situs Web',
+      src: 'tools/web-monitor/index.html',
+      wide: true,
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`
+    }
+  };
+
+  const trackToolLaunch = (toolKey) => {
+    try {
+      let data = localStorage.getItem('toolsuf_analytics');
+      if (data) {
+        data = JSON.parse(data);
+      } else {
+        data = { launchCount: {}, history: [] };
+      }
+      if (!data.launchCount) data.launchCount = {};
+      if (!data.history) data.history = [];
+      
+      data.launchCount[toolKey] = (data.launchCount[toolKey] || 0) + 1;
+      
+      const now = new Date().toISOString();
+      data.history.unshift({ tool: toolKey, time: now });
+      if (data.history.length > 30) {
+        data.history.pop();
+      }
+      localStorage.setItem('toolsuf_analytics', JSON.stringify(data));
+      
+      // Notify running web-monitor if iframe is active
+      if (toolFrame && toolFrame.contentWindow) {
+        toolFrame.contentWindow.postMessage({ type: 'syncAnalytics' }, '*');
+      }
+    } catch (e) {
+      console.warn('Analytics tracking error:', e);
     }
   };
 
@@ -392,6 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!config) return;
 
     activeTool = toolKey;
+    trackToolLaunch(toolKey);
 
     // Set title using current language
     const title = currentLang === 'id' ? config.titleId : config.titleEn;
@@ -449,7 +486,42 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
       closeTool();
     }
+    // Ctrl + Shift + M to open Web Monitor
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'm') {
+      e.preventDefault();
+      openTool('web-monitor');
+    }
   });
+
+  // Secret Logo Trigger (Triple-click / tap)
+  const logoEl = document.querySelector('.header-container .logo');
+  if (logoEl) {
+    let logoClickCount = 0;
+    let logoClickTimeout = null;
+
+    const handleLogoTap = (e) => {
+      // Prevent browser default touch behavior (like double-tap zoom)
+      if (e.type === 'touchstart') {
+        e.preventDefault();
+      }
+      
+      logoClickCount++;
+      if (logoClickCount === 1) {
+        logoClickTimeout = setTimeout(() => {
+          logoClickCount = 0;
+          // Smooth scroll to top for single click/tap
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 600); // 600ms time window for triple tap
+      } else if (logoClickCount === 3) {
+        if (logoClickTimeout) clearTimeout(logoClickTimeout);
+        logoClickCount = 0;
+        openTool('web-monitor');
+      }
+    };
+
+    logoEl.addEventListener('click', handleLogoTap);
+    logoEl.addEventListener('touchstart', handleLogoTap, { passive: false });
+  }
 
   // Handle "Coming Soon" tool cards
   document.querySelectorAll('.coming-soon').forEach(card => {

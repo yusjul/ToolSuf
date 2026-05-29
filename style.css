@@ -139,6 +139,9 @@ a {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
   
   /* Entrance and Shimmer Animation */
   opacity: 0;
