@@ -1,0 +1,18 @@
+{
+  "name": "ToolSuf",
+  "short_name": "ToolSuf",
+  "description": "Premium, Fast & Simple Productivity Tools",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#FCFCFD",
+  "theme_color": "#007AFF",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
