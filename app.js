@@ -209,6 +209,13 @@ document.addEventListener('DOMContentLoaded', () => {
     syncIframeLang();
   });
 
+  // Listen to message events from iframe (cross-origin safe)
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'showToast') {
+      showToast(e.data.message);
+    }
+  });
+
   // --- Translation Controller (i18n) ---
   const applyLanguage = (lang) => {
     currentLang = lang;

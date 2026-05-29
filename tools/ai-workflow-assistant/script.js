@@ -1130,20 +1130,12 @@ function loadCanvasState() {
   }
 }
 
-// Custom simple Toast system
+// Custom simple Toast system using postMessage (cross-origin safe)
 function showToast(message) {
-  // Let parent handle it if integrated, or fallback to native alert/console
-  const parentToast = window.parent.document.getElementById('toast');
-  const parentText = window.parent.document.getElementById('toastText');
-  if (parentToast && parentText) {
-    parentText.textContent = message;
-    parentToast.classList.add('active');
-    setTimeout(() => {
-      parentToast.classList.remove('active');
-    }, 3000);
-  } else {
-    // Local tool console/toast fallback
-    console.log('[Toast]', message);
+  try {
+    window.parent.postMessage({ type: 'showToast', message: message }, '*');
+  } catch (e) {
+    console.log('[Toast Fallback]', message);
   }
 }
 
@@ -1248,8 +1240,8 @@ async function processNode(node, inputContext) {
       outputPreviewBox.style.display = 'flex';
       
       if (format === 'markdown') {
-        // Safe minimal render fallback for marked
-        mdPreview.innerHTML = parseMarkdown(inputContext);
+        // Safe HTML-escaped render to prevent XSS from AI output content
+        mdPreview.innerHTML = parseMarkdown(escapeHtml(inputContext));
       } else {
         // Plain text raw
         mdPreview.innerHTML = `<pre style="white-space:pre-wrap;">${escapeHtml(inputContext)}</pre>`;
