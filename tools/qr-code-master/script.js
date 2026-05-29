@@ -23,6 +23,7 @@ const T = {
     labelOrg: 'Perusahaan', labelText: 'Teks Bebas',
     labelSigner: 'Nama Penandatangan', labelTitle: 'Jabatan / Keterangan',
     labelDocName: 'Nama / No. Dokumen', labelSigDate: 'Tanggal', labelSigHash: 'Kode Unik / Hash',
+    labelDrawSig: 'Coret Tanda Tangan (Opsional)', btnClear: 'Bersihkan',
     labelDotStyle: 'Gaya Piksel', dsSquare: 'Kotak', dsRounded: 'Bulat', dsDots: 'Titik',
     labelFgColor: 'Warna QR', labelBgColor: 'Warna Latar',
     labelSize: 'Ukuran QR', labelMargin: 'Margin', labelEcc: 'Koreksi Error', labelLogo: 'Logo Tengah',
@@ -56,6 +57,7 @@ const T = {
     labelOrg: 'Company', labelText: 'Free Text',
     labelSigner: 'Signer Name', labelTitle: 'Title / Role',
     labelDocName: 'Document Name / No.', labelSigDate: 'Date', labelSigHash: 'Unique Hash / Code',
+    labelDrawSig: 'Draw Signature (Optional)', btnClear: 'Clear',
     labelDotStyle: 'Pixel Style', dsSquare: 'Square', dsRounded: 'Rounded', dsDots: 'Dots',
     labelFgColor: 'QR Color', labelBgColor: 'Background',
     labelSize: 'QR Size', labelMargin: 'Margin', labelEcc: 'Error Correction', labelLogo: 'Center Logo',
@@ -256,6 +258,60 @@ function buildQrDataSilent() {
   return null;
 }
 
+/* ── Signature Pad Global State & Helpers ── */
+let sigCanvas = null;
+let sigCtx = null;
+let isDrawing = false;
+let hasDrawn = false;
+let lastX = 0;
+let lastY = 0;
+
+function updateSignatureLogoSilent() {
+  if (!sigCanvas || !hasDrawn) return;
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = sigCanvas.width;
+  tempCanvas.height = sigCanvas.height;
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCtx.drawImage(sigCanvas, 0, 0);
+  tempCtx.globalCompositeOperation = 'source-in';
+  tempCtx.fillStyle = state.fgColor || '#1C1C1E';
+  tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+  state.logoDataUrl = tempCanvas.toDataURL('image/png');
+  state.logo = 'custom';
+}
+
+function updateSignatureLogo() {
+  if (!sigCanvas) return;
+  if (!hasDrawn) {
+    if (state.logo === 'custom' && state.logoDataUrl) {
+      state.logo = 'none';
+      state.logoDataUrl = null;
+      livePreview();
+    }
+    return;
+  }
+  updateSignatureLogoSilent();
+  // Force ECC level H for logo overlays
+  document.querySelectorAll('#ecc-ctrl .seg-btn').forEach(b => b.classList.remove('active'));
+  const eccH = document.getElementById('ecc-h');
+  if (eccH) eccH.classList.add('active');
+  state.ecc = 'H';
+  livePreview();
+}
+
+function resizeSigCanvas() {
+  if (!sigCanvas || !sigCtx) return;
+  const rect = sigCanvas.getBoundingClientRect();
+  if (rect.width === 0) return; // not visible yet
+  sigCanvas.width = rect.width * window.devicePixelRatio;
+  sigCanvas.height = rect.height * window.devicePixelRatio;
+  sigCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  sigCtx.strokeStyle = state.fgColor || '#1C1C1E';
+  sigCtx.lineWidth = 3;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+}
+
 /* ── Live Preview ── */
 let lpDebounceTimer = null;
 const LP_SIZE = 180; // preview canvas size in px
@@ -264,6 +320,11 @@ function livePreview() {
   clearTimeout(lpDebounceTimer);
   // Show pulse immediately
   document.getElementById('lp-canvas-bg')?.classList.add('updating');
+  
+  if (state.type === 'signature' && hasDrawn) {
+    updateSignatureLogoSilent();
+  }
+  
   lpDebounceTimer = setTimeout(renderLivePreview, 420);
 }
 
@@ -810,6 +871,21 @@ document.addEventListener('DOMContentLoaded', () => {
       state.type = chip.dataset.type;
       document.querySelectorAll('.form-panel').forEach(f => f.classList.remove('active'));
       document.getElementById('form-' + state.type).classList.add('active');
+      
+      // Handle signature canvas initialize / logo state reset
+      if (state.type === 'signature') {
+        setTimeout(resizeSigCanvas, 50);
+        if (hasDrawn) {
+          state.logo = 'custom';
+          updateSignatureLogoSilent();
+        }
+      } else {
+        if (hasDrawn && state.logo === 'custom') {
+          state.logo = 'none';
+          state.logoDataUrl = null;
+        }
+      }
+      
       livePreview();
     });
   });
@@ -1007,4 +1083,76 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(t('toastCopied'));
     } catch { showToast(t('toastCopied')); }
   });
+
+  // ── Signature Drawing Pad ──
+  sigCanvas = document.getElementById('signature-pad');
+  sigCtx = sigCanvas ? sigCanvas.getContext('2d') : null;
+
+  function getMousePos(canvasDom, e) {
+    const rect = canvasDom.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  }
+
+  function startDrawing(e) {
+    if (!sigCtx) return;
+    isDrawing = true;
+    const pos = getMousePos(sigCanvas, e);
+    lastX = pos.x;
+    lastY = pos.y;
+    hasDrawn = true;
+    sigCtx.strokeStyle = state.fgColor || '#1C1C1E';
+  }
+
+  function draw(e) {
+    if (!isDrawing || !sigCtx) return;
+    e.preventDefault();
+    const pos = getMousePos(sigCanvas, e);
+    
+    sigCtx.beginPath();
+    sigCtx.moveTo(lastX, lastY);
+    sigCtx.lineTo(pos.x, pos.y);
+    sigCtx.stroke();
+    
+    lastX = pos.x;
+    lastY = pos.y;
+  }
+
+  function stopDrawing() {
+    if (isDrawing) {
+      isDrawing = false;
+      updateSignatureLogo();
+    }
+  }
+
+  if (sigCanvas) {
+    // Mouse Events
+    sigCanvas.addEventListener('mousedown', startDrawing);
+    sigCanvas.addEventListener('mousemove', draw);
+    sigCanvas.addEventListener('mouseup', stopDrawing);
+    sigCanvas.addEventListener('mouseleave', stopDrawing);
+    
+    // Touch Events
+    sigCanvas.addEventListener('touchstart', startDrawing, { passive: false });
+    sigCanvas.addEventListener('touchmove', draw, { passive: false });
+    sigCanvas.addEventListener('touchend', stopDrawing);
+  }
+
+  const btnClearSig = document.getElementById('btn-clear-sig');
+  if (btnClearSig) {
+    btnClearSig.addEventListener('click', () => {
+      if (!sigCanvas || !sigCtx) return;
+      sigCtx.clearRect(0, 0, sigCanvas.width / window.devicePixelRatio, sigCanvas.height / window.devicePixelRatio);
+      hasDrawn = false;
+      state.logo = 'none';
+      state.logoDataUrl = null;
+      livePreview();
+    });
+  }
+
+  window.addEventListener('resize', resizeSigCanvas);
 });

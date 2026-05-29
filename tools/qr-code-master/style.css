@@ -583,6 +583,48 @@ html.dark .lp-canvas-bg {
 }
 .privacy-badge svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 
+/* ── Signature Pad ── */
+.signature-pad-wrap {
+  position: relative;
+  border: 1.5px dashed var(--apple-separator);
+  border-radius: 12px;
+  background: var(--input-bg);
+  overflow: hidden;
+  height: 120px;
+  margin-top: 4px;
+}
+#signature-pad {
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  display: block;
+}
+#btn-clear-sig {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, background 0.2s;
+  font-family: var(--font-display);
+}
+#btn-clear-sig:hover {
+  background: rgba(0,0,0,0.8);
+}
+html.dark #btn-clear-sig {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+html.dark #btn-clear-sig:hover {
+  background: rgba(255,255,255,0.35);
+}
+
 /* Toast */
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
