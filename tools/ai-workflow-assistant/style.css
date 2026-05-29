@@ -727,16 +727,27 @@ html, body {
     width: 250px;
     background-color: var(--card-bg);
     border-right: 1px solid var(--border-color);
-    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    transform: translateX(0);
-    display: flex !important; /* Keep flex to slide */
+    box-shadow: none;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateX(-100%);
+    visibility: hidden;
+    display: flex !important;
     z-index: 90;
   }
   
   .sidebar.collapsed {
     transform: translateX(-100%);
+    visibility: hidden;
+    box-shadow: none;
     display: flex !important;
+  }
+
+  .sidebar:not(.collapsed) {
+    transform: translateX(0);
+    visibility: visible;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.08);
   }
   
   .right-sidebar {
@@ -744,13 +755,20 @@ html, body {
     right: 0;
     border-left: 1px solid var(--border-color);
     border-right: none;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.08);
-    transform: translateX(0);
+    transform: translateX(100%);
   }
-  
+
   .right-sidebar.collapsed {
     transform: translateX(100%);
+    visibility: hidden;
+    box-shadow: none;
     display: flex !important;
+  }
+
+  .right-sidebar:not(.collapsed) {
+    transform: translateX(0);
+    visibility: visible;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.08);
   }
   
   .canvas-area {
