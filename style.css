@@ -1093,3 +1093,105 @@ html.dark .hero-canvas {
     color: rgba(255, 255, 255, 0.9) !important;
   }
 }
+
+/* --- Premium Cinematic Splash Screen Loader (Netflix/Vidio Style) --- */
+.app-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: #0A0A0C; /* Dark background for cinematic entry */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-loader.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.loader-logo {
+  font-family: var(--font-display);
+  font-size: 54px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, #FFFFFF 20%, var(--accent-color) 50%, #FFFFFF 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0;
+  animation: loaderLogoReveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+             gradientShift 4s ease infinite;
+}
+
+.loader-progress-container {
+  width: 140px;
+  height: 3px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.loader-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-color), #00C6FF);
+  border-radius: 99px;
+  box-shadow: 0 0 8px var(--accent-color);
+  animation: loaderProgress 1.6s cubic-bezier(0.1, 0.85, 0.25, 1) forwards;
+}
+
+/* Light Mode dynamic loader background adaptation */
+html:not(.dark) .app-loader {
+  background-color: #FCFCFD;
+}
+html:not(.dark) .loader-logo {
+  background: linear-gradient(135deg, var(--text-primary) 20%, var(--accent-color) 50%, var(--text-primary) 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+html:not(.dark) .loader-progress-container {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+@keyframes loaderLogoReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(10px);
+    letter-spacing: -0.12em;
+    filter: blur(12px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.04) translateY(0);
+    letter-spacing: -0.04em;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    letter-spacing: -0.04em;
+    filter: blur(0);
+  }
+}
+
+@keyframes loaderProgress {
+  0% { width: 0%; }
+  40% { width: 15%; }
+  70% { width: 65%; }
+  100% { width: 100%; }
+}

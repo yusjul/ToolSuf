@@ -827,3 +827,17 @@ if ('serviceWorker' in navigator) {
       .catch((err) => console.error('Service Worker registration failed:', err));
   });
 }
+
+// Handle Cinematic Splash Screen Loader
+window.addEventListener('load', () => {
+  const loader = document.getElementById('appLoader');
+  if (loader) {
+    setTimeout(() => {
+      loader.classList.add('fade-out');
+      // Remove from DOM after fade-out transition finishes
+      setTimeout(() => {
+        loader.remove();
+      }, 500);
+    }, 1600); // Allow loading animation to complete
+  }
+});
