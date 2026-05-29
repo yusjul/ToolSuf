@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
       toolRenameTitle: 'Batch Renamer Pro',
       toolImgToPdfTitle: 'Image to PDF',
       toolPdfToDocsTitle: 'PDF to Docs',
-      toolVideoToUhdTitle: 'Video to UHD',
+      toolVideoToUhdTitle: 'UHD Video Upscaler',
     },
     id: {
       navHome: 'Beranda',
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
       toastLangChange: 'Bahasa diubah ke Bahasa Indonesia',
       toolPassDesc: 'Buat kata sandi aman dengan antarmuka bergaya Apple.',
       toolRenameDesc: 'Ubah nama banyak file dengan gaya utilitas macOS.',
-      toolAiTitle: 'AI Workflow Assistant',
+      toolAiTitle: 'Asisten Alur Kerja AI',
       toolAiDesc: 'Otomatisasi cerdas untuk tugas-tugas berulang.',
       mediaBadge: 'Media',
       toolCompressTitle: 'Kompresor Media',
@@ -114,16 +114,16 @@ document.addEventListener('DOMContentLoaded', () => {
       toolBgRemoverTitle: 'Penghapus Latar',
       toolImgToPdfTitle: 'Gambar ke PDF',
       toolPdfToDocsTitle: 'PDF ke Dokumen',
-      toolVideoToUhdTitle: 'Video ke UHD',
+      toolVideoToUhdTitle: 'Peningkat Video UHD',
       toolBgRemoverDesc: 'Hapus latar belakang gambar secara offline dengan AI browser.',
       toolImgToPdfDesc: 'Konversi gambar ke PDF dengan antarmuka bergaya Apple.',
       toolPdfToDocsDesc: 'Konversi PDF ke dokumen Word dengan antarmuka bergaya Apple.',
       toolVideoToUhdDesc: 'Tingkatkan resolusi video ke UHD 4K dengan antarmuka bergaya Apple.',
       toolWatermarkTitle: 'Hapus Watermark Video',
       toolWatermarkDesc: 'Hapus watermark video dengan deteksi manual atau otomatis.',
-      toolQrTitle: 'QR Code Master',
+      toolQrTitle: 'Master Kode QR',
       toolQrDesc: 'Buat dan pindai QR Code kustom dengan antarmuka premium bergaya Apple.',
-      toolMetaTitle: 'Metadata Cleaner',
+      toolMetaTitle: 'Penghapus Metadata',
       toolMetaDesc: 'Hapus metadata EXIF dan lokasi GPS dari gambar secara lokal.',
       copyright: '© 2026 ToolSuf. Dibuat presisi untuk pengguna ahli.',
       privacy: 'Kebijakan Privasi',
@@ -345,8 +345,8 @@ document.addEventListener('DOMContentLoaded', () => {
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M16 18H8"/><path d="M16 12H8"/><path d="M8 6h2"/></svg>`
     },
     'video-to-uhd': {
-      titleEn: 'Video to UHD',
-      titleId: 'Video ke UHD',
+      titleEn: 'UHD Video Upscaler',
+      titleId: 'Peningkat Video UHD',
       src: 'tools/video-to-uhd/index.html',
       wide: false,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`
@@ -360,14 +360,14 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     'qr-code-master': {
       titleEn: 'QR Code Master',
-      titleId: 'QR Code Master',
+      titleId: 'Master Kode QR',
       src: 'tools/qr-code-master/index.html',
       wide: false,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><rect x="15" y="3" width="6" height="6"></rect><rect x="3" y="15" width="6" height="6"></rect></svg>`
     },
     'ai-workflow-assistant': {
       titleEn: 'AI Workflow Assistant',
-      titleId: 'AI Workflow Assistant',
+      titleId: 'Asisten Alur Kerja AI',
       src: 'tools/ai-workflow-assistant/index.html',
       wide: false,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg>`
