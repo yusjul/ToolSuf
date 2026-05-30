@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Metadata Cleaner</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -22,109 +24,112 @@
       <p class="subtitle" data-i18n="subtitle">Offline EXIF Stripper & Privacy Suite</p>
     </div>
 
-    <!-- Status Banner (Under Development) -->
+    <!-- Drag-and-Drop Workspace -->
     <section class="mac-section">
-      <div class="status-banner">
-        <div class="status-badge">
-          <span class="pulse-dot"></span>
-          <span data-i18n="statusActive">DIKEMBANGKAN</span>
-        </div>
-        <p class="status-text" data-i18n="statusText">Fitur ini sedang dalam pengembangan aktif dan akan segera hadir dengan fungsionalitas penuh.</p>
-      </div>
-    </section>
-
-    <!-- Visual Mockup Finder Inspector -->
-    <section class="mac-section">
-      <div class="mac-section-header" data-i18n="inspectorPreview">PRATINJAU INSPEKTUR METADATA</div>
-      <div class="inspector-mockup">
-        <div class="mock-file-header">
-          <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-content">
+          <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
             <circle cx="8.5" cy="8.5" r="1.5"/>
             <polyline points="21 15 16 10 5 21"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="9" y1="11" x2="15" y2="11"/>
           </svg>
+          <p class="dropzone-text" data-i18n="dropPrompt">Seret & lepas foto di sini atau klik untuk memilih</p>
+          <p class="dropzone-sub" data-i18n="supportedFormats">Mendukung JPEG, PNG, dan WebP</p>
+        </div>
+        <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,image/webp" style="display: none;">
+      </div>
+    </section>
+
+    <!-- Uploaded Files List -->
+    <section class="mac-section" id="fileListSection" style="display: none;">
+      <div class="mac-section-header" data-i18n="uploadedFiles">DAFTAR GAMBAR</div>
+      <div class="file-list" id="fileList"></div>
+    </section>
+
+    <!-- Finder Inspector (Get Info) -->
+    <section class="mac-section" id="inspectorSection">
+      <div class="mac-section-header" data-i18n="inspectorPreview">INSPEKTUR METADATA</div>
+      
+      <!-- Empty State -->
+      <div class="inspector-empty" id="inspectorEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <p data-i18n="lblNoFile">Pilih gambar untuk melihat detail</p>
+      </div>
+
+      <!-- Real Inspector Panel -->
+      <div class="inspector-mockup" id="inspectorPanel" style="display: none;">
+        <div class="mock-file-header">
+          <div class="file-thumb-container">
+            <img class="file-preview-thumb" id="previewThumb" src="" alt="Preview">
+          </div>
           <div class="file-name-size">
-            <span class="file-name">IMG_94821.JPG</span>
-            <span class="file-size">4.2 MB</span>
+            <span class="file-name" id="previewName">filename.jpg</span>
+            <span class="file-size" id="previewSize">0.0 MB</span>
           </div>
         </div>
 
         <div class="divider"></div>
 
-        <div class="info-rows">
-          <div class="info-row">
-            <span class="info-key" data-i18n="lblCamera">Kamera:</span>
-            <span class="info-val">iPhone 15 Pro (24mm, f/1.78)</span>
-          </div>
-          <div class="info-row">
-            <span class="info-key" data-i18n="lblDate">Tanggal:</span>
-            <span class="info-val">25 Mei 2026, 14:32:01</span>
-          </div>
-          <div class="info-row warning">
-            <span class="info-key" data-i18n="lblLocation">Lokasi GPS:</span>
-            <span class="info-val">Jakarta, ID (-6.2088, 106.8456)</span>
-          </div>
+        <div class="info-rows" id="infoRows">
+          <!-- Populated dynamically via JS -->
         </div>
 
-        <div class="alert-box">
+        <div class="alert-box" id="gpsAlert" style="display: none;">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
             <line x1="12" y1="9" x2="12" y2="13"/>
             <line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
-          <span data-i18n="warningMsg">GPS terdeteksi! Siap dibersihkan.</span>
+          <span id="gpsAlertText" data-i18n="warningMsg">GPS terdeteksi! Siap dibersihkan.</span>
+        </div>
+
+        <!-- Canvas Map Preview -->
+        <div class="map-widget-container" id="mapWidget" style="display: none;">
+          <div class="map-widget-header" data-i18n="locationMap">Visualisasi GPS Offline</div>
+          <div class="canvas-wrapper">
+            <canvas id="mapCanvas" width="450" height="220"></canvas>
+            <div class="coordinate-tag" id="coordTag">0.0000, 0.0000</div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Planned Features Grid -->
-    <section class="mac-section">
-      <div class="mac-section-header" data-i18n="plannedFeatures">FITUR YANG DIRENCANAKAN</div>
-      <div class="features-list">
+    <!-- Actions -->
+    <section class="mac-section actions-section" id="actionsSection" style="display: none;">
+      <div class="action-buttons">
+        <button class="btn btn-primary" id="btnCleanActive">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          <span data-i18n="btnClean">Bersihkan & Unduh</span>
+        </button>
         
-        <!-- Feature 1 -->
-        <div class="feat-card">
-          <div class="feat-icon" style="background:#FF3B30">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </div>
-          <div class="feat-info">
-            <h3 class="feat-title" data-i18n="feat1Title">Hapus GPS & Info Kamera</h3>
-            <p class="feat-desc" data-i18n="feat1Desc">Hapus koordinat lokasi GPS sensitif, nama kamera, pengaturan ISO, dan tanggal pengambilan gambar secara instan.</p>
-          </div>
-        </div>
-
-        <!-- Feature 2 -->
-        <div class="feat-card">
-          <div class="feat-icon" style="background:#34C759">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-              <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-          </div>
-          <div class="feat-info">
-            <h3 class="feat-title" data-i18n="feat2Title">Kompresi Bebas Kerugian</h3>
-            <p class="feat-desc" data-i18n="feat2Desc">Membersihkan file gambar tanpa melakukan kompresi ulang piksel gambar, menjaga kualitas foto 100% utuh.</p>
-          </div>
-        </div>
-
-        <!-- Feature 3 -->
-        <div class="feat-card">
-          <div class="feat-icon" style="background:#007AFF">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-          </div>
-          <div class="feat-info">
-            <h3 class="feat-title" data-i18n="feat3Title">Penghapusan Massal & ZIP</h3>
-            <p class="feat-desc" data-i18n="feat3Desc">Unggah puluhan gambar sekaligus, bersihkan bersama-sama, dan unduh hasilnya dalam satu file ZIP yang ringkas.</p>
-          </div>
-        </div>
-
+        <button class="btn btn-secondary" id="btnCleanAll" style="display: none;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span data-i18n="btnCleanAll">Bersihkan Semua & Unduh ZIP</span>
+        </button>
+        
+        <button class="btn btn-danger" id="btnClearList">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+          <span data-i18n="btnClear">Kosongkan Daftar</span>
+        </button>
       </div>
     </section>
 
