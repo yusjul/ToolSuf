@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Open iframe src with language param
-    toolFrame.src = config.src + '?lang=' + currentLang;
+    toolFrame.src = config.src + '?lang=' + currentLang + '&t=' + Date.now();
 
     // Display Modal
     modalOverlay.classList.add('active');

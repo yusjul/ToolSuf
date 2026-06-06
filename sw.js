@@ -1,4 +1,4 @@
-const CACHE_NAME = 'toolsuf-cache-v2';
+const CACHE_NAME = 'toolsuf-cache-v3';
 const ASSETS_TO_CACHE = [
   'index.html',
   'style.css',
@@ -37,30 +37,30 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// Fetch Event: Cache First, Fallback to Network
+// Fetch Event: Network First, Fallback to Cache
 self.addEventListener('fetch', (e) => {
-  // Only handle HTTP/HTTPS requests (ignores chrome-extension, file:// etc.)
+  // Only handle same-origin requests
   if (!e.request.url.startsWith(self.location.origin)) {
     return;
   }
 
   e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
+    fetch(e.request).then((networkResponse) => {
+      // Cache fresh responses for offline fallback
+      if (networkResponse && networkResponse.status === 200) {
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(e.request, responseToCache);
+        });
       }
-
-      return fetch(e.request).then((networkResponse) => {
-        // Cache newly fetched assets dynamically
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(e.request, responseToCache);
-          });
+      return networkResponse;
+    }).catch(() => {
+      // Network failed — try cache
+      return caches.match(e.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
-        return networkResponse;
-      }).catch(() => {
-        // Fallback for offline if not cached
+        // Fallback for navigation
         if (e.request.mode === 'navigate') {
           return caches.match('index.html');
         }
