@@ -218,8 +218,103 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Listen to message events from iframe (cross-origin safe)
   window.addEventListener('message', (e) => {
-    if (e.data && e.data.type === 'showToast') {
+    if (!e.data) return;
+    if (e.data.type === 'showToast') {
       showToast(e.data.message);
+    } else if (e.data.type === 'downloadFile' || e.data.type === 'download' || e.data.type === 'downloadPDF') {
+      let filename = (e.data.filename || 'document.pdf').trim();
+      const isZip = filename.toLowerCase().endsWith('.zip');
+      if (!isZip && !filename.toLowerCase().endsWith('.pdf')) {
+        filename += '.pdf';
+      }
+      filename = filename.replace(/[/\\?%*:|"<>]/g, '_');
+      if (!filename.toLowerCase().startsWith('toolsuf-')) {
+        filename = `toolsuf-${filename}`;
+      }
+      const mime = isZip ? 'application/zip' : 'application/pdf';
+
+      let blob = e.data.blob;
+      if (!blob && e.data.buffer) {
+        blob = new Blob([e.data.buffer], { type: mime });
+      }
+
+      if (blob) {
+        const topBlob = (blob instanceof Blob && blob.type === mime) ? blob : new Blob([blob], { type: mime });
+        const topUrl = URL.createObjectURL(topBlob);
+        const a = document.createElement('a');
+        a.style.position = 'fixed';
+        a.style.left = '-9999px';
+        a.style.top = '-9999px';
+        a.href = topUrl;
+        a.download = filename;
+        a.setAttribute('download', filename);
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          try {
+            if (a.parentNode) a.parentNode.removeChild(a);
+          } catch (err) {}
+          URL.revokeObjectURL(topUrl);
+        }, 15000);
+        return;
+      }
+
+      if (e.data.url) {
+        if (e.data.url.startsWith('data:')) {
+          const a = document.createElement('a');
+          a.style.position = 'fixed';
+          a.style.left = '-9999px';
+          a.style.top = '-9999px';
+          a.href = e.data.url;
+          a.download = filename;
+          a.setAttribute('download', filename);
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            try {
+              if (a.parentNode) a.parentNode.removeChild(a);
+            } catch (err) {}
+          }, 15000);
+          return;
+        }
+
+        // Re-read iframe blob url into top-level blob context so Chrome honors filename
+        fetch(e.data.url)
+          .then(res => res.blob())
+          .then(b => {
+            const cleanBlob = new Blob([b], { type: mime });
+            const cleanUrl = URL.createObjectURL(cleanBlob);
+            const a = document.createElement('a');
+            a.style.position = 'fixed';
+            a.style.left = '-9999px';
+            a.style.top = '-9999px';
+            a.href = cleanUrl;
+            a.download = filename;
+            a.setAttribute('download', filename);
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+              try {
+                if (a.parentNode) a.parentNode.removeChild(a);
+              } catch (err) {}
+              URL.revokeObjectURL(cleanUrl);
+            }, 15000);
+          })
+          .catch(() => {
+            const a = document.createElement('a');
+            a.style.position = 'fixed';
+            a.style.left = '-9999px';
+            a.style.top = '-9999px';
+            a.href = e.data.url;
+            a.download = filename;
+            a.setAttribute('download', filename);
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+              try { document.body.removeChild(a); } catch (err) {}
+            }, 4000);
+          });
+      }
     }
   });
 

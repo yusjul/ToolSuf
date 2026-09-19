@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gambar ke PDF</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gambar ke PDF - CamScanner Pro</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -23,7 +23,7 @@
 
     <!-- Drop Zone -->
     <section class="mac-section">
-      <div class="mac-section-header">PILIH GAMBAR</div>
+      <div class="mac-section-header" id="hdrSelect">PILIH GAMBAR</div>
       <div class="drop" id="drop">
         <input type="file" id="fi" multiple accept="image/*" style="display:none">
         <div class="drop-icon">
@@ -37,9 +37,9 @@
         <div class="drop-s">Seret & lepas atau klik untuk memilih</div>
         <div class="badges">
           <span class="badge">JPG PNG</span>
-          <span class="badge">WEBP GIF</span>
-          <span class="badge">BMP AVIF</span>
-          <span class="badge">+ Format lain</span>
+          <span class="badge">WEBP HEIC</span>
+          <span class="badge">Auto Deskew</span>
+          <span class="badge">Magic Color</span>
         </div>
       </div>
     </section>
@@ -47,16 +47,102 @@
     <!-- Image Preview Grid -->
     <section class="mac-section" id="previewSection" style="display:none">
       <div class="mac-section-header">
-        URUTAN HALAMAN
+        <span id="hdrPreview">URUTAN HALAMAN</span>
         <span id="imgCount" class="count-badge"></span>
       </div>
       <div class="preview-grid" id="previewGrid"></div>
-      <div class="preview-hint">Seret kartu untuk mengubah urutan halaman</div>
+      <div class="preview-hint">Seret kartu untuk mengubah urutan • Klik kartu untuk edit perspektif & filter</div>
     </section>
 
-    <!-- Settings -->
+    <!-- CamScanner Engine Settings -->
     <section class="mac-section">
-      <div class="mac-section-header">PENGATURAN PDF</div>
+      <div class="mac-section-header" id="hdrScannerSettings">EFEK SCANNER (CAMSCANNER)</div>
+      <div class="settings-group">
+        <!-- Scanner Filter -->
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#007AFF">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title" id="lblGlobalFilter">Filter Default</div>
+            <div class="setting-desc" id="lblGlobalFilterDesc">Diterapkan ke semua halaman baru</div>
+          </div>
+          <select class="apple-select" id="globalFilter">
+            <option value="magic" selected>Warna Ajaib (Magic Color)</option>
+            <option value="bw">Hitam Putih (B&W Sauvola)</option>
+            <option value="gray">Skala Abu-abu (Grayscale)</option>
+            <option value="lighten">Mencerahkan (Lighten)</option>
+            <option value="original">Asli (Original)</option>
+          </select>
+        </div>
+
+        <!-- Shadow Removal Toggle -->
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#34C759">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title" id="lblShadowRemoval">Hapus Bayangan Otomatis</div>
+            <div class="setting-desc" id="lblShadowRemovalDesc">Meratakan cahaya & membersihkan kertas putih</div>
+          </div>
+          <label class="apple-toggle">
+            <input type="checkbox" id="chkShadowRemoval" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Text Sharpening Toggle -->
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#FF9500">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 7V4h16v3M9 20h6M12 4v16"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title" id="lblTextSharpness">Pertajam Teks Dokumen</div>
+            <div class="setting-desc" id="lblTextSharpnessDesc">Meningkatkan keterbacaan teks dan tulisan tangan</div>
+          </div>
+          <label class="apple-toggle">
+            <input type="checkbox" id="chkTextSharpness" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Auto Perspective Crop on Upload -->
+        <div class="setting-row">
+          <div class="setting-icon" style="background:#AF52DE">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"/>
+              <path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"/>
+            </svg>
+          </div>
+          <div class="setting-text">
+            <div class="setting-title" id="lblAutoDeskew">Deteksi Sudut Otomatis</div>
+            <div class="setting-desc" id="lblAutoDeskewDesc">Deteksi tepi dokumen & luruskan perspektif</div>
+          </div>
+          <label class="apple-toggle">
+            <input type="checkbox" id="chkAutoDeskew" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- PDF Page Settings -->
+    <section class="mac-section">
+      <div class="mac-section-header" id="hdrPdfSettings">PENGATURAN PDF</div>
       <div class="settings-group">
         <div class="setting-row">
           <div class="setting-icon" style="background:#007AFF">
@@ -66,10 +152,10 @@
             </svg>
           </div>
           <div class="setting-text">
-            <div class="setting-title">Ukuran Halaman</div>
+            <div class="setting-title" id="lblPageSize">Ukuran Halaman</div>
           </div>
           <select class="apple-select" id="pageSize">
-            <option value="a4">A4 (210×297mm)</option>
+            <option value="a4" selected>A4 (210×297mm)</option>
             <option value="letter">Letter (216×279mm)</option>
             <option value="a3">A3 (297×420mm)</option>
             <option value="fit">Sesuai Gambar</option>
@@ -85,10 +171,10 @@
             </svg>
           </div>
           <div class="setting-text">
-            <div class="setting-title">Orientasi</div>
+            <div class="setting-title" id="lblOrientation">Orientasi</div>
           </div>
           <select class="apple-select" id="orientation">
-            <option value="p">Portrait</option>
+            <option value="p" selected>Portrait</option>
             <option value="l">Landscape</option>
           </select>
         </div>
@@ -99,42 +185,25 @@
             </svg>
           </div>
           <div class="setting-text">
-            <div class="setting-title">Kualitas Gambar</div>
-            <div class="setting-desc" id="qualLabel">90%</div>
+            <div class="setting-title" id="lblQuality">Kualitas Gambar</div>
+            <div class="setting-desc" id="qualLabel">92%</div>
           </div>
-          <input type="range" id="quality" min="40" max="100" value="90"
+          <input type="range" id="quality" min="40" max="100" value="92"
             oninput="document.getElementById('qualLabel').textContent=this.value+'%'"
             style="width:100px;flex-shrink:0">
         </div>
-        <div class="setting-row">
-          <div class="setting-icon" style="background:#007AFF">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
-              <line x1="4" y1="22" x2="4" y2="15"/>
-            </svg>
-          </div>
-          <div class="setting-text">
-            <div class="setting-title">Margin Halaman</div>
-          </div>
-          <select class="apple-select" id="margin">
-            <option value="0">Tanpa Margin</option>
-            <option value="10" selected>Kecil (10mm)</option>
-            <option value="20">Normal (20mm)</option>
-            <option value="30">Lebar (30mm)</option>
-          </select>
-        </div>
+        <!-- margin setting removed: always no margin (CamScanner style) -->
+        <input type="hidden" id="margin" value="0">
       </div>
     </section>
 
     <!-- Action Buttons -->
-    <button class="btn-p" id="genBtn" onclick="generatePDF()" disabled>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-        <line x1="12" y1="18" x2="12" y2="12"/>
-        <line x1="9" y1="15" x2="15" y2="15"/>
+    <button class="btn-p btn-glow" id="genBtn" onclick="generatePDF()" disabled>
+      <svg class="btn-icon-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path class="dl-arrow" d="M12 3v13m0 0l-4-4m4 4l4-4"/>
+        <path class="dl-tray" d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
       </svg>
-      Buat PDF
+      <span id="lblGenerate">Unduh</span>
     </button>
 
     <button class="btn-s" style="margin-top:8px" onclick="clearAll()">
@@ -142,7 +211,7 @@
         <polyline points="3 6 5 6 21 6"/>
         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
       </svg>
-      Hapus Semua
+      <span id="lblClear">Hapus Semua</span>
     </button>
 
     <!-- Progress -->
@@ -154,7 +223,181 @@
     <div class="alert" id="alertBox"></div>
   </div>
 
+  <!-- CamScanner Document Page Editor Modal -->
+  <div class="cam-modal-backdrop" id="editorModal" style="display:none">
+    <div class="cam-modal-sheet">
+      <!-- Modal Header -->
+      <div class="cam-modal-header">
+        <div class="cam-modal-title-group">
+          <div class="cam-modal-badge">CAMSCANNER PRO</div>
+          <div class="cam-modal-title" id="modalPageTitle">Edit Halaman 1</div>
+        </div>
+        <button type="button" class="cam-btn-close" onclick="closeEditorModal()" aria-label="Tutup">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mode Selector Tabs -->
+      <div class="cam-tabs">
+        <button type="button" class="cam-tab active" id="tabCrop" onclick="setEditorTab('crop')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"/>
+            <path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"/>
+          </svg>
+          <span id="lblTabCrop">Potong & Perspektif</span>
+        </button>
+        <button type="button" class="cam-tab" id="tabFilter" onclick="setEditorTab('filter')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span id="lblTabFilter">Filter & Warna</span>
+        </button>
+      </div>
+
+      <!-- Viewport / Stage -->
+      <div class="cam-viewport" id="camViewport">
+        <div class="cam-canvas-wrap" id="camCanvasWrap">
+          <canvas id="editorCanvas"></canvas>
+          <!-- 4-Corner Draggable Overlay for Crop Mode -->
+          <svg id="cropSvg" class="crop-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+            <polygon id="cropPolygon" points="0,0 1000,0 1000,1000 0,1000" class="crop-poly"></polygon>
+            <path id="cropMask" class="crop-mask" fill-rule="evenodd"></path>
+          </svg>
+          <div id="cornerTL" class="crop-handle" data-corner="0" title="Kiri Atas"></div>
+          <div id="cornerTR" class="crop-handle" data-corner="1" title="Kanan Atas"></div>
+          <div id="cornerBR" class="crop-handle" data-corner="2" title="Kanan Bawah"></div>
+          <div id="cornerBL" class="crop-handle" data-corner="3" title="Kiri Bawah"></div>
+          <div id="cropLoupe" class="crop-loupe" style="display:none">
+            <canvas id="loupeCanvas" width="96" height="96"></canvas>
+            <div class="loupe-cross"></div>
+          </div>
+        </div>
+
+        <!-- Press & Hold to Compare Original -->
+        <button type="button" class="cam-compare-btn" id="btnCompare">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span id="lblCompare">Tahan untuk Asli</span>
+        </button>
+      </div>
+
+      <!-- Control Panels -->
+      <!-- Panel 1: Crop & Deskew -->
+      <div class="cam-panel" id="panelCrop">
+        <div class="cam-panel-row">
+          <button type="button" class="cam-sub-btn" onclick="autoDetectCornersCurrentPage()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+            <span id="lblAutoDetect">Deteksi Otomatis</span>
+          </button>
+          <button type="button" class="cam-sub-btn" onclick="resetCornersToFull()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            </svg>
+            <span id="lblSelectAll">Pilih Semua</span>
+          </button>
+          <button type="button" class="cam-sub-btn cam-sub-primary" onclick="applyPerspectiveWarpCurrentPage()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span id="lblWarp">Luruskan Dokumen</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel 2: Filter & Enhancements -->
+      <div class="cam-panel" id="panelFilter" style="display:none">
+        <!-- Preset Filter Chips -->
+        <div class="cam-filters-scroll">
+          <button type="button" class="cam-filter-chip" data-filter="magic" onclick="setModalFilter('magic')">
+            <div class="chip-preview chip-magic">✨</div>
+            <span id="chipMagic">Warna Ajaib</span>
+          </button>
+          <button type="button" class="cam-filter-chip" data-filter="bw" onclick="setModalFilter('bw')">
+            <div class="chip-preview chip-bw">B&W</div>
+            <span id="chipBw">Hitam Putih</span>
+          </button>
+          <button type="button" class="cam-filter-chip" data-filter="gray" onclick="setModalFilter('gray')">
+            <div class="chip-preview chip-gray">A</div>
+            <span id="chipGray">Skala Abu</span>
+          </button>
+          <button type="button" class="cam-filter-chip" data-filter="lighten" onclick="setModalFilter('lighten')">
+            <div class="chip-preview chip-lighten">☀️</div>
+            <span id="chipLighten">Mencerahkan</span>
+          </button>
+          <button type="button" class="cam-filter-chip" data-filter="original" onclick="setModalFilter('original')">
+            <div class="chip-preview chip-original">RAW</div>
+            <span id="chipOriginal">Asli</span>
+          </button>
+        </div>
+
+        <!-- Quick Rotate Controls -->
+        <div class="cam-sliders-group">
+          <div class="cam-slider-row">
+            <div class="cam-slider-label">
+              <span id="lblRotate">Orientasi</span>
+            </div>
+            <div class="cam-rotate-buttons">
+              <button type="button" class="cam-rot-btn" onclick="rotateCurrentPageModal(-90)" title="Putar Kiri 90°">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38L2.5 8"/>
+                </svg>
+                <span>-90°</span>
+              </button>
+              <button type="button" class="cam-rot-btn" onclick="rotateCurrentPageModal(90)" title="Putar Kanan 90°">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                </svg>
+                <span>+90°</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Fine-tune Sliders -->
+          <div class="cam-slider-row">
+            <div class="cam-slider-label">
+              <span id="lblBrightness">Kecerahan</span>
+              <span class="cam-val" id="valBrightness">0</span>
+            </div>
+            <input type="range" id="modalBrightness" min="-50" max="50" value="0" oninput="onEditorSliderChange()">
+          </div>
+
+          <div class="cam-slider-row">
+            <div class="cam-slider-label">
+              <span id="lblContrast">Kontras</span>
+              <span class="cam-val" id="valContrast">0</span>
+            </div>
+            <input type="range" id="modalContrast" min="-50" max="50" value="0" oninput="onEditorSliderChange()">
+          </div>
+
+          <div class="cam-slider-row">
+            <div class="cam-slider-label">
+              <span id="lblSharpness">Ketajaman Teks</span>
+              <span class="cam-val" id="valSharpness">50</span>
+            </div>
+            <input type="range" id="modalSharpness" min="0" max="100" value="50" oninput="onEditorSliderChange()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="cam-modal-footer">
+        <button type="button" class="btn-s cam-footer-btn" onclick="applyModalToAllPages()">
+          <span id="lblApplyAll">Terapkan ke Semua Halaman</span>
+        </button>
+        <button type="button" class="btn-p cam-footer-btn" onclick="saveEditorModalChanges()">
+          <span id="lblApplyThis">Simpan Halaman Ini</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="script.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="script.js?v=5.6"></script>
 </body>
 </html>

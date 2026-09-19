@@ -1,13 +1,11 @@
 // Theme sync from dashboard
-(function() {
-  try {
-    var p = window.parent.document.documentElement;
-    if (p.classList.contains('dark')) { document.documentElement.classList.add('dark'); }
-    else { document.documentElement.classList.add('light'); }
-  } catch(e) { document.documentElement.classList.add('light'); }
-  var lang = new URLSearchParams(window.location.search).get('lang');
-  window.__initialLang = lang === 'en' ? 'en' : 'id';
-})();
+try {
+  var p = window.parent.document.documentElement;
+  if (p.classList.contains('dark')) { document.documentElement.classList.add('dark'); }
+  else { document.documentElement.classList.add('light'); }
+} catch(e) { document.documentElement.classList.add('light'); }
+var lang = new URLSearchParams(window.location.search).get('lang');
+window.__initialLang = lang === 'en' ? 'en' : 'id';
 
 let originalFile = null;
 let processedBlob = null;
@@ -36,7 +34,7 @@ async function getRemoveBackgroundLib() {
   ];
   for (const url of urls) {
     try {
-      const module = await import(url);
+      const module = await import(/* @vite-ignore */ url);
       if (module && typeof module.removeBackground === 'function') {
         removeBackgroundFn = module.removeBackground;
         return removeBackgroundFn;
@@ -380,6 +378,10 @@ window.syncLang = function(lang) {
   updateDownloadButtonText(selectedColor === 'transparent');
   $('lblResetBtn').textContent = d.lblResetBtn;
 };
+
+// Expose functions to global scope (required for type="module" scripts)
+window.downloadResult = downloadResult;
+window.resetAll = resetAll;
 
 // Listen for postMessage from parent dashboard
 window.addEventListener('message', function(e) {

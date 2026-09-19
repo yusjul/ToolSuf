@@ -4,6 +4,6 @@
   "description": "Premium, Fast & Simple Productivity Tools",
   "scripts": {
     "dev": "npx -y vite",
-    "serve": "npx -y http-server -p 8080"
+    "serve": "npx -y http-server -p 8080 -c-1"
   }
 }
