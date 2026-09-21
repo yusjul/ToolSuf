@@ -73,6 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
       toolRenameTitle: 'Batch Renamer Pro',
       toolImgToPdfTitle: 'Image to PDF',
       toolPdfToDocsTitle: 'PDF to Docs',
+      toolPdfCompressorTitle: 'PDF Compressor',
+      toolPdfCompressorDesc: 'Reduce PDF file size while keeping documents usable.',
       toolVideoToUhdTitle: 'UHD Video Upscaler',
     },
     id: {
@@ -114,6 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
       toolBgRemoverTitle: 'Penghapus Latar',
       toolImgToPdfTitle: 'Gambar ke PDF',
       toolPdfToDocsTitle: 'PDF ke Dokumen',
+      toolPdfCompressorTitle: 'PDF Compressor',
+      toolPdfCompressorDesc: 'Kurangi ukuran file PDF dengan tetap menjaga dokumen dapat digunakan.',
       toolVideoToUhdTitle: 'Peningkat Video UHD',
       toolBgRemoverDesc: 'Hapus latar belakang gambar secara offline dengan AI browser.',
       toolImgToPdfDesc: 'Konversi gambar ke PDF dengan antarmuka bergaya Apple.',
@@ -224,14 +228,26 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (e.data.type === 'downloadFile' || e.data.type === 'download' || e.data.type === 'downloadPDF') {
       let filename = (e.data.filename || 'document.pdf').trim();
       const isZip = filename.toLowerCase().endsWith('.zip');
-      if (!isZip && !filename.toLowerCase().endsWith('.pdf')) {
+      const isPng = filename.toLowerCase().endsWith('.png');
+      const isSvg = filename.toLowerCase().endsWith('.svg');
+      const isJpg = filename.toLowerCase().endsWith('.jpg') || filename.toLowerCase().endsWith('.jpeg');
+      const isWebp = filename.toLowerCase().endsWith('.webp');
+      const isImage = isPng || isSvg || isJpg || isWebp;
+
+      if (!isZip && !isImage && !filename.toLowerCase().endsWith('.pdf')) {
         filename += '.pdf';
       }
       filename = filename.replace(/[/\\?%*:|"<>]/g, '_');
-      if (!filename.toLowerCase().startsWith('toolsuf-')) {
+      if (!filename.toLowerCase().startsWith('toolsuf-') && !filename.toLowerCase().endsWith('-compressed.pdf') && !isImage) {
         filename = `toolsuf-${filename}`;
       }
-      const mime = isZip ? 'application/zip' : 'application/pdf';
+      let mime = 'application/pdf';
+      if (isZip) mime = 'application/zip';
+      else if (isPng) mime = 'image/png';
+      else if (isSvg) mime = 'image/svg+xml';
+      else if (isJpg) mime = 'image/jpeg';
+      else if (isWebp) mime = 'image/webp';
+      else if (e.data.blob && e.data.blob.type) mime = e.data.blob.type;
 
       let blob = e.data.blob;
       if (!blob && e.data.buffer) {
@@ -240,6 +256,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (blob) {
         const topBlob = (blob instanceof Blob && blob.type === mime) ? blob : new Blob([blob], { type: mime });
+
+        // Primary: Use saveAs from FileSaver.js (loaded in parent page)
+        const parentSaveAs = window.saveAs || (typeof saveAs !== 'undefined' ? saveAs : null);
+        if (parentSaveAs) {
+          try {
+            parentSaveAs(new File([topBlob], filename, { type: mime }), filename);
+            return;
+          } catch (saveErr) {
+            console.warn('Parent saveAs failed, falling back to anchor:', saveErr);
+          }
+        }
+
+        // Fallback: anchor approach
         const topUrl = URL.createObjectURL(topBlob);
         const a = document.createElement('a');
         a.style.position = 'fixed';
@@ -283,6 +312,13 @@ document.addEventListener('DOMContentLoaded', () => {
           .then(res => res.blob())
           .then(b => {
             const cleanBlob = new Blob([b], { type: mime });
+            const parentSaveAs2 = window.saveAs || (typeof saveAs !== 'undefined' ? saveAs : null);
+            if (parentSaveAs2) {
+              try {
+                parentSaveAs2(new File([cleanBlob], filename, { type: mime }), filename);
+                return;
+              } catch (e2) {}
+            }
             const cleanUrl = URL.createObjectURL(cleanBlob);
             const a = document.createElement('a');
             a.style.position = 'fixed';
@@ -445,6 +481,13 @@ document.addEventListener('DOMContentLoaded', () => {
       wide: false,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M16 18H8"/><path d="M16 12H8"/><path d="M8 6h2"/></svg>`
     },
+    'pdf-compressor': {
+      titleEn: 'PDF Compressor',
+      titleId: 'Kompresor PDF',
+      src: 'tools/pdf-compressor/index.html',
+      wide: false,
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><polyline points="9 15 12 12 15 15"></polyline><line x1="9" y1="9" x2="15" y2="9"></line></svg>`
+    },
     'video-to-uhd': {
       titleEn: 'UHD Video Upscaler',
       titleId: 'Peningkat Video UHD',
@@ -547,11 +590,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Display Modal
     modalOverlay.classList.add('active');
     document.body.style.overflow = 'hidden';
+
+    if (toolKey === 'pdf-compressor') {
+      try { history.pushState({ tool: toolKey }, '', '/pdf-compressor'); } catch (e) {}
+    }
   };
 
   const closeTool = () => {
     modalOverlay.classList.remove('active');
     document.body.style.overflow = ''; // Unlock scroll
+    
+    if (window.location.pathname.includes('pdf-compressor') || window.location.search.includes('pdf-compressor') || window.location.hash.includes('pdf-compressor')) {
+      try { history.pushState(null, '', '/'); } catch (e) {}
+    }
     
     // Wait for animation, then clear frame src
     setTimeout(() => {
@@ -587,6 +638,24 @@ document.addEventListener('DOMContentLoaded', () => {
       openTool('web-monitor');
     }
   });
+
+  // Direct route detection and popstate handling
+  window.addEventListener('popstate', () => {
+    if (window.location.pathname.includes('pdf-compressor')) {
+      openTool('pdf-compressor');
+    } else if (modalOverlay.classList.contains('active')) {
+      closeTool();
+    }
+  });
+
+  try {
+    const initPath = window.location.pathname.toLowerCase();
+    const initQuery = new URLSearchParams(window.location.search).get('tool');
+    const initHash = window.location.hash.toLowerCase().replace('#', '');
+    if (initPath.includes('pdf-compressor') || initQuery === 'pdf-compressor' || initHash === 'pdf-compressor') {
+      openTool('pdf-compressor');
+    }
+  } catch (e) {}
 
   // Secret Logo Trigger (Triple-click / tap)
   const logoEl = document.querySelector('.header-container .logo');

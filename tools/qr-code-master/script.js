@@ -359,6 +359,7 @@ async function renderLivePreview() {
     // Checkerboard for transparent bg
     if (state.bgColor === 'transparent') {
       canvasBg.classList.remove('solid-bg');
+      canvasBg.style.background = '';
     } else {
       canvasBg.classList.add('solid-bg');
       canvasBg.style.background = state.bgColor;
@@ -366,6 +367,7 @@ async function renderLivePreview() {
 
     placeholder.style.display = 'none';
     canvasWrap.style.display = 'flex';
+    syncOutputIfVisible();
 
   } catch(e) {
     console.warn('Live preview error:', e);
@@ -516,8 +518,8 @@ async function drawQRToCanvas(canvas, data, canvasSize, margin, fg, bg, ecc, dot
   const fgVal = fg === 'transparent' ? '#000000' : fg;
   const bgVal = bg === 'transparent' ? '#00000000' : bg;
 
-  // Fast path: square dots + square eye — use library renderer
-  if (dotStyle === 'square' && eyeStyle === 'square') {
+  // Fast path: square dots + square eye — use library renderer only when solid background
+  if (bg !== 'transparent' && dotStyle === 'square' && eyeStyle === 'square') {
     await window.QRCode.toCanvas(canvas, data, {
       errorCorrectionLevel: ecc, margin, width: canvasSize,
       color: { dark: fgVal, light: bgVal }
@@ -534,8 +536,12 @@ async function drawQRToCanvas(canvas, data, canvasSize, margin, fg, bg, ecc, dot
   canvas.height = canvasSize;
 
   // Background
-  if (bg === 'transparent') ctx.clearRect(0, 0, canvasSize, canvasSize);
-  else { ctx.fillStyle = bg; ctx.fillRect(0, 0, canvasSize, canvasSize); }
+  if (bg === 'transparent') {
+    ctx.clearRect(0, 0, canvasSize, canvasSize);
+  } else {
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvasSize, canvasSize);
+  }
 
   // Cell geometry (margin in cells)
   const cellSize = canvasSize / (numCells + margin * 2);
@@ -579,12 +585,51 @@ async function generateQR() {
       state.logo, state.logoDataUrl
     );
 
+    const wrap = document.getElementById('qr-canvas-wrap');
+    if (wrap) {
+      if (state.bgColor === 'transparent') {
+        wrap.classList.add('transparent-preview');
+        wrap.style.background = '';
+      } else {
+        wrap.classList.remove('transparent-preview');
+        wrap.style.background = state.bgColor;
+      }
+    }
+
     const sec = document.getElementById('qr-output-section');
     sec.style.display = 'block';
     sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } catch(e) {
     console.error(e);
     showToast(t('toastTooLong'));
+  }
+}
+
+async function syncOutputIfVisible() {
+  const sec = document.getElementById('qr-output-section');
+  if (sec && sec.style.display !== 'none') {
+    const data = buildQrDataSilent();
+    if (data) {
+      const canvas = document.getElementById('qr-canvas');
+      try {
+        await drawQRToCanvas(
+          canvas, data, state.size, state.margin,
+          state.fgColor, state.bgColor, state.ecc,
+          state.dotStyle, state.eyeStyle,
+          state.logo, state.logoDataUrl
+        );
+        const wrap = document.getElementById('qr-canvas-wrap');
+        if (wrap) {
+          if (state.bgColor === 'transparent') {
+            wrap.classList.add('transparent-preview');
+            wrap.style.background = '';
+          } else {
+            wrap.classList.remove('transparent-preview');
+            wrap.style.background = state.bgColor;
+          }
+        }
+      } catch(e) {}
+    }
   }
 }
 
@@ -618,17 +663,16 @@ const LOGO_SVGS = {
 
 async function svgToPng(svgStr, size) {
   return new Promise(resolve => {
-    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
+    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
     const img = new Image();
     img.onload = () => {
       const c = document.createElement('canvas');
       c.width = size; c.height = size;
       const ctx = c.getContext('2d');
       ctx.drawImage(img, 0, 0, size, size);
-      URL.revokeObjectURL(url);
       resolve(c.toDataURL());
     };
+    img.onerror = () => resolve(null);
     img.src = url;
   });
 }
@@ -679,31 +723,195 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 /* ── Download & Copy ── */
-function downloadPNG() {
+async function downloadPNG() {
+  const data = buildQrData();
+  if (!data) return;
+
   const canvas = document.getElementById('qr-canvas');
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = 'qrcode-master.png';
-  a.click();
-  showToast(t('toastDownloaded'));
+  if (!canvas) return;
+
+  // Always re-render canvas with latest state to guarantee exact size & transparency
+  try {
+    await drawQRToCanvas(
+      canvas, data, state.size, state.margin,
+      state.fgColor, state.bgColor, state.ecc,
+      state.dotStyle, state.eyeStyle,
+      state.logo, state.logoDataUrl
+    );
+
+    const wrap = document.getElementById('qr-canvas-wrap');
+    if (wrap) {
+      if (state.bgColor === 'transparent') {
+        wrap.classList.add('transparent-preview');
+        wrap.style.background = '';
+      } else {
+        wrap.classList.remove('transparent-preview');
+        wrap.style.background = state.bgColor;
+      }
+    }
+  } catch (err) {
+    console.error('Render error before download:', err);
+  }
+
+  const filename = 'qrcode-master.png';
+
+  canvas.toBlob(async (blob) => {
+    if (!blob) {
+      try {
+        const dataUrl = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.download = filename;
+        a.href = dataUrl;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast(t('toastDownloaded'));
+      } catch (e) {
+        showToast('Gagal mengunduh gambar');
+      }
+      return;
+    }
+
+    // 1. Try File System Access API
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [{
+            description: 'PNG Image',
+            accept: { 'image/png': ['.png'] }
+          }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        showToast(t('toastDownloaded'));
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        console.warn('showSaveFilePicker failed, trying fallback:', err);
+      }
+    }
+
+    // 2. Try FileSaver.js saveAs if available in window or top window
+    const saver = window.saveAs || (window.top && window.top.saveAs);
+    if (saver) {
+      try {
+        saver(blob, filename);
+        showToast(t('toastDownloaded'));
+        return;
+      } catch (saveErr) {
+        console.warn('saveAs failed, trying fallback:', saveErr);
+      }
+    }
+
+    // 3. Delegate to parent window via postMessage if running in an iframe
+    if (window.parent && window.parent !== window) {
+      try {
+        window.parent.postMessage({
+          type: 'downloadFile',
+          filename: filename,
+          blob: blob
+        }, '*');
+        showToast(t('toastDownloaded'));
+        return;
+      } catch (postErr) {
+        console.warn('postMessage failed:', postErr);
+      }
+    }
+
+    // 4. Standalone anchor download fallback
+    try {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        if (a.parentNode) a.parentNode.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 5000);
+      showToast(t('toastDownloaded'));
+    } catch (err) {
+      console.error('Anchor download failed:', err);
+      showToast('Gagal mengunduh gambar');
+    }
+  }, 'image/png');
 }
 
 function downloadSVG() {
-  // Generate simple SVG using qrcode lib
   const data = buildQrData();
   if (!data) return;
+  const filename = 'qrcode-master.svg';
+
   window.QRCode.toString(data, {
     type: 'svg',
     errorCorrectionLevel: state.ecc,
     margin: state.margin,
-    color: { dark: state.fgColor === 'transparent' ? '#000' : state.fgColor, light: state.bgColor === 'transparent' ? '#ffffff00' : state.bgColor }
-  }, (err, svgStr) => {
+    color: {
+      dark: state.fgColor === 'transparent' ? '#000000' : state.fgColor,
+      light: state.bgColor === 'transparent' ? '#ffffff00' : state.bgColor
+    }
+  }, async (err, svgStr) => {
     if (err) { showToast('Error'); return; }
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+
+    // 1. Try File System Access API
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [{
+            description: 'SVG Image',
+            accept: { 'image/svg+xml': ['.svg'] }
+          }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        showToast(t('toastDownloaded'));
+        return;
+      } catch (e) {
+        if (e.name === 'AbortError') return;
+      }
+    }
+
+    // 2. Try saveAs
+    const saver = window.saveAs || (window.top && window.top.saveAs);
+    if (saver) {
+      try {
+        saver(blob, filename);
+        showToast(t('toastDownloaded'));
+        return;
+      } catch (e) {}
+    }
+
+    // 3. Delegate to parent if in iframe
+    if (window.parent && window.parent !== window) {
+      try {
+        window.parent.postMessage({
+          type: 'downloadFile',
+          filename: filename,
+          blob: blob
+        }, '*');
+        showToast(t('toastDownloaded'));
+        return;
+      } catch (e) {}
+    }
+
+    // 4. Standalone anchor fallback
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'qrcode-master.svg';
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
     a.click();
+    setTimeout(() => {
+      if (a.parentNode) a.parentNode.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 5000);
     showToast(t('toastDownloaded'));
   });
 }

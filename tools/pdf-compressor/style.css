@@ -1,0 +1,612 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --apple-blue: #007AFF;
+  --apple-blue-dark: #0056CC;
+  --apple-bg: transparent;
+  --apple-card: #FFFFFF;
+  --apple-separator: rgba(0, 0, 0, 0.08);
+  --apple-label: #6E6E73;
+  --apple-text: #1C1C1E;
+  --apple-secondary-bg: #F4F5F7;
+  --apple-hover-bg: #EAEBED;
+  --apple-green: #34C759;
+  --apple-orange: #FF9500;
+  --apple-red: #FF3B30;
+  --apple-radius: 16px;
+  --apple-radius-sm: 12px;
+  --apple-radius-lg: 20px;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", "Outfit", sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", "Inter", sans-serif;
+  --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+html.dark {
+  --apple-bg: transparent;
+  --apple-card: #121215;
+  --apple-separator: rgba(255, 255, 255, 0.08);
+  --apple-label: #A1A1A6;
+  --apple-text: #F5F5F7;
+  --apple-secondary-bg: #1E1E22;
+  --apple-hover-bg: #28282D;
+  --apple-blue: #0A84FF;
+  --apple-blue-dark: #0066CC;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+html, body {
+  overflow-x: hidden;
+  background: transparent;
+}
+
+::-webkit-scrollbar {
+  display: none !important;
+}
+
+html, body, * {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+body {
+  font-family: var(--font-body);
+  background: transparent;
+  color: var(--apple-text);
+  -webkit-font-smoothing: antialiased;
+  padding: 0;
+  margin: 0;
+}
+
+.container {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 24px 16px 36px;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.header-icon {
+  width: 58px;
+  height: 58px;
+  background: linear-gradient(135deg, var(--apple-blue), var(--apple-blue-dark));
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  box-shadow: 0 6px 20px rgba(0, 122, 255, 0.2);
+  transition: transform 0.25s ease;
+}
+
+.header-icon:hover {
+  transform: scale(1.04);
+}
+
+.header-icon svg {
+  width: 28px;
+  height: 28px;
+  stroke: #FFFFFF;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.header-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--apple-text);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+
+.header-desc {
+  font-size: 13px;
+  color: var(--apple-label);
+  line-height: 1.4;
+}
+
+/* Mac Sections */
+.mac-section {
+  margin-bottom: 18px;
+}
+
+.mac-section-header {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--apple-label);
+  margin-bottom: 8px;
+  padding-left: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Drop Zone */
+.drop {
+  border: 1.5px dashed var(--apple-separator);
+  background: var(--apple-card);
+  border-radius: var(--apple-radius);
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--card-shadow);
+  outline: none;
+}
+
+.drop:hover, .drop.drag-over {
+  border-color: var(--apple-blue);
+  background: var(--apple-secondary-bg);
+  transform: translateY(-1px);
+}
+
+.drop:focus-visible {
+  border-color: var(--apple-blue);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.25);
+}
+
+.drop-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  color: var(--apple-blue);
+  background: rgba(0, 122, 255, 0.08);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drop-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.drop-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--apple-text);
+  margin-bottom: 4px;
+}
+
+.drop-sub {
+  font-size: 13px;
+  color: var(--apple-label);
+  margin-bottom: 14px;
+}
+
+.badge-pdf {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--apple-secondary-bg);
+  color: var(--apple-label);
+  border: 1px solid var(--apple-separator);
+}
+
+/* File Info Card */
+.card-info {
+  background: var(--apple-card);
+  border-radius: var(--apple-radius);
+  border: 1px solid var(--apple-separator);
+  padding: 16px 18px;
+  box-shadow: var(--card-shadow);
+}
+
+.info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.info-file-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.info-file-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 122, 255, 0.08);
+  border-radius: 10px;
+  color: var(--apple-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.info-file-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.info-file-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.info-filename {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--apple-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.info-size-pages {
+  font-size: 12px;
+  color: var(--apple-label);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.btn-remove {
+  background: transparent;
+  border: none;
+  color: var(--apple-red);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-remove:hover {
+  background: rgba(255, 59, 48, 0.08);
+}
+
+/* Compression Level Cards */
+.level-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.level-card {
+  background: var(--apple-card);
+  border: 1px solid var(--apple-separator);
+  border-radius: var(--apple-radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  outline: none;
+}
+
+.level-card:hover {
+  background: var(--apple-secondary-bg);
+  border-color: rgba(0, 122, 255, 0.3);
+}
+
+.level-card:focus-visible {
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.25);
+}
+
+.level-card.active {
+  border-color: var(--apple-blue);
+  background: rgba(0, 122, 255, 0.04);
+}
+
+html.dark .level-card.active {
+  background: rgba(10, 132, 255, 0.08);
+}
+
+.level-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--apple-label);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.level-card.active .level-radio {
+  border-color: var(--apple-blue);
+  background: var(--apple-blue);
+}
+
+.level-radio-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.15s ease;
+}
+
+.level-card.active .level-radio-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.level-content {
+  flex: 1;
+}
+
+.level-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--apple-text);
+  margin-bottom: 2px;
+}
+
+.level-desc {
+  font-size: 12px;
+  color: var(--apple-label);
+  line-height: 1.3;
+}
+
+/* Primary and Secondary Buttons */
+.btn-primary {
+  width: 100%;
+  height: 44px;
+  background: var(--apple-blue);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--apple-radius-sm);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+  outline: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--apple-blue-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.35);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  width: 100%;
+  height: 40px;
+  background: var(--apple-secondary-bg);
+  color: var(--apple-text);
+  border: 1px solid var(--apple-separator);
+  border-radius: var(--apple-radius-sm);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--apple-hover-bg);
+}
+
+/* Progress Card */
+.progress-card {
+  background: var(--apple-card);
+  border: 1px solid var(--apple-separator);
+  border-radius: var(--apple-radius);
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--card-shadow);
+}
+
+.progress-header {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--apple-text);
+  margin-bottom: 12px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--apple-secondary-bg);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  background: var(--apple-blue);
+  border-radius: 999px;
+  transition: width 0.25s ease-out;
+}
+
+/* Result Card */
+.result-card {
+  background: var(--apple-card);
+  border: 1px solid var(--apple-separator);
+  border-radius: var(--apple-radius);
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+}
+
+.result-heading {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--apple-text);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.badge-success {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(52, 199, 89, 0.12);
+  color: var(--apple-green);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.stat-box {
+  background: var(--apple-secondary-bg);
+  border-radius: var(--apple-radius-sm);
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--apple-label);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--apple-text);
+}
+
+.text-green {
+  color: var(--apple-green) !important;
+}
+
+.text-orange {
+  color: var(--apple-orange) !important;
+}
+
+.status-note {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--apple-label);
+  background: var(--apple-secondary-bg);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+
+/* Privacy note */
+.privacy-note {
+  text-align: center;
+  font-size: 11px;
+  color: var(--apple-label);
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.privacy-note svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Inline Toast */
+.toast-msg {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(30px);
+  background: rgba(28, 28, 30, 0.9);
+  color: #FFFFFF;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.toast-msg.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .container {
+    padding: 16px 12px 28px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .stat-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+  }
+  
+  .stat-label {
+    margin-bottom: 0;
+  }
+}

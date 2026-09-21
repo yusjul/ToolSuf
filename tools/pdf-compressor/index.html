@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PDF Compressor - ToolSuf</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container" id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="12" y1="18" x2="12" y2="12"></line>
+          <polyline points="9 15 12 12 15 15"></polyline>
+          <line x1="9" y1="9" x2="15" y2="9"></line>
+        </svg>
+      </div>
+      <h1 class="header-title" data-i18n="headerTitle">Kompresor PDF</h1>
+      <p class="header-desc" data-i18n="headerDesc">Kurangi ukuran file PDF dengan tetap menjaga dokumen dapat digunakan.</p>
+    </header>
+
+    <!-- Upload Section / Drop Zone -->
+    <section class="mac-section" id="uploadSection">
+      <div class="mac-section-header" data-i18n="selectPdfHeader">PILIH FILE PDF</div>
+      <div class="drop" id="dropZone" tabindex="0" role="button" aria-label="Upload PDF">
+        <input type="file" id="fileInput" accept=".pdf,application/pdf" style="display: none;">
+        <div class="drop-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <path d="M12 18v-6"></path>
+            <path d="M9 15l3-3 3 3"></path>
+          </svg>
+        </div>
+        <div class="drop-title" data-i18n="dropTitle">Letakkan file PDF Anda di sini</div>
+        <div class="drop-sub" data-i18n="dropSub">atau klik untuk memilih dari komputer</div>
+        <span class="badge-pdf" data-i18n="dropBadge">Hanya file PDF</span>
+      </div>
+    </section>
+
+    <!-- File Information Section -->
+    <section class="mac-section" id="fileInfoSection" style="display: none;">
+      <div class="mac-section-header" data-i18n="fileInfoTitle">INFORMASI FILE</div>
+      <div class="card-info">
+        <div class="info-header">
+          <div class="info-file-details">
+            <div class="info-file-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <path d="M16 13H8"></path>
+                <path d="M16 17H8"></path>
+                <path d="M10 9H8"></path>
+              </svg>
+            </div>
+            <div class="info-file-meta">
+              <div class="info-filename" id="fileName">-</div>
+              <div class="info-size-pages">
+                <span id="fileSize">-</span>
+                <span>•</span>
+                <span id="pageCount">-</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn-remove" id="removeBtn" aria-label="Remove File">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            <span data-i18n="removeBtn">Hapus</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Compression Level Options -->
+    <section class="mac-section" id="optionsSection" style="display: none;">
+      <div class="mac-section-header" data-i18n="compressionTitle">PILIHAN KOMPRESI</div>
+      <div class="level-grid" role="radiogroup" aria-label="Compression Level">
+        <!-- Low -->
+        <div class="level-card" data-level="low" tabindex="0" role="radio" aria-checked="false">
+          <div class="level-radio" aria-hidden="true">
+            <div class="level-radio-dot"></div>
+          </div>
+          <div class="level-content">
+            <div class="level-title">Low</div>
+            <div class="level-desc">Kualitas lebih baik, pengurangan ukuran lebih kecil</div>
+          </div>
+        </div>
+        <!-- Medium (Default) -->
+        <div class="level-card active" data-level="medium" tabindex="0" role="radio" aria-checked="true">
+          <div class="level-radio" aria-hidden="true">
+            <div class="level-radio-dot"></div>
+          </div>
+          <div class="level-content">
+            <div class="level-title">Medium</div>
+            <div class="level-desc">Keseimbangan kualitas dan ukuran file</div>
+          </div>
+        </div>
+        <!-- High -->
+        <div class="level-card" data-level="high" tabindex="0" role="radio" aria-checked="false">
+          <div class="level-radio" aria-hidden="true">
+            <div class="level-radio-dot"></div>
+          </div>
+          <div class="level-content">
+            <div class="level-title">High</div>
+            <div class="level-desc">Ukuran file lebih kecil</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button type="button" class="btn-primary" id="compressBtn" disabled>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="4 14 10 14 10 20"></polyline>
+          <polyline points="20 10 14 10 14 4"></polyline>
+          <line x1="14" y1="10" x2="21" y2="3"></line>
+          <line x1="3" y1="21" x2="10" y2="14"></line>
+        </svg>
+        <span class="btn-text" data-i18n="compressBtn">Kompres PDF</span>
+      </button>
+    </section>
+
+    <!-- Progress Section -->
+    <section class="mac-section" id="progressSection" style="display: none;">
+      <div class="mac-section-header" data-i18n="progressTitle">STATUS KOMPRESI</div>
+      <div class="progress-card">
+        <div class="progress-header" id="progressText" data-i18n="statusPreparing">Menyiapkan PDF...</div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressBar"></div>
+        </div>
+        <button type="button" class="btn-secondary" id="cancelBtn">
+          <span data-i18n="cancelBtn">Batal</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Result / Stats Section -->
+    <section class="mac-section" id="resultSection" style="display: none;">
+      <div class="mac-section-header" data-i18n="resultTitle">HASIL KOMPRESI</div>
+      <div class="result-card">
+        <div class="result-heading">
+          <span data-i18n="completeHeading">Kompresi selesai</span>
+          <span class="badge-success" id="reductionBadge">Hemat 0%</span>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label" data-i18n="statOriginal">Ukuran Asli</div>
+            <div class="stat-value" id="statOriginal">0 B</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label" data-i18n="statCompressed">Ukuran Kompresi</div>
+            <div class="stat-value" id="statCompressed">0 B</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label" data-i18n="statReduced">Pengurangan</div>
+            <div class="stat-value text-green" id="statReduction">0%</div>
+          </div>
+        </div>
+
+        <div class="status-note" id="statusNote" style="display: none;"></div>
+
+        <button type="button" class="btn-primary" id="downloadBtn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span data-i18n="downloadBtn">Download PDF</span>
+        </button>
+
+        <button type="button" class="btn-secondary" id="compressAnotherBtn">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span data-i18n="compressAnotherBtn">Kompres File Baru</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Privacy Note -->
+    <footer class="privacy-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+      <span data-i18n="securityNote">Semua pemrosesan dilakukan secara lokal di browser Anda. Dokumen tidak pernah diunggah ke server mana pun.</span>
+    </footer>
+  </div>
+
+  <div class="toast-msg" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- External Libraries: PDF.js, PDF-Lib & FileSaver -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script type="module" src="script.js?v=2.1"></script>
+</body>
+</html>
