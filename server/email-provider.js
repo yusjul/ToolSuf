@@ -10,31 +10,37 @@ class EmailProvider {
   }
 
   ensureLogsFile() {
-    const dir = path.dirname(LOGS_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    if (!fs.existsSync(LOGS_FILE)) {
-      fs.writeFileSync(LOGS_FILE, JSON.stringify({ logs: [] }, null, 2), 'utf8');
+    try {
+      const dir = path.dirname(LOGS_FILE);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      if (!fs.existsSync(LOGS_FILE)) {
+        fs.writeFileSync(LOGS_FILE, JSON.stringify({ logs: [] }, null, 2), 'utf8');
+      }
+    } catch (e) {
+      // Ignore write errors in read-only serverless environments
     }
   }
 
   loadLogs() {
     this.ensureLogsFile();
     try {
-      const raw = fs.readFileSync(LOGS_FILE, 'utf8');
-      return JSON.parse(raw).logs || [];
+      if (fs.existsSync(LOGS_FILE)) {
+        const raw = fs.readFileSync(LOGS_FILE, 'utf8');
+        return JSON.parse(raw).logs || [];
+      }
     } catch (err) {
-      console.error('[EmailProvider] Error loading delivery-logs.json:', err.message);
       return [];
     }
+    return [];
   }
 
   saveLogs(logs) {
     try {
       fs.writeFileSync(LOGS_FILE, JSON.stringify({ logs }, null, 2), 'utf8');
     } catch (err) {
-      console.error('[EmailProvider] Error saving delivery-logs.json:', err.message);
+      // Read-only serverless environment fallback
     }
   }
 

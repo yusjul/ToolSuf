@@ -10,8 +10,9 @@ const MONITORED_SITE = {
 };
 
 const CHECK_INTERVAL = 30000; // 30 detik interval monitoring
-const MAX_HISTORY = 30; // Maksimal 30 titik riwayat latensi
-const BACKEND_API_BASE = 'http://localhost:3001/api/web-monitor';
+const BACKEND_API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:3001/api/web-monitor'
+  : '/api/web-monitor';
 
 // =============================================================================
 // KONFIGURASI AUTENTIKASI WEB MONITOR

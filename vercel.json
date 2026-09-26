@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/web-monitor/:match*", "destination": "/api/web-monitor.js" },
+    { "source": "/api/web-monitor", "destination": "/api/web-monitor.js" }
+  ]
+}

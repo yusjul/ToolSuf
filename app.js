@@ -682,7 +682,11 @@ document.addEventListener('DOMContentLoaded', () => {
             };
           });
 
-          fetch('http://localhost:3001/api/web-monitor/notify-tool-usage', {
+          const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:3001/api/web-monitor/notify-tool-usage'
+            : '/api/web-monitor/notify-tool-usage';
+
+          fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
