@@ -120,14 +120,14 @@ function updateCmpPos(e) {
   updateSlider();
 }
 
-async function compressImage(file) {
+async function compressImageWithOptions(file, opts) {
   const img = await loadImage(file);
-  const quality = parseInt($('qualitySlider').value) || 80;
-  const format = $('formatSelect').value;
-  const doResize = $('resizeToggle').classList.contains('on');
-  const maxW = parseInt($('resizeW').value) || 1920;
-  const maxH = parseInt($('resizeH').value) || 1080;
-  const lockAspect = $('aspectLock').checked;
+  const quality = opts.quality !== undefined ? opts.quality : 80;
+  const format = opts.format || 'original';
+  const doResize = !!opts.doResize;
+  const maxW = opts.maxW || 1920;
+  const maxH = opts.maxH || 1080;
+  const lockAspect = opts.lockAspect !== false;
 
   const canvas = document.createElement('canvas');
   let w = img.width, h = img.height;
@@ -163,6 +163,16 @@ async function compressImage(file) {
   return { blob, url: URL.createObjectURL(blob), size: blob.size, width: w, height: h, format: fmtLabel };
 }
 
+async function compressImage(file) {
+  const quality = parseInt($('qualitySlider').value) || 80;
+  const format = $('formatSelect').value;
+  const doResize = $('resizeToggle').classList.contains('on');
+  const maxW = parseInt($('resizeW').value) || 1920;
+  const maxH = parseInt($('resizeH').value) || 1080;
+  const lockAspect = $('aspectLock').checked;
+  return await compressImageWithOptions(file, { quality, format, doResize, maxW, maxH, lockAspect });
+}
+
 function loadImage(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -176,6 +186,46 @@ function updatePreview() {
   if (previewIdx >= 0 && previewIdx < files.length) showComparison(previewIdx);
 }
 
+// GlobalJobManager processor for media-compressor
+async function mediaCompressorProcessor(job, signal, onProgress) {
+  const jobFiles = job.inputData.files;
+  const opts = job.inputData.options;
+  const zip = new JSZip();
+  const folder = zip.folder('compressed');
+
+  for (let i = 0; i < jobFiles.length; i++) {
+    if (signal && signal.aborted) throw new DOMException('AbortError', 'AbortError');
+    let result;
+    try {
+      result = await compressImageWithOptions(jobFiles[i], opts);
+      compressed[i] = result;
+    } catch (e) {
+      result = { blob: jobFiles[i], size: jobFiles[i].size, format: 'original' };
+    }
+
+    const format = opts.format;
+    let ext = format === 'original' ? getExt(jobFiles[i].name) : '.' + format;
+    const name = jobFiles[i].name.replace(/\.[^.]+$/, '') + ext;
+    folder.file(name, result.blob || jobFiles[i]);
+
+    onProgress(Math.round(((i + 1) / jobFiles.length) * 85));
+    if (i % 5 === 0) await new Promise(r => setTimeout(r, 0));
+  }
+
+  if (jobFiles.length === 1) {
+    onProgress(100);
+    return compressed[0]?.blob || jobFiles[0];
+  }
+
+  onProgress(88);
+  const blob = await zip.generateAsync(
+    { type: 'blob', compression: 'DEFLATE' },
+    (meta) => { onProgress(88 + Math.round(meta.percent * 0.11)); }
+  );
+  onProgress(100);
+  return blob;
+}
+
 async function doZip() {
   const t = toolTranslations[currentLang];
   if (!files.length) { showAlert(t.noFile, 'err'); return; }
@@ -186,6 +236,88 @@ async function doZip() {
     CuteLoading.show('zprog', 'Sabar yahh..');
   }
 
+  const quality = parseInt($('qualitySlider').value) || 80;
+  const format = $('formatSelect').value;
+  const doResize = $('resizeToggle').classList.contains('on');
+  const maxW = parseInt($('resizeW').value) || 1920;
+  const maxH = parseInt($('resizeH').value) || 1080;
+  const lockAspect = $('aspectLock').checked;
+  const opts = { quality, format, doResize, maxW, maxH, lockAspect };
+
+  const gjm = (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.GlobalJobManager)
+    ? window.parent.GlobalJobManager
+    : (window.GlobalJobManager || null);
+
+  if (gjm) {
+    if (!gjm.hasProcessor('media-compressor')) {
+      gjm.registerProcessor('media-compressor', mediaCompressorProcessor);
+    }
+    const inputName = files.length === 1 ? files[0].name : `${files.length} gambar`;
+    const targetExt = (format === 'original' ? getExt(files[0].name) : format).replace(/^\./, '').toLowerCase();
+    const outputName = files.length === 1
+      ? `toolsuf-${files[0].name.replace(/\.[^.]+$/, '')}-image-compressor.${targetExt}`
+      : `toolsuf-${files[0].name.replace(/\.[^.]+$/, '')}-image-compressor.zip`;
+
+    gjm.createJob({
+      feature: 'media-compressor',
+      featureLabel: 'Kompresor Gambar',
+      inputName,
+      outputName,
+      inputData: { files: [...files], options: opts },
+      onComplete: async (job) => {
+        btn.disabled = false;
+        if (typeof CuteLoading !== 'undefined') CuteLoading.hide('zprog');
+        const blob = await gjm.getResultBlob(job.id);
+        if (blob) {
+          if (files.length === 1) {
+            if (typeof ToolSufDownload !== 'undefined') {
+              await ToolSufDownload.downloadFile({
+                blob,
+                originalName: files[0].name,
+                featureName: 'image-compressor',
+                extension: targetExt
+              });
+            } else {
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = outputName;
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 1000);
+            }
+          } else {
+            if (typeof ToolSufDownload !== 'undefined') {
+              await ToolSufDownload.downloadFile({
+                blob,
+                originalName: files[0].name,
+                featureName: 'image-compressor',
+                extension: 'zip',
+                defaultName: 'compressed-images'
+              });
+            } else {
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = outputName;
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 1000);
+            }
+          }
+          showAlert('✓ ' + files.length + t.success, 'ok');
+          refreshStats();
+          renderList();
+        }
+      },
+      onFail: (job) => {
+        btn.disabled = false;
+        if (typeof CuteLoading !== 'undefined') CuteLoading.hide('zprog');
+        showAlert(job.error || t.failed || 'Gagal memproses file.', 'err');
+      }
+    });
+    return;
+  }
+
+  // Standalone fallback:
   try {
     const zip = new JSZip();
     const folder = zip.folder('compressed');
@@ -195,7 +327,6 @@ async function doZip() {
       if (compressed[i]) result = compressed[i];
       else { try { result = await compressImage(files[i]); compressed[i] = result; } catch (e) { result = { blob: files[i], size: files[i].size, format: 'original' }; } }
 
-      const format = $('formatSelect').value;
       let ext = format === 'original' ? getExt(files[i].name) : '.' + format;
       const name = files[i].name.replace(/\.[^.]+$/, '') + ext;
       folder.file(name, result.blob || files[i]);
@@ -203,10 +334,8 @@ async function doZip() {
       if (i % 10 === 0) await new Promise(r => setTimeout(r, 0));
     }
 
-    // Jika hanya 1 file, download langsung file gambar hasil kompresi sesuai format output
     if (files.length === 1) {
       const singleResult = compressed[0] || (await compressImage(files[0]));
-      const format = $('formatSelect').value;
       const targetExt = (format === 'original' ? getExt(files[0].name) : format).replace(/^\./, '').toLowerCase();
 
       if (typeof ToolSufDownload !== 'undefined') {
@@ -225,7 +354,6 @@ async function doZip() {
         setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 1000);
       }
     } else {
-      // Jika multiple files, kemas ke dalam ZIP berformat toolsuf-[nama-file]-image-compressor.zip
       const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
 
       if (typeof ToolSufDownload !== 'undefined') {

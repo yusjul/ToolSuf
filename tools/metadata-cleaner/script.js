@@ -812,24 +812,99 @@ function cleanActiveImage() {
   reader.readAsArrayBuffer(activeFile.file);
 }
 
+const FEATURE_NAME_META = 'metadata-cleaner';
+const FEATURE_LABEL_META = 'Penghapus Metadata';
+
+async function metadataCleanerProcessor(job, signal, onProgress) {
+  const filesToClean = job.inputData.files;
+  const zip = new JSZip();
+
+  for (let i = 0; i < filesToClean.length; i++) {
+    if (signal && signal.aborted) throw new DOMException('AbortError', 'AbortError');
+    const fObj = filesToClean[i];
+    const rawBuffer = await fObj.file.arrayBuffer();
+    const cleanBuffer = stripMetadata(rawBuffer, fObj.type);
+    const blob = new Blob([cleanBuffer], { type: fObj.type });
+    fObj.cleanedBlob = blob;
+    fObj.status = 'cleaned';
+
+    zip.file(fObj.name, blob);
+    onProgress(Math.round(((i + 1) / filesToClean.length) * 85));
+    if (i % 5 === 0) await new Promise(r => setTimeout(r, 0));
+  }
+
+  if (filesToClean.length === 1) {
+    onProgress(100);
+    return filesToClean[0].cleanedBlob;
+  }
+
+  onProgress(88);
+  const zipBlob = await zip.generateAsync(
+    { type: 'blob' },
+    (meta) => { onProgress(88 + Math.round(meta.percent * 0.11)); }
+  );
+  onProgress(100);
+  return zipBlob;
+}
+
 function cleanAllImages() {
   if (uploadedFiles.length === 0) return;
-  
+
+  const gjm = (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.GlobalJobManager)
+    ? window.parent.GlobalJobManager
+    : (window.GlobalJobManager || null);
+
+  if (gjm) {
+    if (!gjm.hasProcessor(FEATURE_NAME_META)) {
+      gjm.registerProcessor(FEATURE_NAME_META, metadataCleanerProcessor);
+    }
+    const zipBase = uploadedFiles[0] ? uploadedFiles[0].name : 'photos';
+    const outputName = uploadedFiles.length === 1
+      ? `toolsuf-${zipBase.replace(/\.[^.]+$/, '')}-metadata-cleaner.${zipBase.split('.').pop()}`
+      : `toolsuf-${zipBase.replace(/\.[^.]+$/, '')}-metadata-cleaner.zip`;
+
+    gjm.createJob({
+      feature: FEATURE_NAME_META,
+      featureLabel: FEATURE_LABEL_META,
+      inputName: uploadedFiles.length === 1 ? zipBase : `${uploadedFiles.length} gambar`,
+      outputName,
+      inputData: { files: [...uploadedFiles] },
+      onComplete: async (job) => {
+        const blob = await gjm.getResultBlob(job.id);
+        if (blob) {
+          if (uploadedFiles.length === 1) {
+            downloadBlob(blob, zipBase);
+          } else {
+            downloadBlob(blob, zipBase, 'zip');
+          }
+          notifyParent(translations[currentLang].zipSuccess);
+          renderFileList();
+          renderInspector();
+        }
+      },
+      onFail: (job) => {
+        notifyParent(job.error || 'Gagal membersihkan metadata.');
+      }
+    });
+    return;
+  }
+
+  // Standalone fallback:
   const zip = new JSZip();
   let processedCount = 0;
-  
+
   uploadedFiles.forEach(fileObj => {
     const reader = new FileReader();
     reader.onload = function(e) {
       const rawBuffer = e.target.result;
       const cleanBuffer = stripMetadata(rawBuffer, fileObj.type);
-      
+
       fileObj.cleanedBlob = new Blob([cleanBuffer], { type: fileObj.type });
       fileObj.status = 'cleaned';
-      
+
       zip.file(fileObj.name, fileObj.cleanedBlob);
       processedCount++;
-      
+
       if (processedCount === uploadedFiles.length) {
         zip.generateAsync({ type: 'blob' }).then(zipBlob => {
           const zipBase = uploadedFiles[0] ? uploadedFiles[0].name : 'photos';

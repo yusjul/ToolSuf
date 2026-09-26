@@ -14,8 +14,194 @@ let removeBackgroundFn = null;
 let selectedColor = 'transparent';
 let cmpPos = 50;
 let cmpDragging = false;
+let _activeJobId = null;  // ID job yang sedang berjalan untuk fitur ini
 
 const $ = id => document.getElementById(id);
+
+// ─── GlobalJobManager integration ────────────────────────────────────────
+// Daftarkan processor ke parent jika tersedia, atau jalankan langsung
+const FEATURE_NAME = 'background-remover';
+const FEATURE_LABEL = 'Penghapus Latar';
+
+// Processor function yang didaftarkan ke GlobalJobManager
+async function bgRemoverProcessor(job, signal, onProgress) {
+  const file = job.inputData;
+  if (!file) throw new Error('File tidak tersedia');
+
+  // Load gambar ke ImageBitmap (lebih efisien)
+  const img = new Image();
+  const fileUrl = URL.createObjectURL(file);
+  img.src = fileUrl;
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = () => reject(new Error('Gagal memuat gambar'));
+  });
+  URL.revokeObjectURL(fileUrl);
+
+  const width = img.naturalWidth || img.width;
+  const height = img.naturalHeight || img.height;
+  if (!width || !height) throw new Error('Resolusi gambar tidak valid');
+
+  if (signal && signal.aborted) throw new DOMException('AbortError', 'AbortError');
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(img, 0, 0, width, height);
+  const imageData = ctx.getImageData(0, 0, width, height);
+
+  onProgress(5);
+
+  // Coba jalankan di Worker jika memungkinkan
+  let resultImageData;
+  try {
+    resultImageData = await _runInWorker(job.id, imageData, signal, onProgress);
+  } catch (workerErr) {
+    // Fallback ke main thread jika Worker gagal
+    if (signal && signal.aborted) throw workerErr;
+    const model = detectAndBuildBackgroundModel(imageData.data, width, height);
+    const { visited, distMap } = floodFillBackgroundConnected(imageData.data, width, height, model);
+    refineEdgesAndAlphaMatte(imageData.data, width, height, visited, distMap, model);
+    resultImageData = imageData;
+    onProgress(95);
+  }
+
+  if (signal && signal.aborted) throw new DOMException('AbortError', 'AbortError');
+
+  ctx.putImageData(new ImageData(resultImageData.data, resultImageData.width, resultImageData.height), 0, 0);
+  onProgress(99);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (blob) resolve(blob);
+      else reject(new Error('Ekspor canvas gagal'));
+    }, 'image/png');
+  });
+}
+
+// Jalankan processing di Web Worker
+function _runInWorker(jobId, imageData, signal, onProgress) {
+  return new Promise((resolve, reject) => {
+    let worker;
+    try {
+      worker = new Worker('bg-removal-worker.js');
+    } catch(e) {
+      reject(new Error('Worker tidak tersedia'));
+      return;
+    }
+
+    const handleAbort = () => {
+      worker.postMessage({ jobId, cancelled: true });
+      worker.terminate();
+      reject(new DOMException('AbortError', 'AbortError'));
+    };
+    if (signal) signal.addEventListener('abort', handleAbort, { once: true });
+
+    worker.onmessage = (e) => {
+      const { type, pct, imageData: resultData, message } = e.data;
+      if (type === 'progress') { onProgress(pct); }
+      else if (type === 'done') {
+        if (signal) signal.removeEventListener('abort', handleAbort);
+        worker.terminate();
+        resolve(resultData);
+      }
+      else if (type === 'error') {
+        if (signal) signal.removeEventListener('abort', handleAbort);
+        worker.terminate();
+        reject(new Error(message || 'Worker error'));
+      }
+    };
+
+    worker.onerror = (err) => {
+      if (signal) signal.removeEventListener('abort', handleAbort);
+      reject(new Error(err.message || 'Worker crash'));
+    };
+
+    // Transfer ImageData buffer ke worker (zero-copy)
+    const transferBuf = imageData.data.buffer.slice(0);
+    const transferData = new Uint8ClampedArray(transferBuf);
+    worker.postMessage({
+      jobId,
+      imageData: { data: transferData, width: imageData.width, height: imageData.height }
+    }, [transferBuf]);
+  });
+}
+
+// Register ke GlobalJobManager parent (jika tersedia via postMessage)
+function _registerJob(file) {
+  // Jika dalam iframe dan parent memiliki GlobalJobManager
+  if (window.parent && window.parent !== window && window.parent.GlobalJobManager) {
+    const gjm = window.parent.GlobalJobManager;
+    // Daftarkan processor di parent jika belum
+    if (!gjm._processors || !gjm._processors.has(FEATURE_NAME)) {
+      gjm.registerProcessor(FEATURE_NAME, bgRemoverProcessor);
+    }
+    const jobId = gjm.createJob({
+      feature: FEATURE_NAME,
+      featureLabel: FEATURE_LABEL,
+      inputName: file.name,
+      inputData: file,
+      onComplete: (job) => {
+        if (_activeJobId === job.id) {
+          _onJobComplete(job);
+        }
+      },
+      onFail: (job) => {
+        if (_activeJobId === job.id) {
+          _onJobFailed(job);
+        }
+      }
+    });
+    _activeJobId = jobId;
+    return jobId;
+  }
+  // Standalone (tidak dalam iframe): jalankan langsung
+  return null;
+}
+
+// Callback saat job selesai
+function _onJobComplete(job) {
+  const gjm = (window.parent && window.parent !== window && window.parent.GlobalJobManager)
+    ? window.parent.GlobalJobManager
+    : (window.GlobalJobManager || null);
+  if (!gjm) {
+    CuteLoading.hide('progressSection');
+    return;
+  }
+  gjm.getResultBlob(job.id).then(blob => {
+    if (!blob) return;
+    processedBlob = blob;
+    if (processedUrl) URL.revokeObjectURL(processedUrl);
+    processedUrl = URL.createObjectURL(blob);
+    $('cmpResult').src = processedUrl;
+    CuteLoading.hide('progressSection');
+    const cmpImages = $('cmpImages');
+    cmpImages.style.display = 'block';
+    cmpImages.classList.remove('cmp-show');
+    void cmpImages.offsetWidth;
+    cmpImages.classList.add('cmp-show');
+    $('downloadBtn').disabled = false;
+    $('bgOptionsTitle').style.display = 'block';
+    $('bgOptionsCard').style.display = 'block';
+    resetSlider();
+    selectBgColor('transparent', document.querySelector('.color-btn[data-color="transparent"]'));
+    showAlert(currentLang === 'id' ? 'Latar belakang berhasil dihapus!' : 'Background removed successfully!', 'ok');
+  }).catch(() => {
+    _onJobFailed(job);
+  });
+}
+
+function _onJobFailed(job) {
+  CuteLoading.hide('progressSection');
+  $('cmpEmpty').style.display = 'flex';
+  showAlert(
+    currentLang === 'id' ? 'Gambar tidak dapat diproses.' : 'Image could not be processed.',
+    'err'
+  );
+}
+
+
 
 function getFriendlyKey(key, lang) {
   const filename = (key.split('/').pop() || '').toLowerCase();
@@ -626,71 +812,81 @@ function updateDownloadButtonText(isTrans) {
   }
 }
 
-// Main image processor
+// Main image processor — gunakan GlobalJobManager jika tersedia
 async function processImage(file) {
   if (!file.type.startsWith('image/')) {
     showAlert(currentLang === 'id' ? 'Format file tidak didukung. Pilih gambar!' : 'Unsupported file format. Select an image!', 'err');
     return;
   }
 
+  // Cancel job sebelumnya jika masih berjalan
+  if (_activeJobId && window.parent && window.parent.GlobalJobManager) {
+    const prevJob = window.parent.GlobalJobManager.getJob(_activeJobId);
+    if (prevJob && (prevJob.status === 'queued' || prevJob.status === 'processing')) {
+      window.parent.GlobalJobManager.cancelJob(_activeJobId);
+    }
+  }
+
   originalFile = file;
   processedBlob = null;
-  
-  // Set UI state
+
   $('cmpEmpty').style.display = 'none';
   $('cmpImages').style.display = 'none';
   $('downloadBtn').disabled = true;
   $('bgOptionsTitle').style.display = 'none';
   $('bgOptionsCard').style.display = 'none';
-  
-  // Load original preview
   $('cmpOriginal').src = URL.createObjectURL(file);
-  
-  // Tampilkan CuteLoading
-  const progressSection = $('progressSection');
-  const statusLabel = { set textContent(v) { CuteLoading.setText('progressSection', v); } };
-  const progressBar = { style: { set width(_) {} } }; // dummy - tidak ditampilkan ke user
-  
   CuteLoading.show('progressSection', 'Sabar yahh..');
 
-  try {
-    const resultBlob = await executeAdaptiveBackgroundRemoval(file);
-    processedBlob = resultBlob;
+  // Coba gunakan GlobalJobManager dari parent
+  const parentGJM = window.parent && window.parent !== window ? window.parent.GlobalJobManager : null;
 
-    const processedUrl2 = URL.createObjectURL(resultBlob);
+  if (parentGJM) {
+    // Daftarkan processor jika belum
+    if (!parentGJM._processors.has(FEATURE_NAME)) {
+      parentGJM.registerProcessor(FEATURE_NAME, bgRemoverProcessor);
+    }
+    const jobId = parentGJM.createJob({
+      feature: FEATURE_NAME,
+      featureLabel: FEATURE_LABEL,
+      inputName: file.name,
+      inputData: file,
+      onComplete: _onJobComplete,
+      onFail: _onJobFailed,
+    });
+    _activeJobId = jobId;
 
-    if (processedUrl) URL.revokeObjectURL(processedUrl);
-    processedUrl = processedUrl2;
-
-    $('cmpResult').src = processedUrl;
-
-    CuteLoading.hide('progressSection');
-    const cmpImages = $('cmpImages');
-    cmpImages.style.display = 'block';
-    cmpImages.classList.remove('cmp-show');
-    void cmpImages.offsetWidth; // trigger reflow for smooth transition
-    cmpImages.classList.add('cmp-show');
-
-    $('downloadBtn').disabled = false;
-    $('bgOptionsTitle').style.display = 'block';
-    $('bgOptionsCard').style.display = 'block';
-
-    resetSlider();
-    selectBgColor('transparent', document.querySelector('.color-btn[data-color="transparent"]'));
-    showAlert(currentLang === 'id' ? 'Latar belakang berhasil dihapus!' : 'Background removed successfully!', 'ok');
-
-  } catch (e) {
-    console.error('Background removal error:', e);
-    CuteLoading.hide('progressSection');
-    $('cmpEmpty').style.display = 'flex';
-    showAlert(
-      currentLang === 'id'
-        ? 'Gambar tidak dapat diproses.'
-        : 'Image could not be processed.',
-      'err'
-    );
+    // Tampilkan toast ringan — proses berjalan di background
+    // UI tidak diblokir
+  } else {
+    // Standalone mode: jalankan langsung
+    try {
+      const resultBlob = await executeAdaptiveBackgroundRemoval(file);
+      processedBlob = resultBlob;
+      if (processedUrl) URL.revokeObjectURL(processedUrl);
+      processedUrl = URL.createObjectURL(resultBlob);
+      $('cmpResult').src = processedUrl;
+      CuteLoading.hide('progressSection');
+      const cmpImages = $('cmpImages');
+      cmpImages.style.display = 'block';
+      cmpImages.classList.remove('cmp-show');
+      void cmpImages.offsetWidth;
+      cmpImages.classList.add('cmp-show');
+      $('downloadBtn').disabled = false;
+      $('bgOptionsTitle').style.display = 'block';
+      $('bgOptionsCard').style.display = 'block';
+      resetSlider();
+      selectBgColor('transparent', document.querySelector('.color-btn[data-color="transparent"]'));
+      showAlert(currentLang === 'id' ? 'Latar belakang berhasil dihapus!' : 'Background removed successfully!', 'ok');
+    } catch (e) {
+      console.error('Background removal error:', e);
+      CuteLoading.hide('progressSection');
+      $('cmpEmpty').style.display = 'flex';
+      showAlert(currentLang === 'id' ? 'Gambar tidak dapat diproses.' : 'Image could not be processed.', 'err');
+    }
   }
 }
+
 
 // Download action
 async function downloadResult() {

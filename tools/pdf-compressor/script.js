@@ -74,6 +74,25 @@ async function handleFileSelect(file) {
   }
 }
 
+const FEATURE_NAME = 'pdf-compressor';
+const FEATURE_LABEL = 'Kompresor PDF';
+
+async function pdfCompressorProcessor(job, signal, onProgress) {
+  const file = job.inputData.file;
+  const level = job.inputData.level;
+
+  const result = await compressPdf({
+    file,
+    level,
+    onProgress: (percent) => {
+      onProgress(percent);
+    },
+    isCancelled: () => signal && signal.aborted
+  });
+
+  return result.blob;
+}
+
 /**
  * Handle compress action trigger
  */
@@ -85,6 +104,49 @@ async function handleCompress() {
 
   state.setProcessing(true);
   ui.renderProcessing(5, 'statusPreparing');
+
+  const gjm = (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.GlobalJobManager)
+    ? window.parent.GlobalJobManager
+    : (window.GlobalJobManager || null);
+
+  if (gjm) {
+    if (!gjm.hasProcessor(FEATURE_NAME)) {
+      gjm.registerProcessor(FEATURE_NAME, pdfCompressorProcessor);
+    }
+    const outputName = `toolsuf-${state.file.name.replace(/\.[^.]+$/, '')}-pdf-compressor.pdf`;
+    const jobId = gjm.createJob({
+      feature: FEATURE_NAME,
+      featureLabel: FEATURE_LABEL,
+      inputName: state.file.name,
+      outputName,
+      inputData: { file: state.file, level: state.compressionLevel },
+      onComplete: async (job) => {
+        const blob = await gjm.getResultBlob(job.id);
+        const result = {
+          blob,
+          originalSize: state.file.size,
+          compressedSize: blob ? blob.size : state.file.size,
+          pageCount: state.pageCount,
+          timeTaken: Math.max(0.5, ((job.completedAt - job.startedAt) / 1000).toFixed(1))
+        };
+        state.setResult(result);
+        ui.renderResult();
+        ui.showToast(ui.t('toastSuccess'));
+      },
+      onFail: (job) => {
+        state.setProcessing(false);
+        if (job.status === 'cancelled') {
+          ui.showToast(ui.t('toastCancelled'));
+        } else {
+          ui.showToast(job.error || ui.t('toastProcessingError'));
+        }
+        ui.renderFileInfo();
+      }
+    });
+
+    state.activeJobId = jobId;
+    return;
+  }
 
   try {
     const result = await compressPdf({
@@ -120,6 +182,12 @@ async function handleCompress() {
  */
 function handleCancel() {
   state.cancel();
+  const gjm = (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.GlobalJobManager)
+    ? window.parent.GlobalJobManager
+    : (window.GlobalJobManager || null);
+  if (gjm && state.activeJobId) {
+    gjm.cancelJob(state.activeJobId);
+  }
 }
 
 /**

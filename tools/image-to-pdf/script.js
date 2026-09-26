@@ -1418,8 +1418,84 @@ async function applyModalToAllPages() {
 }
 
 /* =========================================================
-   FULL-RESOLUTION PDF GENERATION (Optimized 300 DPI)
+   FULL-RESOLUTION PDF GENERATION (Optimized 300 DPI) & GlobalJobManager
    ========================================================= */
+
+const FEATURE_NAME_IMG_PDF = 'image-to-pdf';
+const FEATURE_LABEL_IMG_PDF = 'Gambar ke PDF';
+
+function getPageMMForItem(item, sizeKey, pdfW, pdfH) {
+  if (sizeKey !== 'fit') return [pdfW, pdfH];
+  const src = (item.hasWarped && item.warpedCanvas) ? item.warpedCanvas : item.origImg;
+  const px = src.naturalWidth || src.width;
+  const py = src.naturalHeight || src.height;
+  const pxToMM = 25.4 / 96;
+  let fitW = px * pxToMM;
+  let fitH = py * pxToMM;
+  if (item.rotation % 180 !== 0) { [fitW, fitH] = [fitH, fitW]; }
+  const scaleDown = Math.min(1, 297 / Math.max(fitW, fitH));
+  return [fitW * scaleDown, fitH * scaleDown];
+}
+
+async function renderPageToDoc(doc, item, isFirstPage, quality, sizeKey, pdfW, pdfH, isLandscape) {
+  const imgDataUrl = await processOptimizedPage(item, quality);
+  const [pageW, pageH] = getPageMMForItem(item, sizeKey, pdfW, pdfH);
+
+  if (!isFirstPage) {
+    doc.addPage(sizeKey === 'fit' ? [pageW, pageH] : [pdfW, pdfH], isLandscape ? 'l' : 'p');
+  }
+
+  const img = new Image();
+  img.src = imgDataUrl;
+  await new Promise((resolve) => { img.onload = resolve; });
+
+  const imgAR = img.width / img.height;
+  const pageAR = pageW / pageH;
+  let renderW, renderH;
+  if (imgAR > pageAR) {
+    renderW = pageW;
+    renderH = renderW / imgAR;
+  } else {
+    renderH = pageH;
+    renderW = renderH * imgAR;
+  }
+  const offsetX = (pageW - renderW) / 2;
+  const offsetY = (pageH - renderH) / 2;
+
+  doc.addImage(imgDataUrl, 'JPEG', offsetX, offsetY, renderW, renderH, undefined, 'FAST');
+}
+
+async function imageToPdfProcessor(job, signal, onProgress) {
+  const { items, settings } = job.inputData;
+  const { sizeKey, orient, quality, margin } = settings;
+  const { jsPDF } = window.jspdf;
+
+  const [w, h] = getPageSizeMM(sizeKey);
+  const isLandscape = orient === 'l';
+  const pdfW = isLandscape ? h : w;
+  const pdfH = isLandscape ? w : h;
+
+  const firstItem = items[0];
+  const [firstW, firstH] = getPageMMForItem(firstItem, sizeKey, pdfW, pdfH);
+  const doc = new jsPDF({
+    orientation: isLandscape ? 'l' : 'p',
+    unit: 'mm',
+    format: sizeKey === 'fit' ? [firstW, firstH] : [pdfW, pdfH],
+  });
+
+  for (let i = 0; i < items.length; i++) {
+    if (signal && signal.aborted) throw new DOMException('AbortError', 'AbortError');
+    const item = items[i];
+    onProgress(Math.round(((i + 0.5) / items.length) * 90));
+    await renderPageToDoc(doc, item, i === 0, quality, sizeKey, pdfW, pdfH, isLandscape);
+  }
+
+  onProgress(95);
+  const pdfData = doc.output('arraybuffer');
+  const pdfBlob = new Blob([pdfData], { type: 'application/pdf' });
+  onProgress(100);
+  return pdfBlob;
+}
 
 async function generatePDF() {
   if (!images.length) {
@@ -1430,77 +1506,66 @@ async function generatePDF() {
   genBtn.disabled = true;
   setProgress(0, t('processing'));
 
-  try {
-    const sizeKey = document.getElementById('pageSize').value;
-    const orient = document.getElementById('orientation').value;
-    const quality = parseInt(document.getElementById('quality').value) / 100;
-    const marginEl = document.getElementById('margin');
-    const margin = marginEl ? parseInt(marginEl.value) : 0;
+  const sizeKey = document.getElementById('pageSize').value;
+  const orient = document.getElementById('orientation').value;
+  const quality = parseInt(document.getElementById('quality').value) / 100;
+  const marginEl = document.getElementById('margin');
+  const margin = marginEl ? parseInt(marginEl.value) : 0;
+  const rawInputName = (images[0] && images[0].name) ? images[0].name : 'foto';
 
+  const gjm = (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.GlobalJobManager)
+    ? window.parent.GlobalJobManager
+    : (window.GlobalJobManager || null);
+
+  if (gjm) {
+    if (!gjm.hasProcessor(FEATURE_NAME_IMG_PDF)) {
+      gjm.registerProcessor(FEATURE_NAME_IMG_PDF, imageToPdfProcessor);
+    }
+    const outputName = `toolsuf-${rawInputName.replace(/\.[^/.]+$/, '')}-image-to-pdf.pdf`;
+
+    gjm.createJob({
+      feature: FEATURE_NAME_IMG_PDF,
+      featureLabel: FEATURE_LABEL_IMG_PDF,
+      inputName: images.length === 1 ? rawInputName : `${images.length} gambar`,
+      outputName,
+      inputData: {
+        items: [...images],
+        settings: { sizeKey, orient, quality, margin }
+      },
+      onProgress: (job) => {
+        setProgress(
+          Math.round(job.progress),
+          `${t('processing')} ${Math.round(job.progress)}%`
+        );
+      },
+      onComplete: async (job) => {
+        genBtn.disabled = false;
+        if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
+        const blob = await gjm.getResultBlob(job.id);
+        if (blob) {
+          await downloadBlob(blob, rawInputName);
+          showAlert(t('success'), 'ok');
+        }
+      },
+      onFail: (job) => {
+        genBtn.disabled = false;
+        if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
+        showAlert(job.error || t('error'), 'err');
+      }
+    });
+    return;
+  }
+
+  // Standalone fallback:
+  try {
     const [w, h] = getPageSizeMM(sizeKey);
     const isLandscape = orient === 'l';
     const pdfW = isLandscape ? h : w;
     const pdfH = isLandscape ? w : h;
-
     const { jsPDF } = window.jspdf;
 
-    const marginMM = margin;
-    const usableW = (sizeKey === 'fit' ? w : pdfW) - marginMM * 2;
-    const usableH = (sizeKey === 'fit' ? h : pdfH) - marginMM * 2;
-
-    /**
-     * Get page dimensions in mm for a given item.
-     * For 'fit', derives dimensions from the actual (warped) image pixel size at 96dpi.
-     */
-    function getPageMMForItem(item) {
-      if (sizeKey !== 'fit') return [pdfW, pdfH];
-      // Use warpedCanvas if available, otherwise original image
-      const src = (item.hasWarped && item.warpedCanvas) ? item.warpedCanvas : item.origImg;
-      const px = src.naturalWidth || src.width;
-      const py = src.naturalHeight || src.height;
-      // Convert pixels → mm (96 dpi: 1 inch = 25.4 mm, 1 px = 25.4/96 mm)
-      const pxToMM = 25.4 / 96;
-      let fitW = px * pxToMM;
-      let fitH = py * pxToMM;
-      // Respect rotation
-      if (item.rotation % 180 !== 0) { [fitW, fitH] = [fitH, fitW]; }
-      // Cap to A4-sized max to avoid absurd page sizes
-      const scaleDown = Math.min(1, 297 / Math.max(fitW, fitH));
-      return [fitW * scaleDown, fitH * scaleDown];
-    }
-
-    async function renderPageToDoc(doc, item, isFirstPage) {
-      const imgDataUrl = await processOptimizedPage(item, quality);
-      const [pageW, pageH] = getPageMMForItem(item);
-
-      if (!isFirstPage) {
-        doc.addPage(sizeKey === 'fit' ? [pageW, pageH] : [pdfW, pdfH], isLandscape ? 'l' : 'p');
-      }
-
-      const img = new Image();
-      img.src = imgDataUrl;
-      await new Promise((resolve) => { img.onload = resolve; });
-
-      // CamScanner style: image fills the entire page, perfectly fitted, no gaps
-      const imgAR = img.width / img.height;
-      const pageAR = pageW / pageH;
-      let renderW, renderH;
-      if (imgAR > pageAR) {
-        renderW = pageW;
-        renderH = renderW / imgAR;
-      } else {
-        renderH = pageH;
-        renderW = renderH * imgAR;
-      }
-      const offsetX = (pageW - renderW) / 2;
-      const offsetY = (pageH - renderH) / 2;
-
-      doc.addImage(imgDataUrl, 'JPEG', offsetX, offsetY, renderW, renderH, undefined, 'FAST');
-    }
-
-    // Build unified PDF document (single or multi-page)
     const firstItem = images[0];
-    const [firstW, firstH] = getPageMMForItem(firstItem);
+    const [firstW, firstH] = getPageMMForItem(firstItem, sizeKey, pdfW, pdfH);
     const doc = new jsPDF({
       orientation: isLandscape ? 'l' : 'p',
       unit: 'mm',
@@ -1513,23 +1578,14 @@ async function generatePDF() {
         Math.round(((i + 0.5) / images.length) * 90),
         `${t('processingPage')} ${i + 1} / ${images.length}...`
       );
-      await renderPageToDoc(doc, item, i === 0);
+      await renderPageToDoc(doc, item, i === 0, quality, sizeKey, pdfW, pdfH, isLandscape);
     }
-
-    let baseName = '';
-    const rawInputName = (images[0] && images[0].name) ? images[0].name : 'foto';
-    const pdfFileName = typeof ToolSufDownload !== 'undefined'
-      ? ToolSufDownload.generateFilename({ originalName: rawInputName, featureName: 'image-to-pdf', extension: 'pdf', defaultName: 'foto' })
-      : `toolsuf-${rawInputName.replace(/\.[^/.]+$/, '')}-image-to-pdf.pdf`;
 
     setProgress(100, t('processing'));
     await new Promise(r => setTimeout(r, 150));
 
-    // Explicit Blob construction with application/pdf MIME type
     const pdfData = doc.output('arraybuffer');
-    const pdfBlob = new Blob([pdfData], {
-      type: 'application/pdf'
-    });
+    const pdfBlob = new Blob([pdfData], { type: 'application/pdf' });
     await downloadBlob(pdfBlob, rawInputName);
 
     showAlert(t('success'), 'ok');

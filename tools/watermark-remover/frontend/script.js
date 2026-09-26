@@ -537,9 +537,79 @@ async function autoDetect() {
   showAlert(found.length + ' watermark terdeteksi', 'ok');
 }
 
-// ─── Server-side processing via Flask ────────────────────────────────────────
-// BUG FIX: replaced EventSource (SSE) with polling via fetch — more reliable
-// when iframe sandbox policies block SSE, and avoids browser SSE retry storms.
+// ─── Server-side processing via Flask & GlobalJobManager ────────────────────
+const FEATURE_NAME_WM = 'watermark-remover';
+const FEATURE_LABEL_WM = 'Hapus Watermark';
+
+async function watermarkRemoverProcessor(job, signal, onProgress) {
+  const { video, masksData, method, radius } = job.inputData;
+  const fd = new FormData();
+  fd.append('video', video);
+  fd.append('masks', JSON.stringify(masksData));
+  fd.append('method', method);
+  fd.append('radius', radius);
+
+  const taskId = await new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', API_BASE + '/api/process');
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        onProgress(Math.round((e.loaded / e.total) * 10));
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        try { resolve(JSON.parse(xhr.responseText).task_id); }
+        catch { reject(new Error('Invalid server response')); }
+      } else {
+        try { reject(new Error(JSON.parse(xhr.responseText).error)); }
+        catch { reject(new Error('Server error ' + xhr.status)); }
+      }
+    };
+    xhr.onerror = () => reject(new Error('Network error — server offline?'));
+    xhr.send(fd);
+  });
+
+  await new Promise((resolve, reject) => {
+    const poll = async () => {
+      if (signal && signal.aborted) {
+        reject(new DOMException('AbortError', 'AbortError'));
+        return;
+      }
+      try {
+        const res = await fetch(API_BASE + '/api/status/' + taskId, {
+          signal: AbortSignal.timeout(5000)
+        });
+        if (!res.ok) { reject(new Error('Status check failed: ' + res.status)); return; }
+
+        const text = await res.text();
+        const match = text.match(/data:\s*(\{.*?\})/s);
+        if (!match) { setTimeout(poll, 800); return; }
+
+        const data = JSON.parse(match[1]);
+        const pct = Math.min(95, 10 + Math.round((data.progress || 0) * 0.85));
+        onProgress(pct);
+
+        if (data.error) { reject(new Error(data.error)); return; }
+        if (data.done) { resolve(taskId); return; }
+        setTimeout(poll, 800);
+      } catch (err) {
+        reject(err);
+      }
+    };
+    poll();
+  });
+
+  onProgress(97);
+  const dlRes = await fetch(API_BASE + '/api/download/' + taskId);
+  if (!dlRes.ok) throw new Error('Download failed: ' + dlRes.status);
+  const blob = await dlRes.blob();
+  onProgress(100);
+  return blob;
+}
+
 async function processViaServer() {
   if (!videoFile || !videoMeta) { showAlert(tr('noFile'), 'err'); return; }
   if (masks.length === 0) { showAlert(tr('noMask'), 'err'); return; }
@@ -557,18 +627,55 @@ async function processViaServer() {
   processBtn.disabled = true;
   showProgress(0, tr('processing'));
 
+  const gjm = (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.GlobalJobManager)
+    ? window.parent.GlobalJobManager
+    : (window.GlobalJobManager || null);
+
+  const method = (document.getElementById('qualityLevel') || {}).value || 'advanced';
+  const radius = (document.getElementById('inpaintRadius') || {}).value || '8';
+  const masksData = masks.map(m => ({ x: m.x, y: m.y, w: m.w, h: m.h }));
+
+  if (gjm) {
+    if (!gjm.hasProcessor(FEATURE_NAME_WM)) {
+      gjm.registerProcessor(FEATURE_NAME_WM, watermarkRemoverProcessor);
+    }
+    const outputName = `toolsuf-${videoFile.name.replace(/\.[^.]+$/, '')}-watermark-remover.mp4`;
+
+    gjm.createJob({
+      feature: FEATURE_NAME_WM,
+      featureLabel: FEATURE_LABEL_WM,
+      inputName: videoFile.name,
+      outputName,
+      inputData: { video: videoFile, masksData, method, radius },
+      onProgress: (job) => {
+        showProgress(Math.round(job.progress), tr('processing') + ' ' + Math.round(job.progress) + '%');
+      },
+      onComplete: async (job) => {
+        processBtn.disabled = masks.length === 0;
+        if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
+        const blob = await gjm.getResultBlob(job.id);
+        if (blob) {
+          showResult(blob);
+          showAlert(tr('success'), 'ok');
+        }
+      },
+      onFail: (job) => {
+        processBtn.disabled = masks.length === 0;
+        if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
+        showAlert(job.error || tr('error'), 'err');
+      }
+    });
+    return;
+  }
+
+  // Standalone fallback:
   try {
-    // Step 1: upload video + masks
     const fd = new FormData();
     fd.append('video', videoFile);
-    fd.append('masks', JSON.stringify(masks.map(m => ({ x: m.x, y: m.y, w: m.w, h: m.h }))));
-    // Read from UI controls
-    const method = (document.getElementById('qualityLevel') || {}).value || 'advanced';
-    const radius = (document.getElementById('inpaintRadius') || {}).value || '8';
+    fd.append('masks', JSON.stringify(masksData));
     fd.append('method', method);
     fd.append('radius', radius);
 
-    // Use XHR so we can track upload progress
     const taskId = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', API_BASE + '/api/process');
@@ -593,9 +700,6 @@ async function processViaServer() {
       xhr.send(fd);
     });
 
-    // Step 2: poll /api/status/<task_id> every 800ms until done
-    // BUG FIX: replaced SSE (EventSource) with polling — EventSource was
-    // being closed by the browser after the first event in some iframe setups.
     await new Promise((resolve, reject) => {
       const poll = async () => {
         try {
@@ -605,7 +709,6 @@ async function processViaServer() {
           if (!res.ok) { reject(new Error('Status check failed: ' + res.status)); return; }
 
           const text = await res.text();
-          // SSE text: "data: {...}\n\n"
           const match = text.match(/data:\s*(\{.*?\})/s);
           if (!match) { setTimeout(poll, 800); return; }
 
@@ -623,7 +726,6 @@ async function processViaServer() {
       poll();
     });
 
-    // Step 3: download result blob
     showProgress(97, tr('finalizing'));
     const dlRes = await fetch(API_BASE + '/api/download/' + taskId);
     if (!dlRes.ok) throw new Error('Download failed: ' + dlRes.status);

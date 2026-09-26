@@ -684,9 +684,84 @@ async function convertPDF() {
   convBtn.disabled = true;
   setProgress(90, t('generatingDoc'));
 
-  try {
-    const format = document.getElementById('outputFormat').value;
+  const gjm = (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.GlobalJobManager)
+    ? window.parent.GlobalJobManager
+    : (window.GlobalJobManager || null);
 
+  const format = document.getElementById('outputFormat').value;
+  const baseName = pdfData.name.replace(/\.pdf$/i, '');
+
+  if (gjm) {
+    if (!gjm.hasProcessor('pdf-to-docs')) {
+      gjm.registerProcessor('pdf-to-docs', async (job, signal, onProgress) => {
+        if (job.inputData.format === 'docx') {
+          onProgress(25);
+          const blob = await buildDocxBlob();
+          onProgress(100);
+          return blob;
+        } else {
+          onProgress(50);
+          const blob = buildTxtBlob();
+          onProgress(100);
+          return blob;
+        }
+      });
+    }
+
+    const outputName = `toolsuf-${baseName}-pdf-to-docs.${format}`;
+    gjm.createJob({
+      feature: 'pdf-to-docs',
+      featureLabel: 'PDF ke Dokumen',
+      inputName: pdfData.name,
+      outputName,
+      inputData: { format, baseName },
+      onProgress: (job) => {
+        setProgress(Math.round(job.progress), t('generatingDoc'));
+      },
+      onComplete: async (job) => {
+        convBtn.disabled = false;
+        if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
+        const blob = await gjm.getResultBlob(job.id);
+        if (blob) {
+          if (format === 'docx') {
+            if (typeof ToolSufDownload !== 'undefined') {
+              await ToolSufDownload.downloadFile({
+                blob,
+                originalName: pdfData.name,
+                featureName: 'pdf-to-docs',
+                extension: 'docx',
+                mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+              });
+            } else {
+              saveAs(blob, outputName);
+            }
+            showAlert(t('successDocx'), 'ok');
+          } else {
+            if (typeof ToolSufDownload !== 'undefined') {
+              await ToolSufDownload.downloadFile({
+                blob,
+                originalName: pdfData.name,
+                featureName: 'pdf-to-docs',
+                extension: 'txt',
+                mimeType: 'text/plain;charset=utf-8'
+              });
+            } else {
+              saveAs(blob, outputName);
+            }
+            showAlert(t('successTxt'), 'ok');
+          }
+        }
+      },
+      onFail: (job) => {
+        convBtn.disabled = false;
+        if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
+        showAlert(job.error || t('error'), 'err');
+      }
+    });
+    return;
+  }
+
+  try {
     if (format === 'docx') {
       await generateDOCX();
     } else {
@@ -698,6 +773,167 @@ async function convertPDF() {
     convBtn.disabled = false;
     if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
   }
+}
+
+async function buildDocxBlob() {
+  const { 
+    Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, 
+    WidthType, BorderStyle, TableAnchorType, ImageRun, HeightRule 
+  } = window.docx;
+  const baseName = pdfData.name.replace(/\.pdf$/i, '');
+  const sections = [];
+
+  for (let i = 0; i < pagesData.length; i++) {
+    const page = pagesData[i];
+    const sectionChildren = [];
+    const anchorParagraph = new Paragraph({ children: [], spacing: { before: 0, after: 0 } });
+    sectionChildren.push(anchorParagraph);
+
+    for (const seg of page.textSegments) {
+      const leftInTwips = Math.round(seg.left * 20);
+      const topInTwips = Math.round(seg.top * 20);
+      const widthInTwips = Math.round((seg.width + Math.max(10, seg.width * 0.1)) * 20);
+      const fontNameMapped = getStandardFont(seg.fontFamily);
+
+      const textTable = new Table({
+        float: {
+          horizontalAnchor: TableAnchorType ? TableAnchorType.PAGE : "page",
+          verticalAnchor: TableAnchorType ? TableAnchorType.PAGE : "page",
+          absoluteHorizontalPosition: leftInTwips,
+          absoluteVerticalPosition: topInTwips,
+        },
+        width: { size: widthInTwips, type: "dxa" },
+        borders: {
+          top: { style: "none", size: 0, color: "auto" },
+          bottom: { style: "none", size: 0, color: "auto" },
+          left: { style: "none", size: 0, color: "auto" },
+          right: { style: "none", size: 0, color: "auto" },
+        },
+        rows: [
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: seg.text,
+                        size: Math.max(12, Math.round(seg.fontSize * 2)),
+                        font: fontNameMapped,
+                        color: "000000"
+                      })
+                    ],
+                    spacing: { before: 0, after: 0 }
+                  })
+                ],
+                borders: {
+                  top: { style: "none", size: 0, color: "auto" },
+                  bottom: { style: "none", size: 0, color: "auto" },
+                  left: { style: "none", size: 0, color: "auto" },
+                  right: { style: "none", size: 0, color: "auto" },
+                },
+                margins: { top: 0, bottom: 0, left: 0, right: 0 }
+              })
+            ]
+          })
+        ]
+      });
+      sectionChildren.push(textTable);
+    }
+
+    for (const img of page.images) {
+      if (!img.base64) continue;
+      const leftInTwips = Math.round(img.left * 20);
+      const topInTwips = Math.round(img.top * 20);
+      const widthInTwips = Math.round(img.width * 20);
+
+      const base64Data = img.base64.replace(/^data:image\/\w+;base64,/, "");
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let k = 0; k < binaryString.length; k++) {
+        bytes[k] = binaryString.charCodeAt(k);
+      }
+
+      let imgType = "png";
+      if (img.base64.includes("image/jpeg") || img.base64.includes("image/jpg")) {
+        imgType = "jpg";
+      }
+
+      const imgTable = new Table({
+        float: {
+          horizontalAnchor: TableAnchorType ? TableAnchorType.PAGE : "page",
+          verticalAnchor: TableAnchorType ? TableAnchorType.PAGE : "page",
+          absoluteHorizontalPosition: leftInTwips,
+          absoluteVerticalPosition: topInTwips,
+        },
+        width: { size: widthInTwips, type: "dxa" },
+        borders: {
+          top: { style: "none", size: 0, color: "auto" },
+          bottom: { style: "none", size: 0, color: "auto" },
+          left: { style: "none", size: 0, color: "auto" },
+          right: { style: "none", size: 0, color: "auto" },
+        },
+        rows: [
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new ImageRun({
+                        data: bytes,
+                        transformation: {
+                          width: Math.round(img.width * 96 / 72),
+                          height: Math.round(img.height * 96 / 72)
+                        },
+                        type: imgType
+                      })
+                    ],
+                    spacing: { before: 0, after: 0 }
+                  })
+                ],
+                borders: {
+                  top: { style: "none", size: 0, color: "auto" },
+                  bottom: { style: "none", size: 0, color: "auto" },
+                  left: { style: "none", size: 0, color: "auto" },
+                  right: { style: "none", size: 0, color: "auto" },
+                },
+                margins: { top: 0, bottom: 0, left: 0, right: 0 }
+              })
+            ]
+          })
+        ]
+      });
+      sectionChildren.push(imgTable);
+    }
+
+    sections.push({
+      properties: {
+        page: {
+          size: { width: Math.round(page.width * 20), height: Math.round(page.height * 20) },
+          margin: { top: 0, right: 0, bottom: 0, left: 0 }
+        }
+      },
+      children: sectionChildren
+    });
+  }
+
+  const doc = new Document({
+    title: baseName,
+    description: 'Converted from ' + pdfData.name,
+    sections: sections
+  });
+
+  return await Packer.toBlob(doc);
+}
+
+function buildTxtBlob() {
+  let content = '';
+  for (let i = 0; i < pageTexts.length; i++) {
+    content += `=== ${t('pageLabel')} ${i + 1} ===\n\n`;
+    content += pageTexts[i] + '\n\n';
+  }
+  return new Blob([content], { type: 'text/plain;charset=utf-8' });
 }
 
 async function generateDOCX() {

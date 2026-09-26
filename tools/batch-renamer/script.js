@@ -243,6 +243,83 @@ async function doZip() {
     CuteLoading.show('zprog', 'Sabar yahh..');
   }
 
+  const gjm = (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.GlobalJobManager)
+    ? window.parent.GlobalJobManager
+    : (window.GlobalJobManager || null);
+
+  const originalInput = ($('base').value || '').trim() || (files[0] ? files[0].name : 'renamed-files');
+  const outputName = `toolsuf-${originalInput.replace(/\.[^.]+$/, '')}-batch-renamer-pro.zip`;
+  const includeCsv = $('csv').classList.contains('on');
+
+  if (gjm) {
+    if (!gjm.hasProcessor('batch-renamer')) {
+      gjm.registerProcessor('batch-renamer', async (job, signal, onProgress) => {
+        const { filesList, baseInput, includeCsv } = job.inputData;
+        const zip = new JSZip();
+        const folder = zip.folder('renamed');
+        const csv = ['Nama Asli,Nama Baru,Ukuran,Format'];
+
+        for (let i = 0; i < filesList.length; i++) {
+          if (signal && signal.aborted) throw new DOMException('AbortError', 'AbortError');
+          const nn = genName(i);
+          folder.file(nn, filesList[i]);
+          csv.push(`"${filesList[i].name}","${nn}","${fmtSize(filesList[i].size)}","${getExt(filesList[i].name)}"`);
+          onProgress(Math.round(((i + 1) / filesList.length) * 85));
+          if (i % 15 === 0) await new Promise(r => setTimeout(r, 0));
+        }
+
+        if (includeCsv) zip.file('laporan_rename.csv', csv.join('\n'));
+
+        onProgress(88);
+        const blob = await zip.generateAsync(
+          { type: 'blob', compression: 'DEFLATE' },
+          (meta) => { onProgress(88 + Math.round(meta.percent * 0.11)); }
+        );
+        onProgress(100);
+        return blob;
+      });
+    }
+
+    gjm.createJob({
+      feature: 'batch-renamer',
+      featureLabel: 'Ganti Nama File',
+      inputName: `${files.length} file`,
+      outputName,
+      inputData: { filesList: [...files], baseInput: originalInput, includeCsv },
+      onComplete: async (job) => {
+        btn.disabled = false;
+        if (typeof CuteLoading !== 'undefined') CuteLoading.hide('zprog');
+        const blob = await gjm.getResultBlob(job.id);
+        if (blob) {
+          if (typeof ToolSufDownload !== 'undefined') {
+            await ToolSufDownload.downloadFile({
+              blob,
+              originalName: originalInput,
+              featureName: 'batch-renamer-pro',
+              extension: 'zip',
+              defaultName: 'renamed-files'
+            });
+          } else {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = outputName;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 1000);
+          }
+          showAlert('✓ ' + files.length + ' file direname & dikemas dalam ZIP!', 'ok');
+        }
+      },
+      onFail: (job) => {
+        btn.disabled = false;
+        if (typeof CuteLoading !== 'undefined') CuteLoading.hide('zprog');
+        showAlert(job.error || 'Gagal mengemas file ke ZIP.', 'err');
+      }
+    });
+    return;
+  }
+
+  // Standalone fallback:
   try {
     const zip = new JSZip();
     const folder = zip.folder('renamed');
@@ -255,7 +332,6 @@ async function doZip() {
     }
     if ($('csv').classList.contains('on')) zip.file('laporan_rename.csv', csv.join('\n'));
     const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
-    const originalInput = ($('base').value || '').trim() || (files[0] ? files[0].name : 'renamed-files');
 
     if (typeof ToolSufDownload !== 'undefined') {
       await ToolSufDownload.downloadFile({
@@ -273,7 +349,7 @@ async function doZip() {
       a.click();
       setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 1000);
     }
-    showAlert('\u2713 ' + files.length + ' file direname & dikemas dalam ZIP!', 'ok');
+    showAlert('✓ ' + files.length + ' file direname & dikemas dalam ZIP!', 'ok');
   } catch (err) {
     console.error(err);
     showAlert('Gagal mengemas file ke ZIP.', 'err');

@@ -1,0 +1,404 @@
+/**
+ * ToolSuf — Global Job Center Styles  v1.0
+ * ==========================================
+ * Apple-like, compact, dark/light mode aware.
+ * Mobile: bottom sheet
+ * Desktop: dropdown popover dari header
+ */
+
+/* ─────────────────────────────────────────────────────────────────────
+   INDICATOR BUTTON (header)
+──────────────────────────────────────────────────────────────────────── */
+.gjm-indicator {
+  position: relative;
+}
+
+.gjm-indicator svg {
+  animation: gjm-spin 2s linear infinite;
+}
+
+@keyframes gjm-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.gjm-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #007AFF;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  padding: 0 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+  letter-spacing: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   OVERLAY (click-outside backdrop, hanya di mobile)
+──────────────────────────────────────────────────────────────────────── */
+.gjm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1900;
+  background: transparent;
+  pointer-events: auto;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   PANEL — Base (Desktop popover)
+──────────────────────────────────────────────────────────────────────── */
+.gjm-panel {
+  position: fixed;
+  z-index: 2000;
+  display: none;
+  flex-direction: column;
+  width: 320px;
+  max-height: min(480px, 80vh);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.12);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.97);
+  /* Position: top-right below header */
+  top: 64px;
+  right: 16px;
+  /* Colors via CSS vars (synced from app theme) */
+  background: var(--gjm-bg, #ffffff);
+  border: 1px solid var(--gjm-border, rgba(0,0,0,0.10));
+  color: var(--gjm-text, #1c1c1e);
+}
+
+.gjm-panel.gjm-panel-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   PANEL — Header
+──────────────────────────────────────────────────────────────────────── */
+.gjm-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--gjm-border, rgba(0,0,0,0.08));
+  flex-shrink: 0;
+}
+
+.gjm-panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--gjm-text, #1c1c1e);
+}
+
+.gjm-panel-close {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gjm-btn-bg, rgba(0,0,0,0.06));
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gjm-text-muted, #8e8e93);
+  padding: 0;
+  transition: background 0.15s;
+}
+.gjm-panel-close:hover { background: var(--gjm-btn-bg-hover, rgba(0,0,0,0.12)); }
+.gjm-panel-close svg { width: 12px; height: 12px; }
+
+/* ─────────────────────────────────────────────────────────────────────
+   JOB LIST
+──────────────────────────────────────────────────────────────────────── */
+.gjm-job-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 8px 0;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.gjm-job-list::-webkit-scrollbar { width: 4px; }
+.gjm-job-list::-webkit-scrollbar-thumb { background: var(--gjm-border, rgba(0,0,0,0.12)); border-radius: 2px; }
+
+/* ─────────────────────────────────────────────────────────────────────
+   JOB CARD
+──────────────────────────────────────────────────────────────────────── */
+.gjm-job-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--gjm-border, rgba(0,0,0,0.05));
+  transition: background 0.12s;
+}
+.gjm-job-card:last-child { border-bottom: none; }
+.gjm-job-card:hover { background: var(--gjm-hover, rgba(0,0,0,0.03)); }
+
+.gjm-card-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.gjm-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.gjm-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gjm-text, #1c1c1e);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.gjm-card-file {
+  font-size: 11px;
+  color: var(--gjm-text-muted, #8e8e93);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+  line-height: 1.3;
+}
+
+.gjm-card-status {
+  font-size: 11px;
+  margin-top: 3px;
+  font-weight: 500;
+}
+.gjm-status-queued     { color: #8e8e93; }
+.gjm-status-processing { color: #007AFF; }
+.gjm-status-done       { color: #34C759; }
+.gjm-status-failed     { color: #FF3B30; }
+.gjm-status-cancelled  { color: #8e8e93; }
+
+/* ─────────────────────────────────────────────────────────────────────
+   PROGRESS BAR (subtle)
+──────────────────────────────────────────────────────────────────────── */
+.gjm-progress-track {
+  height: 2px;
+  border-radius: 2px;
+  background: var(--gjm-border, rgba(0,0,0,0.10));
+  margin-top: 5px;
+  overflow: hidden;
+}
+.gjm-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: #007AFF;
+  transition: width 0.3s ease;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   ICONS
+──────────────────────────────────────────────────────────────────────── */
+.gjm-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.gjm-icon svg { width: 14px; height: 14px; }
+
+.gjm-icon-spin {
+  background: rgba(0, 122, 255, 0.12);
+  color: #007AFF;
+}
+.gjm-icon-spin svg { animation: gjm-spin 1.2s linear infinite; }
+
+.gjm-icon-done {
+  background: rgba(52, 199, 89, 0.12);
+  color: #34C759;
+}
+
+.gjm-icon-fail {
+  background: rgba(255, 59, 48, 0.12);
+  color: #FF3B30;
+}
+
+.gjm-icon-cancelled {
+  background: rgba(142, 142, 147, 0.12);
+  color: #8e8e93;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   ACTION BUTTONS
+──────────────────────────────────────────────────────────────────────── */
+.gjm-card-actions {
+  flex-shrink: 0;
+}
+
+.gjm-action-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  transition: opacity 0.12s, background 0.12s;
+}
+.gjm-action-btn:hover { opacity: 0.8; }
+.gjm-action-btn:active { opacity: 0.6; }
+
+.gjm-btn-cancel {
+  background: rgba(255, 59, 48, 0.12);
+  color: #FF3B30;
+}
+.gjm-btn-download {
+  background: rgba(0, 122, 255, 0.12);
+  color: #007AFF;
+}
+.gjm-btn-retry {
+  background: rgba(255, 159, 10, 0.12);
+  color: #FF9F0A;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   EMPTY STATE
+──────────────────────────────────────────────────────────────────────── */
+.gjm-panel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 20px;
+  color: var(--gjm-text-muted, #8e8e93);
+}
+.gjm-panel-empty svg {
+  width: 32px;
+  height: 32px;
+  opacity: 0.4;
+}
+.gjm-panel-empty span {
+  font-size: 13px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   TOAST (Global)
+──────────────────────────────────────────────────────────────────────── */
+.gjm-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--gjm-toast-bg, rgba(28,28,30,0.92));
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 20px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  z-index: 9999;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  max-width: min(380px, 90vw);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gjm-toast.gjm-toast-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.gjm-toast-ok { background: rgba(52, 199, 89, 0.92); }
+.gjm-toast-err { background: rgba(255, 59, 48, 0.92); }
+.gjm-toast-info { background: rgba(28, 28, 30, 0.88); }
+
+/* ─────────────────────────────────────────────────────────────────────
+   MOBILE — Bottom Sheet
+──────────────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .gjm-panel {
+    top: auto !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 65vh;
+    transform: translateY(16px) scale(1);
+  }
+  .gjm-panel.gjm-panel-open {
+    transform: translateY(0) scale(1);
+  }
+  .gjm-overlay {
+    background: rgba(0,0,0,0.25);
+  }
+  .gjm-toast {
+    bottom: 72px;
+  }
+  .gjm-panel-header {
+    /* Handle/drag indicator untuk bottom sheet */
+    padding-top: 16px;
+  }
+  .gjm-panel-header::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--gjm-border, rgba(0,0,0,0.14));
+  }
+  .gjm-panel-header {
+    position: relative;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   DARK MODE
+──────────────────────────────────────────────────────────────────────── */
+:root {
+  --gjm-bg:           #ffffff;
+  --gjm-border:       rgba(0,0,0,0.09);
+  --gjm-text:         #1c1c1e;
+  --gjm-text-muted:   #8e8e93;
+  --gjm-hover:        rgba(0,0,0,0.03);
+  --gjm-btn-bg:       rgba(0,0,0,0.06);
+  --gjm-btn-bg-hover: rgba(0,0,0,0.12);
+  --gjm-toast-bg:     rgba(28,28,30,0.88);
+}
+
+html.dark {
+  --gjm-bg:           #1c1c1e;
+  --gjm-border:       rgba(255,255,255,0.08);
+  --gjm-text:         #f2f2f7;
+  --gjm-text-muted:   #636366;
+  --gjm-hover:        rgba(255,255,255,0.04);
+  --gjm-btn-bg:       rgba(255,255,255,0.08);
+  --gjm-btn-bg-hover: rgba(255,255,255,0.14);
+  --gjm-toast-bg:     rgba(44,44,46,0.92);
+}

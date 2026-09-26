@@ -376,6 +376,72 @@ document.getElementById('targetRes').addEventListener('change', onSettingChange)
 document.getElementById('targetFps').addEventListener('change', onSettingChange);
 document.getElementById('qualityLevel').addEventListener('change', onSettingChange);
 
+const FEATURE_NAME_UHD = 'video-to-uhd';
+const FEATURE_LABEL_UHD = 'Peningkat UHD';
+
+async function videoToUhdProcessor(job, signal, onProgress) {
+  const { targetRes, fpsVal, qualityVal, dur, w, h } = job.inputData;
+  const [outW, outH] = targetRes.split('x').map(Number);
+  const fps = fpsVal === '0' ? Math.min(30, Math.round(dur > 0 ? 30 : 30)) : parseInt(fpsVal);
+  const frameInterval = 1 / fps;
+  const totalFrames = Math.ceil(dur * fps);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = outW;
+  canvas.height = outH;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  const stream = canvas.captureStream(fps);
+  const mimeType = 'video/webm;codecs=vp9';
+  const recorder = new MediaRecorder(stream, {
+    mimeType: MediaRecorder.isTypeSupported(mimeType) ? mimeType : 'video/webm',
+    videoBitsPerSecond: getBitrate(qualityVal, outW, outH, fps),
+  });
+
+  const chunks = [];
+  recorder.ondataavailable = (e) => {
+    if (e.data.size > 0) chunks.push(e.data);
+  };
+
+  const recordingDone = new Promise((resolve) => {
+    recorder.onstop = resolve;
+  });
+
+  recorder.start();
+  cmpVideo.currentTime = 0;
+  cmpVideo.playbackRate = 1;
+
+  for (let i = 0; i < totalFrames; i++) {
+    if (signal && signal.aborted) {
+      try { recorder.stop(); } catch(e) {}
+      throw new DOMException('AbortError', 'AbortError');
+    }
+    const targetTime = i * frameInterval;
+    cmpVideo.currentTime = targetTime;
+
+    await new Promise((resolve) => {
+      cmpVideo.onseeked = resolve;
+      setTimeout(resolve, 50);
+    });
+
+    ctx.drawImage(cmpVideo, 0, 0, outW, outH);
+    applySharpening(ctx, outW, outH);
+
+    const pct = Math.round((i / totalFrames) * 90);
+    onProgress(pct);
+  }
+
+  onProgress(95);
+  recorder.stop();
+  await recordingDone;
+
+  const blob = new Blob(chunks, { type: 'video/webm' });
+  onProgress(100);
+  return blob;
+}
+
 async function convertVideo() {
   if (!videoFile || !videoMeta) {
     showAlert(t('noFile'), 'err');
@@ -386,24 +452,81 @@ async function convertVideo() {
   convBtn.disabled = true;
   setProgress(0, t('extracting'));
 
-  try {
-    const targetRes = document.getElementById('targetRes').value;
-    const [outW, outH] = targetRes.split('x').map(Number);
-    const fpsVal = document.getElementById('targetFps').value;
-    const qualityVal = document.getElementById('qualityLevel').value;
+  const targetRes = document.getElementById('targetRes').value;
+  const [outW, outH] = targetRes.split('x').map(Number);
+  const fpsVal = document.getElementById('targetFps').value;
+  const qualityVal = document.getElementById('qualityLevel').value;
 
-    const fps = fpsVal === '0' ? Math.min(30, Math.round(videoMeta.dur > 0 ? 30 : 30)) : parseInt(fpsVal);
-    const frameInterval = 1 / fps;
-    const totalFrames = Math.ceil(videoMeta.dur * fps);
+  const fps = fpsVal === '0' ? Math.min(30, Math.round(videoMeta.dur > 0 ? 30 : 30)) : parseInt(fpsVal);
+  const totalFrames = Math.ceil(videoMeta.dur * fps);
 
-    if (totalFrames > 1800) {
-      showAlert(t('tooLarge'), 'err');
-      convBtn.disabled = false;
-      if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
-      return;
+  if (totalFrames > 1800) {
+    showAlert(t('tooLarge'), 'err');
+    convBtn.disabled = false;
+    if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
+    return;
+  }
+
+  const gjm = (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.GlobalJobManager)
+    ? window.parent.GlobalJobManager
+    : (window.GlobalJobManager || null);
+
+  if (gjm) {
+    if (!gjm.hasProcessor(FEATURE_NAME_UHD)) {
+      gjm.registerProcessor(FEATURE_NAME_UHD, videoToUhdProcessor);
     }
+    const outputName = `toolsuf-${videoFile.name.replace(/\.[^.]+$/, '')}-uhd-video-upscaler.webm`;
 
-    // Create canvas at target resolution
+    gjm.createJob({
+      feature: FEATURE_NAME_UHD,
+      featureLabel: FEATURE_LABEL_UHD,
+      inputName: videoFile.name,
+      outputName,
+      inputData: {
+        targetRes,
+        fpsVal,
+        qualityVal,
+        dur: videoMeta.dur,
+        w: videoMeta.w,
+        h: videoMeta.h
+      },
+      onProgress: (job) => {
+        setProgress(Math.round(job.progress), t('converting') + ' ' + Math.round(job.progress) + '%');
+      },
+      onComplete: async (job) => {
+        convBtn.disabled = false;
+        if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
+        const blob = await gjm.getResultBlob(job.id);
+        if (blob) {
+          if (typeof ToolSufDownload !== 'undefined') {
+            await ToolSufDownload.downloadFile({
+              blob,
+              originalName: videoFile.name,
+              featureName: 'uhd-video-upscaler',
+              extension: 'webm',
+              mimeType: 'video/webm'
+            });
+          } else {
+            saveAs(blob, outputName);
+          }
+          infoUhdSize.textContent = formatSize(blob.size);
+          infoUhdBitrate.textContent = formatBitrate(Math.round(blob.size * 8 / videoMeta.dur));
+          setProgress(100, t('success'));
+          showAlert(t('success'), 'ok');
+        }
+      },
+      onFail: (job) => {
+        convBtn.disabled = false;
+        if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
+        showAlert(job.error || t('error'), 'err');
+      }
+    });
+    return;
+  }
+
+  // Standalone fallback:
+  try {
+    const frameInterval = 1 / fps;
     const canvas = document.createElement('canvas');
     canvas.width = outW;
     canvas.height = outH;
@@ -411,7 +534,6 @@ async function convertVideo() {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    // Setup MediaRecorder
     const stream = canvas.captureStream(fps);
     const mimeType = 'video/webm;codecs=vp9';
     const recorder = new MediaRecorder(stream, {
@@ -429,8 +551,6 @@ async function convertVideo() {
     });
 
     recorder.start();
-
-    // Process frames
     cmpVideo.currentTime = 0;
     cmpVideo.playbackRate = 1;
 
@@ -451,7 +571,6 @@ async function convertVideo() {
     }
 
     setProgress(95, t('finalizing'));
-
     recorder.stop();
     await recordingDone;
 
