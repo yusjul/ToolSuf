@@ -399,7 +399,7 @@ async function convertVideo() {
     if (totalFrames > 1800) {
       showAlert(t('tooLarge'), 'err');
       convBtn.disabled = false;
-      progressCard.style.display = 'none';
+      if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
       return;
     }
 
@@ -456,8 +456,20 @@ async function convertVideo() {
     await recordingDone;
 
     const blob = new Blob(chunks, { type: 'video/webm' });
-    const baseName = videoFile.name.replace(/\.[^.]+$/, '');
-    saveAs(blob, baseName + '_UHD.webm');
+    const originalName = videoFile ? videoFile.name : 'video.webm';
+
+    if (typeof ToolSufDownload !== 'undefined') {
+      await ToolSufDownload.downloadFile({
+        blob,
+        originalName,
+        featureName: 'uhd-video-upscaler',
+        extension: 'webm',
+        mimeType: 'video/webm'
+      });
+    } else {
+      const baseName = videoFile.name.replace(/\.[^.]+$/, '');
+      saveAs(blob, `toolsuf-${baseName}-uhd-video-upscaler.webm`);
+    }
 
     infoUhdSize.textContent = formatSize(blob.size);
     infoUhdBitrate.textContent = formatBitrate(Math.round(blob.size * 8 / videoMeta.dur));
@@ -469,7 +481,7 @@ async function convertVideo() {
     showAlert(t('error'), 'err');
   } finally {
     convBtn.disabled = false;
-    setTimeout(() => { progressCard.style.display = 'none'; }, 600);
+    if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
   }
 }
 
@@ -496,7 +508,7 @@ function clearAll() {
   cmpEmpty.style.display = 'block';
   cmpImages.style.display = 'none';
   convBtn.disabled = true;
-  progressCard.style.display = 'none';
+  if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
   infoSection.style.display = 'none';
   infoOrigRes.textContent = '—';
   infoUhdRes.textContent = '—';
@@ -516,8 +528,11 @@ function showAlert(msg, type) {
 }
 
 function setProgress(pct, text) {
-  progressCard.style.display = 'block';
-  progressText.textContent = text || t('processing');
+  if (typeof CuteLoading !== 'undefined') {
+    CuteLoading.show('progressCard', 'Sabar yahh..');
+  } else {
+    progressCard.style.display = 'block';
+  }
 }
 
 function formatSize(bytes) {

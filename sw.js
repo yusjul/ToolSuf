@@ -1,4 +1,4 @@
-const CACHE_NAME = 'toolsuf-cache-v3';
+const CACHE_NAME = 'toolsuf-cache-v6';
 const ASSETS_TO_CACHE = [
   'index.html',
   'style.css',
@@ -10,7 +10,8 @@ const ASSETS_TO_CACHE = [
   'tools/ai-workflow-assistant/script.js',
   'tools/web-monitor/index.html',
   'tools/web-monitor/style.css',
-  'tools/web-monitor/script.js'
+  'tools/web-monitor/script.js',
+  'yusjul-admin/index.html'
 ];
 
 // Install Event: cache static assets

@@ -222,6 +222,9 @@ export class CompressorUI {
     this.dom.fileInfoSection.style.display = 'block';
     this.dom.optionsSection.style.display = 'block';
     this.dom.progressSection.style.display = 'none';
+    if (window.CuteLoading) {
+      window.CuteLoading.hide('progressLoading');
+    }
     this.dom.resultSection.style.display = 'none';
 
     this.dom.fileName.textContent = this.state.file.name;
@@ -244,12 +247,11 @@ export class CompressorUI {
     this.dom.progressSection.style.display = 'block';
     this.dom.resultSection.style.display = 'none';
 
-    this.dom.progressBar.style.width = `${percent}%`;
-    this.dom.progressText.textContent = this.t(statusKey, params);
+    if (window.CuteLoading) {
+      window.CuteLoading.show('progressLoading', 'Sabar yahh..');
+    }
 
     this.dom.compressBtn.disabled = true;
-    this.dom.compressBtn.classList.add('loading');
-    this.dom.compressBtn.querySelector('.btn-text').textContent = this.t('compressingBtn');
   }
 
   renderResult() {
@@ -257,6 +259,9 @@ export class CompressorUI {
     if (!res) return;
 
     this.dom.progressSection.style.display = 'none';
+    if (window.CuteLoading) {
+      window.CuteLoading.hide('progressLoading');
+    }
     this.dom.optionsSection.style.display = 'none';
     this.dom.resultSection.style.display = 'block';
 
@@ -297,15 +302,33 @@ export class CompressorUI {
     const res = this.state.result;
     if (!res) return;
 
-    // Build guaranteed filename: original-name-compressed.pdf
+    // Build guaranteed filename: toolsuf-[nama-file]-pdf-compressor.pdf
     const originalName = (this.state.file && this.state.file.name) ? this.state.file.name : 'document.pdf';
-    const baseName = originalName.trim().replace(/\.pdf$/i, '');
-    const outputName = `${baseName}-compressed.pdf`;
+    const outputName = typeof ToolSufDownload !== 'undefined'
+      ? ToolSufDownload.generateFilename({ originalName, featureName: 'pdf-compressor', extension: 'pdf' })
+      : `toolsuf-${originalName.trim().replace(/\.pdf$/i, '').replace(/[-_]compressed$/i, '')}-pdf-compressor.pdf`;
 
     const targetBlob = res.blob || this.state.file;
     const finalBlob = (targetBlob instanceof Blob && targetBlob.type === 'application/pdf')
       ? targetBlob
       : new Blob([targetBlob], { type: 'application/pdf' });
+
+    if (typeof ToolSufDownload !== 'undefined') {
+      try {
+        await ToolSufDownload.downloadFile({
+          blob: finalBlob,
+          originalName,
+          featureName: 'pdf-compressor',
+          extension: 'pdf',
+          filename: outputName,
+          mimeType: 'application/pdf'
+        });
+        this.showToast(this.t('toastDownloaded'));
+        return;
+      } catch (err) {
+        console.warn('[PDF Compressor] ToolSufDownload failed, trying fallbacks:', err.message);
+      }
+    }
 
     // ─── Strategy 1: File System Access API (showSaveFilePicker) ───
     // This is the ONLY method that guarantees the filename in ALL contexts
@@ -389,10 +412,13 @@ export class CompressorUI {
     this.dom.fileInfoSection.style.display = 'none';
     this.dom.optionsSection.style.display = 'none';
     this.dom.progressSection.style.display = 'none';
+    if (window.CuteLoading) {
+      window.CuteLoading.hide('progressLoading');
+    }
     this.dom.resultSection.style.display = 'none';
 
     this.dom.fileInput.value = '';
-    this.dom.progressBar.style.width = '0%';
+    if (this.dom.progressBar) this.dom.progressBar.style.width = '0%';
     this.dom.compressBtn.disabled = true;
     this.dom.compressBtn.classList.remove('loading');
     this.dom.compressBtn.querySelector('.btn-text').textContent = this.t('compressBtn');

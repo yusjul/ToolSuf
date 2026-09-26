@@ -1,0 +1,112 @@
+/*
+ * ToolSuf — CuteLoadingState Global Component
+ * Satu sistem loading tunggal yang dipakai seluruh tools.
+ * Hanya ada SATU animasi tunggal (Dots Wave) agar tidak duplikat.
+ */
+
+/* ── Container ────────────────────────────────────── */
+.cute-loading {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 16px;
+  animation: cuteLoadingFadeIn 0.25s ease;
+}
+
+.cute-loading.active {
+  display: flex !important;
+}
+
+@keyframes cuteLoadingFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Sembunyikan sparkle agar animasi tidak duplikat ─── */
+.cute-loading-sparkle {
+  display: none !important;
+}
+
+/* ── Teks (Jelas, Berwarna Gelap di Light Mode & Terang di Dark Mode) ─ */
+.cute-loading-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1C1C1E;
+  letter-spacing: 0.01em;
+  text-align: center;
+  line-height: 1.4;
+  user-select: none;
+}
+
+/* Warna teks di Dark Mode (hanya bila tema dokumen dark aktif) */
+html.dark .cute-loading-text,
+body.dark .cute-loading-text,
+.dark .cute-loading-text,
+[data-theme="dark"] .cute-loading-text,
+.dark-mode .cute-loading-text {
+  color: #F5F5F7 !important;
+}
+
+/* ── Satu-satunya Animasi Tunggal: Dots Wave ──────── */
+.cute-loading-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  height: 14px;
+}
+
+.cute-loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cute-color, #007AFF);
+  opacity: 0.3;
+  animation: cuteDotsWave 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.cute-loading-dots span:nth-child(1) { animation-delay: 0s; }
+.cute-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.cute-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes cuteDotsWave {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  40%      { opacity: 1;    transform: translateY(-6px); }
+}
+
+/* ── Reduced motion ───────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .cute-loading-dots span {
+    animation: none !important;
+    opacity: 0.8 !important;
+    transform: none !important;
+  }
+}
+
+/* ── Wrapper untuk backward-compat progress-card ─── */
+.progress-card.cute-mode {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 8px 0 !important;
+}
+
+/* ── Sembunyikan elemen progress teknis lama secara absolut ─── */
+.cute-loading .prog-w,
+.cute-loading .prog-f,
+.cute-loading .progress-track,
+.cute-loading .progress-fill,
+.cute-loading .progress-bar-track,
+.cute-loading .progress-bar-fill,
+.cute-loading .progress-header,
+.cute-loading .zinfo:not(.cute-loading-text),
+.cute-loading + .prog-w,
+.cute-loading.active ~ .progress-card,
+.cute-loading.active ~ .prog-w,
+.progress-card:has(.cute-loading.active) .prog-w,
+.progress-card:has(.cute-loading.active) .zinfo {
+  display: none !important;
+}

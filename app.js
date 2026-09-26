@@ -76,6 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
       toolPdfCompressorTitle: 'PDF Compressor',
       toolPdfCompressorDesc: 'Reduce PDF file size while keeping documents usable.',
       toolVideoToUhdTitle: 'UHD Video Upscaler',
+      cardMaintenanceBadge: 'MAINTENANCE',
+      cardMaintenanceDesc: 'Feature is currently under maintenance. Please check back later.',
     },
     id: {
       navHome: 'Beranda',
@@ -137,6 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
       iframeTitle: 'Alat Produktivitas Terintegrasi',
       toolPassTitle: 'Generator Kata Sandi',
       toolRenameTitle: 'Pengganti Nama File Pro',
+      cardMaintenanceBadge: 'MAINTENANCE',
+      cardMaintenanceDesc: 'Fitur sedang dalam pemeliharaan. Silakan coba kembali nanti.',
     }
   };
 
@@ -227,26 +231,29 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(e.data.message);
     } else if (e.data.type === 'downloadFile' || e.data.type === 'download' || e.data.type === 'downloadPDF') {
       let filename = (e.data.filename || 'document.pdf').trim();
-      const isZip = filename.toLowerCase().endsWith('.zip');
-      const isPng = filename.toLowerCase().endsWith('.png');
-      const isSvg = filename.toLowerCase().endsWith('.svg');
-      const isJpg = filename.toLowerCase().endsWith('.jpg') || filename.toLowerCase().endsWith('.jpeg');
-      const isWebp = filename.toLowerCase().endsWith('.webp');
-      const isImage = isPng || isSvg || isJpg || isWebp;
+      filename = filename.replace(/[/\\?%*:|"<>]/g, '');
 
-      if (!isZip && !isImage && !filename.toLowerCase().endsWith('.pdf')) {
-        filename += '.pdf';
-      }
-      filename = filename.replace(/[/\\?%*:|"<>]/g, '_');
-      if (!filename.toLowerCase().startsWith('toolsuf-') && !filename.toLowerCase().endsWith('-compressed.pdf') && !isImage) {
+      // Pastikan format toolsuf- prefix jika belum ada
+      if (!filename.toLowerCase().startsWith('toolsuf-')) {
         filename = `toolsuf-${filename}`;
       }
-      let mime = 'application/pdf';
-      if (isZip) mime = 'application/zip';
-      else if (isPng) mime = 'image/png';
-      else if (isSvg) mime = 'image/svg+xml';
-      else if (isJpg) mime = 'image/jpeg';
-      else if (isWebp) mime = 'image/webp';
+
+      // Deteksi MIME type berdasarkan ekstensi atau data blob
+      const lower = filename.toLowerCase();
+      let mime = 'application/octet-stream';
+      if (lower.endsWith('.zip')) mime = 'application/zip';
+      else if (lower.endsWith('.docx')) mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      else if (lower.endsWith('.txt')) mime = 'text/plain';
+      else if (lower.endsWith('.mp4')) mime = 'video/mp4';
+      else if (lower.endsWith('.webm')) mime = 'video/webm';
+      else if (lower.endsWith('.json')) mime = 'application/json';
+      else if (lower.endsWith('.csv')) mime = 'text/csv';
+      else if (lower.endsWith('.png')) mime = 'image/png';
+      else if (lower.endsWith('.svg')) mime = 'image/svg+xml';
+      else if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) mime = 'image/jpeg';
+      else if (lower.endsWith('.webp')) mime = 'image/webp';
+      else if (lower.endsWith('.pdf')) mime = 'application/pdf';
+      else if (e.data.mime) mime = e.data.mime;
       else if (e.data.blob && e.data.blob.type) mime = e.data.blob.type;
 
       let blob = e.data.blob;
@@ -398,6 +405,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Sync language into open iframe tool
     syncIframeLang();
+
+    // Re-apply maintenance badges/descriptions in current language
+    _applyMaintenanceBadges();
   };
 
   // Language Dropdown toggling
@@ -423,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Apply initial language
+  // Apply initial language (NOTE: must be called again after _applyMaintenanceBadges is defined)
   applyLanguage(currentLang);
 
   // --- Toast System ---
@@ -526,10 +536,101 @@ document.addEventListener('DOMContentLoaded', () => {
     'web-monitor': {
       titleEn: 'Web Monitor',
       titleId: 'Pemantau Situs Web',
-      src: 'tools/web-monitor/index.html',
+      src: 'yusjul-admin/index.html',
       wide: true,
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`
     }
+  };
+
+  // --- Comprehensive Device Detection for Activity Email Notifications ---
+  const detectDetailedDevice = () => {
+    const ua = navigator.userAgent || '';
+    const platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
+    const maxTouchPoints = navigator.maxTouchPoints || 0;
+    const hasTouch = 'ontouchstart' in window || maxTouchPoints > 0;
+
+    let device = 'Unknown Device';
+    let os = 'Unknown';
+    let type = 'desktop';
+
+    // 1. iPhone
+    if (/iPhone|iPod/i.test(ua) || /iPhone|iPod/i.test(platform)) {
+      device = 'iPhone';
+      os = 'iOS';
+      type = 'mobile';
+    }
+    // 2. iPad (termasuk iPadOS 13+ desktop-class Safari)
+    else if (/iPad/i.test(ua) || ((/Macintosh/i.test(ua) || /MacIntel/i.test(platform)) && maxTouchPoints > 1)) {
+      device = 'iPad';
+      os = 'iPadOS';
+      type = 'tablet';
+    }
+    // 3. Android (Phone vs Tablet)
+    else if (/Android/i.test(ua)) {
+      os = 'Android';
+      if (/Mobile/i.test(ua)) {
+        device = 'Android Phone';
+        type = 'mobile';
+      } else {
+        device = 'Android Tablet';
+        type = 'tablet';
+      }
+    }
+    // 4. Windows
+    else if (/Windows NT|Windows/i.test(ua)) {
+      device = (hasTouch && /Touch/i.test(ua)) ? 'Windows Laptop' : 'Windows PC';
+      if (/Windows NT 10\.0/i.test(ua)) os = 'Windows 11';
+      else if (/Windows NT 6\.3/i.test(ua)) os = 'Windows 8.1';
+      else if (/Windows NT 6\.2/i.test(ua)) os = 'Windows 8';
+      else if (/Windows NT 6\.1/i.test(ua)) os = 'Windows 7';
+      else os = 'Windows';
+      type = 'desktop';
+    }
+    // 5. macOS
+    else if (/Macintosh|Mac OS X/i.test(ua) || /MacIntel/i.test(platform)) {
+      device = 'MacBook';
+      os = 'macOS';
+      type = 'laptop';
+    }
+    // 6. Linux
+    else if (/Linux|X11/i.test(ua)) {
+      device = 'Linux';
+      os = 'Linux';
+      type = 'desktop';
+    }
+
+    let browser = 'Browser';
+    if (/CriOS\/(\d+(\.\d+)?)/i.test(ua)) browser = 'Chrome';
+    else if (/FxiOS\/(\d+(\.\d+)?)/i.test(ua)) browser = 'Firefox';
+    else if (/EdgiOS\/(\d+(\.\d+)?)/i.test(ua)) browser = 'Edge';
+    else if (/OPiOS\/(\d+(\.\d+)?)/i.test(ua)) browser = 'Opera';
+    else if (/EdgA?\/(\d+(\.\d+)?)/i.test(ua)) browser = 'Edge';
+    else if (/SamsungBrowser\/(\d+(\.\d+)?)/i.test(ua)) browser = 'Samsung Internet';
+    else if (/OPR\/(\d+(\.\d+)?)|Opera/i.test(ua)) browser = 'Opera';
+    else if (/Chrome\/(\d+(\.\d+)?)/i.test(ua)) browser = 'Chrome';
+    else if (/Firefox\/(\d+(\.\d+)?)/i.test(ua)) browser = 'Firefox';
+    else if (/Version\/(\d+(\.\d+)?).*Safari/i.test(ua) || /Safari/i.test(ua)) browser = 'Safari';
+
+    return { device, os, browser, type };
+  };
+
+  let cachedPublicIpApp = null;
+  const resolvePublicIpApp = async () => {
+    if (cachedPublicIpApp) return cachedPublicIpApp;
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+      clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.ip) {
+          cachedPublicIpApp = data.ip;
+          return cachedPublicIpApp;
+        }
+      }
+    } catch (e) {}
+    return '127.0.0.1';
   };
 
   const trackToolLaunch = (toolKey) => {
@@ -556,10 +657,123 @@ document.addEventListener('DOMContentLoaded', () => {
       if (toolFrame && toolFrame.contentWindow) {
         toolFrame.contentWindow.postMessage({ type: 'syncAnalytics' }, '*');
       }
+
+      // Kirim Notifikasi Email Penggunaan Fitur ke Admin (Beserta info Device & Fitur apa saja yang digunakan)
+      const notifyAdminUsage = async () => {
+        try {
+          let sessionId = sessionStorage.getItem('toolsuf_app_session_id');
+          if (!sessionId) {
+            sessionId = 'sess-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36);
+            sessionStorage.setItem('toolsuf_app_session_id', sessionId);
+          }
+
+          const devInfo = detectDetailedDevice();
+          const ip = await resolvePublicIpApp();
+          const toolConfig = toolsInfo[toolKey] || {};
+          const toolName = currentLang === 'id' ? (toolConfig.titleId || toolKey) : (toolConfig.titleEn || toolKey);
+
+          // Susun daftar fitur apa saja yang dia gunakan beserta frekuensinya
+          const usedTools = Object.keys(data.launchCount || {}).map(k => {
+            const conf = toolsInfo[k] || {};
+            return {
+              key: k,
+              name: currentLang === 'id' ? (conf.titleId || k) : (conf.titleEn || k),
+              count: data.launchCount[k] || 1
+            };
+          });
+
+          fetch('http://localhost:3001/api/web-monitor/notify-tool-usage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sessionId,
+              toolKey,
+              toolName,
+              device: devInfo.device,
+              os: devInfo.os,
+              browser: devInfo.browser,
+              type: devInfo.type,
+              ip,
+              usedTools
+            })
+          }).catch(() => {});
+        } catch (err) {
+          console.warn('Gagal memicu notifikasi email penggunaan fitur:', err);
+        }
+      };
+
+      notifyAdminUsage();
     } catch (e) {
       console.warn('Analytics tracking error:', e);
     }
   };
+
+  // --- Maintenance Badge & State: inject subtle badge, update desc & disable card when in maintenance ---
+  function _applyMaintenanceBadges() {
+    if (typeof ToolSufMaintenance === 'undefined') return;
+    const mntText = (translations[currentLang] && translations[currentLang].cardMaintenanceDesc) ||
+      (currentLang === 'id'
+        ? 'Fitur sedang dalam pemeliharaan. Silakan coba kembali nanti.'
+        : 'Feature is currently under maintenance. Please check back later.');
+
+    document.querySelectorAll('[data-launch]').forEach(card => {
+      const toolKey = card.getAttribute('data-launch');
+      if (!toolKey) return;
+
+      const titleEl = card.querySelector('.card-title, h3, h2');
+      const descEl = card.querySelector('.card-desc, p');
+      let existingBadge = card.querySelector('.mnt-card-badge');
+
+      if (ToolSufMaintenance.isFeatureMaintenance(toolKey)) {
+        card.classList.add('mnt-active');
+        card.setAttribute('aria-disabled', 'true');
+        card.setAttribute('tabindex', '-1');
+        card.style.transform = 'none';
+
+        if (!existingBadge) {
+          existingBadge = document.createElement('span');
+          existingBadge.className = 'mnt-card-badge';
+          existingBadge.setAttribute('aria-label', 'Status: Maintenance');
+          existingBadge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span>MAINTENANCE</span>';
+          
+          if (titleEl && titleEl.parentNode === card) {
+            titleEl.insertAdjacentElement('afterend', existingBadge);
+          } else {
+            card.appendChild(existingBadge);
+          }
+        }
+
+        if (descEl) {
+          if (!descEl.dataset.origI18n && descEl.getAttribute('data-i18n')) {
+            descEl.dataset.origI18n = descEl.getAttribute('data-i18n');
+          }
+          if (!descEl.dataset.origText) {
+            descEl.dataset.origText = descEl.textContent;
+          }
+          descEl.textContent = mntText;
+          descEl.classList.add('mnt-desc');
+        }
+      } else {
+        card.classList.remove('mnt-active');
+        card.removeAttribute('aria-disabled');
+        card.setAttribute('tabindex', '0');
+
+        if (existingBadge) {
+          existingBadge.remove();
+        }
+
+        if (descEl && descEl.classList.contains('mnt-desc')) {
+          descEl.classList.remove('mnt-desc');
+          const origKey = descEl.dataset.origI18n;
+          if (origKey && translations[currentLang] && translations[currentLang][origKey]) {
+            descEl.textContent = translations[currentLang][origKey];
+          } else if (descEl.dataset.origText) {
+            descEl.textContent = descEl.dataset.origText;
+          }
+        }
+      }
+    });
+  }
 
   const openTool = (toolKey) => {
     const config = toolsInfo[toolKey];
@@ -584,7 +798,21 @@ document.addEventListener('DOMContentLoaded', () => {
       macWindow.classList.remove('ultrawide');
     }
 
-    // Open iframe src with language param
+    // --- MAINTENANCE CHECK: Prevent tool from loading if in maintenance ---
+    if (typeof ToolSufMaintenance !== 'undefined' && ToolSufMaintenance.isFeatureMaintenance(toolKey)) {
+      toolFrame.removeAttribute('src');
+      toolFrame.srcdoc = ToolSufMaintenance.generateMaintenanceHTML(toolKey, {
+        isDark: !document.documentElement.classList.contains('light'),
+        showHomeBtn: false
+      });
+
+      modalOverlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      return; // Stop here — do not initialize tool
+    }
+
+    // Open iframe src with language param (ensure srcdoc is removed first)
+    toolFrame.removeAttribute('srcdoc');
     toolFrame.src = config.src + '?lang=' + currentLang + '&t=' + Date.now();
 
     // Display Modal
@@ -606,6 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Wait for animation, then clear frame src
     setTimeout(() => {
+      toolFrame.removeAttribute('srcdoc');
       toolFrame.src = 'about:blank';
       activeTool = null;
     }, 300);
@@ -613,11 +842,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Connect Click Listeners
   document.querySelectorAll('[data-launch]').forEach(card => {
-    card.addEventListener('click', (e) => {
+    card.addEventListener('click', () => {
       const toolKey = card.getAttribute('data-launch');
-      if (toolKey) openTool(toolKey);
+      if (!toolKey) return;
+      // openTool handles maintenance state internally (shows animation modal)
+      openTool(toolKey);
     });
   });
+
+  // Apply maintenance badges to tool cards on load
+  _applyMaintenanceBadges();
+
+  const _syncActiveModalMaintenance = () => {
+    if (!modalOverlay.classList.contains('active') || !activeTool) return;
+    if (typeof ToolSufMaintenance === 'undefined') return;
+
+    const isMnt = ToolSufMaintenance.isFeatureMaintenance(activeTool);
+    if (isMnt) {
+      toolFrame.removeAttribute('src');
+      toolFrame.srcdoc = ToolSufMaintenance.generateMaintenanceHTML(activeTool, {
+        isDark: !document.documentElement.classList.contains('light'),
+        showHomeBtn: false
+      });
+    } else {
+      if (toolFrame.hasAttribute('srcdoc')) {
+        const config = toolsInfo[activeTool];
+        if (config) {
+          toolFrame.removeAttribute('srcdoc');
+          toolFrame.src = config.src + '?lang=' + currentLang + '&t=' + Date.now();
+        }
+      }
+    }
+  };
+
+  // Listen for maintenance config changes (e.g. from admin panel or other tabs)
+  window.addEventListener('toolsuf-maintenance-changed', () => {
+    _applyMaintenanceBadges();
+    _syncActiveModalMaintenance();
+  });
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'toolsuf_maintenance') {
+      _applyMaintenanceBadges();
+      _syncActiveModalMaintenance();
+    }
+  });
+  try {
+    if ('BroadcastChannel' in window) {
+      const modalBc = new BroadcastChannel('toolsuf_maintenance_channel');
+      modalBc.onmessage = () => {
+        _applyMaintenanceBadges();
+        _syncActiveModalMaintenance();
+      };
+    }
+  } catch (err) {}
+
 
   // Close handlers
   closeWindowBtn.addEventListener('click', closeTool);
@@ -652,6 +930,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const initPath = window.location.pathname.toLowerCase();
     const initQuery = new URLSearchParams(window.location.search).get('tool');
     const initHash = window.location.hash.toLowerCase().replace('#', '');
+    if (initPath.includes('yusjul-admin')) {
+      const base = window.location.pathname.replace(/\/yusjul-admin.*$/, '').replace(/\/$/, '');
+      window.location.replace((base || '') + '/yusjul-admin/');
+      return;
+    }
     if (initPath.includes('pdf-compressor') || initQuery === 'pdf-compressor' || initHash === 'pdf-compressor') {
       openTool('pdf-compressor');
     }
@@ -694,10 +977,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Add 3D Tilt Effect to Folder Cards
+  // Add 3D Tilt Effect to Folder Cards (disabled for cards under maintenance)
   const folderCards = document.querySelectorAll('.tool-card, .feature-item');
   folderCards.forEach(card => {
     card.addEventListener('mousemove', (e) => {
+      if (card.classList.contains('mnt-active')) {
+        card.style.transform = 'none';
+        return;
+      }
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
@@ -713,7 +1000,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     card.addEventListener('mouseleave', () => {
-      card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1)';
+      card.style.transform = card.classList.contains('mnt-active')
+        ? 'none'
+        : 'perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1)';
     });
   });
 

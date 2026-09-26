@@ -4,6 +4,12 @@
   "description": "Premium, Fast & Simple Productivity Tools",
   "scripts": {
     "dev": "npx -y vite",
-    "serve": "npx -y http-server -p 8080 -c-1"
+    "serve": "npx -y http-server -p 8080 -c-1",
+    "server": "node server/index.js",
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.3",
+    "nodemailer": "^10.0.10"
   }
 }

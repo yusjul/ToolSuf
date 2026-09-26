@@ -662,10 +662,19 @@ function setupButtonEvents() {
 
   document.getElementById('btnExport').addEventListener('click', () => {
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(state));
-    const dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute('href', dataStr);
-    dlAnchorElem.setAttribute('download', 'ai-workflow.json');
-    dlAnchorElem.click();
+    if (typeof ToolSufDownload !== 'undefined') {
+      ToolSufDownload.downloadFile({
+        url: dataStr,
+        originalName: 'workflow',
+        featureName: 'ai-workflow-assistant',
+        extension: 'json'
+      });
+    } else {
+      const dlAnchorElem = document.createElement('a');
+      dlAnchorElem.setAttribute('href', dataStr);
+      dlAnchorElem.setAttribute('download', 'toolsuf-workflow-ai-workflow-assistant.json');
+      dlAnchorElem.click();
+    }
     showToast(translations[currentLang].toastExportSuccess);
   });
 
@@ -1260,10 +1269,20 @@ async function processNode(node, inputContext) {
       
       document.getElementById('btnDownloadResult').onclick = () => {
         const dataStr = 'data:text/plain;charset=utf-8,' + encodeURIComponent(inputContext);
-        const dl = document.createElement('a');
-        dl.setAttribute('href', dataStr);
-        dl.setAttribute('download', format === 'markdown' ? 'ai-output.md' : 'ai-output.txt');
-        dl.click();
+        const ext = format === 'markdown' ? 'md' : 'txt';
+        if (typeof ToolSufDownload !== 'undefined') {
+          ToolSufDownload.downloadFile({
+            url: dataStr,
+            originalName: 'output',
+            featureName: 'ai-workflow-assistant',
+            extension: ext
+          });
+        } else {
+          const dl = document.createElement('a');
+          dl.setAttribute('href', dataStr);
+          dl.setAttribute('download', `toolsuf-output-ai-workflow-assistant.${ext}`);
+          dl.click();
+        }
       };
       
       return inputContext;

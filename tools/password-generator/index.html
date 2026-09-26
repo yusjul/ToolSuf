@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Generator Kata Sandi</title>
   <link rel="stylesheet" href="style.css">
+  <script src="../../shared/maintenance.js"></script>
   <script src="script.js"></script>
 </head>
 <body>
@@ -105,7 +106,14 @@
       </div>
     </div>
 
-    <button class="generate-btn" onclick="generatePassword()">Buat Kata Sandi Baru</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
+      <button class="generate-btn" style="margin-top:0" onclick="generatePassword()" id="btnGenerate">Buat Kata Sandi Baru</button>
+      <button class="btn-s" onclick="exportPasswordTxt()" id="btnExportTxt" style="padding:14px;border-radius:var(--apple-radius);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+        <span id="lblExportTxt">Ekspor TXT</span>
+      </button>
+    </div>
   </div>
+  <script src="../../shared/toolsuf-download.js"></script>
 </body>
 </html>

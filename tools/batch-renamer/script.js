@@ -238,34 +238,53 @@ async function doZip() {
   if (!files.length) { showAlert('Pilih file terlebih dahulu.', 'err'); return; }
   const btn = $('zipBtn');
   btn.disabled = true;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6l0 -3"/><path d="M16.25 7.75l2.15 -2.15"/><path d="M18 12l3 0"/><path d="M16.25 16.25l2.15 2.15"/><path d="M12 18l0 3"/><path d="M7.75 16.25l-2.15 2.15"/><path d="M6 12l-3 0"/><path d="M7.75 7.75l-2.15 -2.15"/></svg> Memproses...';
-  $('zprog').style.display = 'block';
-  const zpf = $('zpf'), zinfo = $('zinfo');
-  const zip = new JSZip();
-  const folder = zip.folder('renamed');
-  const csv = ['Nama Asli,Nama Baru,Ukuran,Format'];
-  for (let i = 0; i < files.length; i++) {
-    const nn = genName(i);
-    folder.file(nn, files[i]);
-    csv.push(`"${files[i].name}","${nn}","${fmtSize(files[i].size)}","${getExt(files[i].name)}"`);
-    zpf.style.width = Math.round(((i + 1) / files.length) * 80) + '%';
-    zinfo.textContent = 'Menambahkan ' + (i + 1) + ' / ' + files.length + ' file...';
-    if (i % 15 === 0) await new Promise(r => setTimeout(r, 0));
+
+  if (typeof CuteLoading !== 'undefined') {
+    CuteLoading.show('zprog', 'Sabar yahh..');
   }
-  if ($('csv').classList.contains('on')) zip.file('laporan_rename.csv', csv.join('\n'));
-  zinfo.textContent = 'Mengompresi...';
-  const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' }, m => { zpf.style.width = Math.round(80 + m.percent * .2) + '%'; });
-  zpf.style.width = '100%';
-  zinfo.textContent = 'Selesai! Mengunduh ZIP...';
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = ($('base').value || 'renamed') + '_files.zip';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showAlert('\u2713 ' + files.length + ' file direname & dikemas dalam ZIP!', 'ok');
-  btn.disabled = false;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20.735a2 2 0 0 1 -1 -1.735v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-1"/><path d="M11 17a2 2 0 0 1 2 2v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-2a2 2 0 0 1 2 -2z"/></svg> Download ZIP';
-  setTimeout(() => { $('zprog').style.display = 'none'; zpf.style.width = '0%'; }, 4000);
+
+  try {
+    const zip = new JSZip();
+    const folder = zip.folder('renamed');
+    const csv = ['Nama Asli,Nama Baru,Ukuran,Format'];
+    for (let i = 0; i < files.length; i++) {
+      const nn = genName(i);
+      folder.file(nn, files[i]);
+      csv.push(`"${files[i].name}","${nn}","${fmtSize(files[i].size)}","${getExt(files[i].name)}"`);
+      if (i % 15 === 0) await new Promise(r => setTimeout(r, 0));
+    }
+    if ($('csv').classList.contains('on')) zip.file('laporan_rename.csv', csv.join('\n'));
+    const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+    const originalInput = ($('base').value || '').trim() || (files[0] ? files[0].name : 'renamed-files');
+
+    if (typeof ToolSufDownload !== 'undefined') {
+      await ToolSufDownload.downloadFile({
+        blob,
+        originalName: originalInput,
+        featureName: 'batch-renamer-pro',
+        extension: 'zip',
+        defaultName: 'renamed-files'
+      });
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `toolsuf-${originalInput.replace(/\.[^.]+$/, '')}-batch-renamer-pro.zip`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 1000);
+    }
+    showAlert('\u2713 ' + files.length + ' file direname & dikemas dalam ZIP!', 'ok');
+  } catch (err) {
+    console.error(err);
+    showAlert('Gagal mengemas file ke ZIP.', 'err');
+  } finally {
+    btn.disabled = false;
+    if (typeof CuteLoading !== 'undefined') {
+      CuteLoading.hide('zprog');
+    } else {
+      $('zprog').style.display = 'none';
+    }
+  }
 }
 
 function showAlert(msg, type) {
@@ -298,7 +317,8 @@ function resetAll() {
   $('sb-name').classList.add('active');
   $('singleExt').style.display = 'none'; $('manualExt').style.display = 'none';
   $('statsSection').style.display = 'none'; $('pf').style.width = '0%';
-  $('zprog').style.display = 'none'; $('alertBox').className = 'alert';
+  if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('zprog'); } else { $('zprog').style.display = 'none'; }
+  $('alertBox').className = 'alert';
   update();
 }
 

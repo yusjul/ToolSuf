@@ -753,23 +753,52 @@ async function downloadPNG() {
     console.error('Render error before download:', err);
   }
 
-  const filename = 'qrcode-master.png';
+  const filename = typeof ToolSufDownload !== 'undefined'
+    ? ToolSufDownload.generateFilename({ originalName: 'qr-code', featureName: 'qr-code-master', extension: 'png' })
+    : 'toolsuf-qr-code-qr-code-master.png';
 
   canvas.toBlob(async (blob) => {
     if (!blob) {
       try {
         const dataUrl = canvas.toDataURL('image/png');
-        const a = document.createElement('a');
-        a.download = filename;
-        a.href = dataUrl;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        if (typeof ToolSufDownload !== 'undefined') {
+          await ToolSufDownload.downloadFile({
+            url: dataUrl,
+            originalName: 'qr-code',
+            featureName: 'qr-code-master',
+            extension: 'png',
+            filename
+          });
+        } else {
+          const a = document.createElement('a');
+          a.download = filename;
+          a.href = dataUrl;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
         showToast(t('toastDownloaded'));
       } catch (e) {
         showToast('Gagal mengunduh gambar');
       }
       return;
+    }
+
+    if (typeof ToolSufDownload !== 'undefined') {
+      try {
+        await ToolSufDownload.downloadFile({
+          blob,
+          originalName: 'qr-code',
+          featureName: 'qr-code-master',
+          extension: 'png',
+          filename,
+          mimeType: 'image/png'
+        });
+        showToast(t('toastDownloaded'));
+        return;
+      } catch (err) {
+        console.warn('ToolSufDownload failed, fallback to anchor:', err);
+      }
     }
 
     // 1. Try File System Access API
@@ -793,19 +822,7 @@ async function downloadPNG() {
       }
     }
 
-    // 2. Try FileSaver.js saveAs if available in window or top window
-    const saver = window.saveAs || (window.top && window.top.saveAs);
-    if (saver) {
-      try {
-        saver(blob, filename);
-        showToast(t('toastDownloaded'));
-        return;
-      } catch (saveErr) {
-        console.warn('saveAs failed, trying fallback:', saveErr);
-      }
-    }
-
-    // 3. Delegate to parent window via postMessage if running in an iframe
+    // 2. Delegate to parent window via postMessage if running in an iframe
     if (window.parent && window.parent !== window) {
       try {
         window.parent.postMessage({
@@ -820,7 +837,7 @@ async function downloadPNG() {
       }
     }
 
-    // 4. Standalone anchor download fallback
+    // 3. Standalone anchor download fallback
     try {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -844,7 +861,9 @@ async function downloadPNG() {
 function downloadSVG() {
   const data = buildQrData();
   if (!data) return;
-  const filename = 'qrcode-master.svg';
+  const filename = typeof ToolSufDownload !== 'undefined'
+    ? ToolSufDownload.generateFilename({ originalName: 'qr-code', featureName: 'qr-code-master', extension: 'svg' })
+    : 'toolsuf-qr-code-qr-code-master.svg';
 
   window.QRCode.toString(data, {
     type: 'svg',
@@ -857,6 +876,23 @@ function downloadSVG() {
   }, async (err, svgStr) => {
     if (err) { showToast('Error'); return; }
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+
+    if (typeof ToolSufDownload !== 'undefined') {
+      try {
+        await ToolSufDownload.downloadFile({
+          blob,
+          originalName: 'qr-code',
+          featureName: 'qr-code-master',
+          extension: 'svg',
+          filename,
+          mimeType: 'image/svg+xml'
+        });
+        showToast(t('toastDownloaded'));
+        return;
+      } catch (err) {
+        console.warn('ToolSufDownload failed for SVG, fallback to anchor:', err);
+      }
+    }
 
     // 1. Try File System Access API
     if (window.showSaveFilePicker) {
@@ -878,17 +914,7 @@ function downloadSVG() {
       }
     }
 
-    // 2. Try saveAs
-    const saver = window.saveAs || (window.top && window.top.saveAs);
-    if (saver) {
-      try {
-        saver(blob, filename);
-        showToast(t('toastDownloaded'));
-        return;
-      } catch (e) {}
-    }
-
-    // 3. Delegate to parent if in iframe
+    // 2. Delegate to parent if in iframe
     if (window.parent && window.parent !== window) {
       try {
         window.parent.postMessage({
@@ -901,7 +927,7 @@ function downloadSVG() {
       } catch (e) {}
     }
 
-    // 4. Standalone anchor fallback
+    // 3. Standalone anchor fallback
     const a = document.createElement('a');
     const url = URL.createObjectURL(blob);
     a.href = url;

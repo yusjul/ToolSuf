@@ -240,6 +240,31 @@ window.addEventListener('message', function(e) {
   }
 });
 
+function exportPasswordTxt() {
+  const pwd = currentPassword || (document.getElementById('passwordDisplay') && document.getElementById('passwordDisplay').textContent);
+  if (!pwd) return;
+  const content = `ToolSuf Password Generator\nGenerated: ${new Date().toLocaleString()}\nPassword: ${pwd}\n`;
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+
+  if (typeof ToolSufDownload !== 'undefined') {
+    ToolSufDownload.downloadFile({
+      blob,
+      originalName: 'passwords',
+      featureName: 'password-generator',
+      extension: 'txt'
+    });
+  } else {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'toolsuf-passwords-password-generator.txt';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+  }
+}
+window.exportPasswordTxt = exportPasswordTxt;
+
 document.addEventListener('DOMContentLoaded', () => {
   updateLength(16);
   generatePassword();

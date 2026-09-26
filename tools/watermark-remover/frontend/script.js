@@ -330,7 +330,7 @@ function handleFile(file) {
   videoFile = file;
   stopPlayback();
   clearMasks();
-  progressCard.style.display = 'none';
+  if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
 
   const url = URL.createObjectURL(file);
   
@@ -468,7 +468,7 @@ async function autoDetect() {
   const sorted = [...blockVar].filter(v => v > 0.1).sort((a, b) => a - b);
   if (sorted.length < 10) {
     autoBtn.disabled = false;
-    progressCard.style.display = 'none';
+    if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
     showAlert(tr('error'), 'err');
     return;
   }
@@ -527,7 +527,7 @@ async function autoDetect() {
   }
 
   autoBtn.disabled = false;
-  progressCard.style.display = 'none';
+  if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
 
   if (found.length === 0) {
     showAlert(tr('error'), 'err');
@@ -638,7 +638,7 @@ async function processViaServer() {
     showAlert(err.message || tr('error'), 'err');
   } finally {
     processBtn.disabled = masks.length === 0;
-    setTimeout(() => { progressCard.style.display = 'none'; }, 800);
+    if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
   }
 }
 
@@ -654,10 +654,25 @@ function showResult(blob) {
 
 function downloadResult() {
   if (!resultBlob) return;
+  const originalName = videoFile ? videoFile.name : 'video.mp4';
+  const ext = originalName.includes('.') ? originalName.split('.').pop().toLowerCase() : 'mp4';
+
+  if (typeof ToolSufDownload !== 'undefined') {
+    ToolSufDownload.downloadFile({
+      blob: resultBlob,
+      originalName,
+      featureName: 'watermark-remover',
+      extension: ext,
+      mimeType: resultBlob.type || 'video/mp4'
+    });
+    return;
+  }
+
   const baseName = videoFile ? videoFile.name.replace(/\.[^.]+$/, '') : 'video';
+  const filename = `toolsuf-${baseName}-watermark-remover.${ext}`;
   const a = document.createElement('a');
   a.href = URL.createObjectURL(resultBlob);
-  a.download = baseName + '_clean.mp4';
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -686,7 +701,7 @@ function clearAll() {
   infoSection.style.display = 'none';
   maskSection.style.display = 'none';
   settingsSection.style.display = 'none';
-  progressCard.style.display = 'none';
+  if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
   resultSection.style.display = 'none';
   alertBox.style.display = 'none';
   processBtn.disabled = true;
@@ -705,11 +720,12 @@ function showAlert(msg, type) {
   alertBox.style.display = 'block';
 }
 
-// Single authoritative showProgress (fixes the duplicate setProgress bug)
 function showProgress(pct, text) {
-  progressCard.style.display = 'block';
-  progressFill.style.width = (pct || 0) + '%';
-  progressText.textContent = text || tr('processing');
+  if (typeof CuteLoading !== 'undefined') {
+    CuteLoading.show('progressCard', 'Sabar yahh..');
+  } else {
+    progressCard.style.display = 'block';
+  }
 }
 
 function formatSize(bytes) {

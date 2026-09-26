@@ -667,12 +667,11 @@ async function handleFile(file) {
     previewSection.style.display = 'block';
     convBtn.disabled = false;
     fileInput.value = '';
-    setProgress(100, 'Selesai');
-    setTimeout(() => { progressCard.style.display = 'none'; }, 400);
+    if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
   } catch (e) {
     console.error(e);
     showAlert(t('error'), 'err');
-    progressCard.style.display = 'none';
+    if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
   }
 }
 
@@ -697,7 +696,7 @@ async function convertPDF() {
     console.error(e);
     showAlert(t('error'), 'err');
     convBtn.disabled = false;
-    progressCard.style.display = 'none';
+    if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
   }
 }
 
@@ -961,13 +960,23 @@ async function generateDOCX() {
   });
 
   const blob = await Packer.toBlob(doc);
-  saveAs(blob, baseName + '.docx');
+  if (typeof ToolSufDownload !== 'undefined') {
+    await ToolSufDownload.downloadFile({
+      blob,
+      originalName: pdfData.name,
+      featureName: 'pdf-to-docs',
+      extension: 'docx',
+      mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    });
+  } else {
+    saveAs(blob, `toolsuf-${baseName}-pdf-to-docs.docx`);
+  }
   showAlert(t('successDocx'), 'ok');
   convBtn.disabled = false;
-  setTimeout(() => { progressCard.style.display = 'none'; }, 400);
+  if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
 }
 
-function generateTXT() {
+async function generateTXT() {
   const baseName = pdfData.name.replace(/\.pdf$/i, '');
   let content = '';
 
@@ -977,10 +986,20 @@ function generateTXT() {
   }
 
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  saveAs(blob, baseName + '.txt');
+  if (typeof ToolSufDownload !== 'undefined') {
+    await ToolSufDownload.downloadFile({
+      blob,
+      originalName: pdfData.name,
+      featureName: 'pdf-to-docs',
+      extension: 'txt',
+      mimeType: 'text/plain;charset=utf-8'
+    });
+  } else {
+    saveAs(blob, `toolsuf-${baseName}-pdf-to-docs.txt`);
+  }
   showAlert(t('successTxt'), 'ok');
   convBtn.disabled = false;
-  setTimeout(() => { progressCard.style.display = 'none'; }, 400);
+  if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
 }
 
 function clearAll() {
@@ -992,7 +1011,7 @@ function clearAll() {
   previewSection.style.display = 'none';
   previewScroll.innerHTML = '';
   convBtn.disabled = true;
-  progressCard.style.display = 'none';
+  if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
   alertBox.style.display = 'none';
 }
 
@@ -1003,9 +1022,11 @@ function showAlert(msg, type) {
 }
 
 function setProgress(pct, text) {
-  progressCard.style.display = 'block';
-  pf.style.width = pct + '%';
-  progressText.textContent = text || t('processing');
+  if (typeof CuteLoading !== 'undefined') {
+    CuteLoading.show('progressCard', 'Sabar yahh..');
+  } else {
+    progressCard.style.display = 'block';
+  }
 }
 
 function formatSize(bytes) {

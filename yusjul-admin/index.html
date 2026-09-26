@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Web Monitor — ToolSuf</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/tools/web-monitor/style.css">
 </head>
-<body class="dark-theme"> <!-- Controlled dynamically by parent postMessage -->
+<body class="dark-theme"> <!-- Controlled dynamically by parent postMessage or system default -->
   
   <!-- Login Access View -->
   <div id="loginView" class="login-wrapper" style="display: none;">
@@ -315,148 +316,148 @@
       </section>
     </main>
 
-    <!-- Main Workspace Layout - User Analytics -->
-    <main class="monitor-workspace tab-content" id="workspaceAnalytics" style="display: none;">
-      <!-- Chart Panel -->
-      <section class="sites-section">
-        <div class="section-title-bar">
-          <h2 data-i18n="usageChartTitle">Grafik Penggunaan Alat</h2>
-          <button id="resetAnalyticsBtn" class="btn-link" style="color: var(--color-red);" data-i18n="resetAnalytics">Reset Statistik</button>
-        </div>
-        <div class="chart-card-container">
-          <canvas id="usageChartCanvas"></canvas>
-        </div>
-      </section>
-
-      <!-- Recent Launch History Panel -->
-      <aside class="logs-section">
-        <div class="section-title-bar">
-          <h2 data-i18n="recentToolActivity">Log Penggunaan Alat</h2>
-        </div>
-        <div class="logs-container">
-          <div id="analyticsLogsList" class="logs-list">
-            <!-- Analytics logs will appear here -->
-            <div class="empty-logs" id="emptyAnalyticsLogs" data-i18n="noAnalyticsLogs">Belum ada aktivitas alat.</div>
+      <!-- Main Workspace Layout - User Analytics -->
+      <main class="monitor-workspace tab-content" id="workspaceAnalytics" style="display: none;">
+        <!-- Chart Panel -->
+        <section class="sites-section">
+          <div class="section-title-bar">
+            <h2 data-i18n="usageChartTitle">Grafik Penggunaan Alat</h2>
+            <button id="resetAnalyticsBtn" class="btn-link" style="color: var(--color-red);" data-i18n="resetAnalytics">Reset Statistik</button>
           </div>
-        </div>
-      </aside>
-    </main>
-
-    <!-- Main Workspace Layout - Feature Maintenance -->
-    <main class="monitor-workspace tab-content" id="workspaceMaintenance" style="display: none;">
-      <section class="maintenance-section">
-        <div class="section-title-bar">
-          <div>
-            <h2 data-i18n="maintenanceTitle">Pemeliharaan Fitur</h2>
-            <p class="section-subtitle" data-i18n="maintenanceSubtitle">Atur status akses dan pemeliharaan untuk setiap tool ToolSuf</p>
+          <div class="chart-card-container">
+            <canvas id="usageChartCanvas"></canvas>
           </div>
-          <div class="title-bar-actions">
-            <button id="resetAllMaintenanceBtn" class="btn-link" data-i18n="resetMaintenance">Aktifkan Semua</button>
-          </div>
-        </div>
+        </section>
 
-        <!-- Global Maintenance Banner Card -->
-        <div class="global-maintenance-banner">
-          <div class="global-banner-left">
-            <div class="global-banner-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
+        <!-- Recent Launch History Panel -->
+        <aside class="logs-section">
+          <div class="section-title-bar">
+            <h2 data-i18n="recentToolActivity">Log Penggunaan Alat</h2>
+          </div>
+          <div class="logs-container">
+            <div id="analyticsLogsList" class="logs-list">
+              <!-- Analytics logs will appear here -->
+              <div class="empty-logs" id="emptyAnalyticsLogs" data-i18n="noAnalyticsLogs">Belum ada aktivitas alat.</div>
             </div>
+          </div>
+        </aside>
+      </main>
+
+      <!-- Main Workspace Layout - Feature Maintenance -->
+      <main class="monitor-workspace tab-content" id="workspaceMaintenance" style="display: none;">
+        <section class="maintenance-section">
+          <div class="section-title-bar">
             <div>
-              <div class="global-banner-title" data-i18n="globalBannerTitle">Mode Pemeliharaan Global</div>
-              <div class="global-banner-desc" data-i18n="globalBannerDesc">Kunci dan masukkan seluruh tool ke mode maintenance secara bersamaan</div>
+              <h2 data-i18n="maintenanceTitle">Pemeliharaan Fitur</h2>
+              <p class="section-subtitle" data-i18n="maintenanceSubtitle">Atur status akses dan pemeliharaan untuk setiap tool ToolSuf</p>
+            </div>
+            <div class="title-bar-actions">
+              <button id="resetAllMaintenanceBtn" class="btn-link" data-i18n="resetMaintenance">Aktifkan Semua</button>
             </div>
           </div>
-          <label class="apple-switch" title="Toggle Global Maintenance" aria-label="Toggle Global Maintenance">
-            <input type="checkbox" id="globalMaintenanceSwitch">
-            <span class="apple-switch-slider"></span>
-          </label>
-        </div>
 
-        <!-- Search Bar -->
-        <div class="maintenance-search-bar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" id="maintenanceSearchInput" placeholder="Cari nama fitur atau tool..." autocomplete="off">
-        </div>
+          <!-- Global Maintenance Banner Card -->
+          <div class="global-maintenance-banner">
+            <div class="global-banner-left">
+              <div class="global-banner-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="global-banner-title" data-i18n="globalBannerTitle">Mode Pemeliharaan Global</div>
+                <div class="global-banner-desc" data-i18n="globalBannerDesc">Kunci dan masukkan seluruh tool ke mode maintenance secara bersamaan</div>
+              </div>
+            </div>
+            <label class="apple-switch" title="Toggle Global Maintenance" aria-label="Toggle Global Maintenance">
+              <input type="checkbox" id="globalMaintenanceSwitch">
+              <span class="apple-switch-slider"></span>
+            </label>
+          </div>
 
-        <!-- Maintenance Cards Grid (Mobile: 1 Baris 3 Card) -->
-        <div id="maintenanceGrid" class="maintenance-grid">
-          <!-- Dynamically populated -->
-        </div>
-      </section>
+          <!-- Search Bar -->
+          <div class="maintenance-search-bar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="maintenanceSearchInput" placeholder="Cari nama fitur atau tool..." autocomplete="off">
+          </div>
 
-      <!-- Quick Guide Panel -->
-      <aside class="logs-section maintenance-sidebar">
-        <div class="section-title-bar">
-          <h2 data-i18n="maintenanceGuideTitle">Panduan Kontrol</h2>
-        </div>
-        <div class="logs-container maintenance-guide-box">
-          <div class="guide-item">
-            <div class="guide-dot active"></div>
-            <div>
-              <strong>Mode Normal (Hijau)</strong>
-              <p>Tool dapat dibuka dan digunakan dengan normal oleh pengguna.</p>
+          <!-- Maintenance Cards Grid (Mobile: 1 Baris 3 Card) -->
+          <div id="maintenanceGrid" class="maintenance-grid">
+            <!-- Dynamically populated -->
+          </div>
+        </section>
+
+        <!-- Quick Guide Panel -->
+        <aside class="logs-section maintenance-sidebar">
+          <div class="section-title-bar">
+            <h2 data-i18n="maintenanceGuideTitle">Panduan Kontrol</h2>
+          </div>
+          <div class="logs-container maintenance-guide-box">
+            <div class="guide-item">
+              <div class="guide-dot active"></div>
+              <div>
+                <strong>Mode Normal (Hijau)</strong>
+                <p>Tool dapat dibuka dan digunakan dengan normal oleh pengguna.</p>
+              </div>
+            </div>
+            <div class="guide-item">
+              <div class="guide-dot warning"></div>
+              <div>
+                <strong>Maintenance (Oranye)</strong>
+                <p>Badge otomatis tampil di beranda dan akses iframe tool diblokir.</p>
+              </div>
+            </div>
+            <div class="guide-item">
+              <div class="guide-dot info"></div>
+              <div>
+                <strong>Sinkronisasi Realtime</strong>
+                <p>Pengaturan tersimpan instan dan sinkron langsung ke beranda tanpa refresh.</p>
+              </div>
             </div>
           </div>
-          <div class="guide-item">
-            <div class="guide-dot warning"></div>
-            <div>
-              <strong>Maintenance (Oranye)</strong>
-              <p>Badge otomatis tampil di beranda dan akses iframe tool diblokir.</p>
-            </div>
-          </div>
-          <div class="guide-item">
-            <div class="guide-dot info"></div>
-            <div>
-              <strong>Sinkronisasi Realtime</strong>
-              <p>Pengaturan tersimpan instan dan sinkron langsung ke beranda tanpa refresh.</p>
-            </div>
-          </div>
-        </div>
-      </aside>
-    </main>
-  </div>
-
-  <!-- Custom Maintenance Message Modal -->
-  <div class="modal-backdrop" id="maintenanceMsgModal">
-    <div class="modal-sheet">
-      <div class="modal-header">
-        <h3 id="maintenanceMsgModalTitle">Pesan Pemeliharaan</h3>
-        <button id="closeMaintenanceMsgBtn" class="modal-close-btn" aria-label="Tutup">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-      <form id="maintenanceMsgForm" class="modal-body" novalidate>
-        <input type="hidden" id="editMaintenanceFeatureId" value="">
-        <div class="form-group">
-          <label>Fitur / Alat</label>
-          <input type="text" id="maintenanceFeatureNameDisplay" readonly style="opacity: 0.8; cursor: default;">
-        </div>
-        <div class="form-group">
-          <label for="maintenanceCustomMsgInput">Pesan untuk Pengguna</label>
-          <textarea id="maintenanceCustomMsgInput" rows="3" class="maintenance-textarea" placeholder="Tulis alasan pemeliharaan atau estimasi waktu selesai..."></textarea>
-        </div>
-        <div class="modal-footer" style="justify-content: space-between;">
-          <button type="button" id="resetMaintenanceMsgBtn" class="btn-action secondary-btn" data-i18n="resetMsgBtn">Gunakan Bawaan</button>
-          <div style="display: flex; gap: 8px;">
-            <button type="button" id="cancelMaintenanceMsgBtn" class="btn-action secondary-btn" data-i18n="cancelBtn">Batal</button>
-            <button type="submit" class="btn-action primary-btn" data-i18n="saveMsgBtn">Simpan Pesan</button>
-          </div>
-        </div>
-      </form>
+        </aside>
+      </main>
     </div>
-  </div>
+
+    <!-- Custom Maintenance Message Modal -->
+    <div class="modal-backdrop" id="maintenanceMsgModal">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h3 id="maintenanceMsgModalTitle">Pesan Pemeliharaan</h3>
+          <button id="closeMaintenanceMsgBtn" class="modal-close-btn" aria-label="Tutup">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <form id="maintenanceMsgForm" class="modal-body" novalidate>
+          <input type="hidden" id="editMaintenanceFeatureId" value="">
+          <div class="form-group">
+            <label>Fitur / Alat</label>
+            <input type="text" id="maintenanceFeatureNameDisplay" readonly style="opacity: 0.8; cursor: default;">
+          </div>
+          <div class="form-group">
+            <label for="maintenanceCustomMsgInput">Pesan untuk Pengguna</label>
+            <textarea id="maintenanceCustomMsgInput" rows="3" class="maintenance-textarea" placeholder="Tulis alasan pemeliharaan atau estimasi waktu selesai..."></textarea>
+          </div>
+          <div class="modal-footer" style="justify-content: space-between;">
+            <button type="button" id="resetMaintenanceMsgBtn" class="btn-action secondary-btn" data-i18n="resetMsgBtn">Gunakan Bawaan</button>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" id="cancelMaintenanceMsgBtn" class="btn-action secondary-btn" data-i18n="cancelBtn">Batal</button>
+              <button type="submit" class="btn-action primary-btn" data-i18n="saveMsgBtn">Simpan Pesan</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   </div><!-- /dashboardView -->
 
-  <script src="../../shared/maintenance.js"></script>
-  <script src="../../shared/toolsuf-download.js"></script>
-  <script src="script.js"></script>
+  <script src="/shared/maintenance.js"></script>
+  <script src="/shared/toolsuf-download.js"></script>
+  <script src="/tools/web-monitor/script.js"></script>
 </body>
 </html>

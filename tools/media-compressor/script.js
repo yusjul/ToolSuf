@@ -89,7 +89,7 @@ async function showComparison(i) {
   $('cmpImages').style.display = 'block';
   $('cmpEmpty').style.display = 'none';
   $('cmpInfo').style.display = 'flex';
-  $('cmpNewSize').textContent = t.cmpProcessing;
+  $('cmpNewSize').textContent = '—';
   $('cmpSave').textContent = '';
 
   try {
@@ -181,43 +181,83 @@ async function doZip() {
   if (!files.length) { showAlert(t.noFile, 'err'); return; }
   const btn = $('zipBtn');
   btn.disabled = true;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6l0 -3"/><path d="M16.25 7.75l2.15 -2.15"/><path d="M18 12l3 0"/><path d="M16.25 16.25l2.15 2.15"/><path d="M12 18l0 3"/><path d="M7.75 16.25l-2.15 2.15"/><path d="M6 12l-3 0"/><path d="M7.75 7.75l-2.15 -2.15"/></svg> ' + t.cmpProcessing;
-  $('zprog').style.display = 'block';
-  const zpf = $('zpf'), zinfo = $('zinfo');
-  const zip = new JSZip();
-  const folder = zip.folder('compressed');
 
-  for (let i = 0; i < files.length; i++) {
-    zinfo.textContent = t.compressingFile + (i + 1) + ' / ' + files.length + '...';
-    zpf.style.width = Math.round(((i + 1) / files.length) * 80) + '%';
-
-    let result;
-    if (compressed[i]) result = compressed[i];
-    else { try { result = await compressImage(files[i]); compressed[i] = result; } catch (e) { result = { blob: files[i], size: files[i].size, format: 'original' }; } }
-
-    const format = $('formatSelect').value;
-    let ext = format === 'original' ? getExt(files[i].name) : '.' + format;
-    const name = files[i].name.replace(/\.[^.]+$/, '') + ext;
-    folder.file(name, result.blob || files[i]);
-
-    if (i % 10 === 0) await new Promise(r => setTimeout(r, 0));
+  if (typeof CuteLoading !== 'undefined') {
+    CuteLoading.show('zprog', 'Sabar yahh..');
   }
 
-  zinfo.textContent = t.compressingZip;
-  const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' }, m => { zpf.style.width = Math.round(80 + m.percent * 0.2) + '%'; });
-  zpf.style.width = '100%';
-  zinfo.textContent = t.doneDownloading;
+  try {
+    const zip = new JSZip();
+    const folder = zip.folder('compressed');
 
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'compressed_images.zip';
-  a.click();
-  URL.revokeObjectURL(a.href);
+    for (let i = 0; i < files.length; i++) {
+      let result;
+      if (compressed[i]) result = compressed[i];
+      else { try { result = await compressImage(files[i]); compressed[i] = result; } catch (e) { result = { blob: files[i], size: files[i].size, format: 'original' }; } }
 
-  showAlert('✓ ' + files.length + t.success, 'ok');
-  btn.disabled = false;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20.735a2 2 0 0 1 -1 -1.735v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-1"/><path d="M11 17a2 2 0 0 1 2 2v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-2a2 2 0 0 1 2 -2z"/></svg> ' + t.btnDownload;
-  setTimeout(() => { $('zprog').style.display = 'none'; zpf.style.width = '0%'; }, 4000);
+      const format = $('formatSelect').value;
+      let ext = format === 'original' ? getExt(files[i].name) : '.' + format;
+      const name = files[i].name.replace(/\.[^.]+$/, '') + ext;
+      folder.file(name, result.blob || files[i]);
+
+      if (i % 10 === 0) await new Promise(r => setTimeout(r, 0));
+    }
+
+    // Jika hanya 1 file, download langsung file gambar hasil kompresi sesuai format output
+    if (files.length === 1) {
+      const singleResult = compressed[0] || (await compressImage(files[0]));
+      const format = $('formatSelect').value;
+      const targetExt = (format === 'original' ? getExt(files[0].name) : format).replace(/^\./, '').toLowerCase();
+
+      if (typeof ToolSufDownload !== 'undefined') {
+        await ToolSufDownload.downloadFile({
+          blob: singleResult.blob,
+          originalName: files[0].name,
+          featureName: 'image-compressor',
+          extension: targetExt
+        });
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(singleResult.blob);
+        a.download = `toolsuf-${files[0].name.replace(/\.[^.]+$/, '')}-image-compressor.${targetExt}`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 1000);
+      }
+    } else {
+      // Jika multiple files, kemas ke dalam ZIP berformat toolsuf-[nama-file]-image-compressor.zip
+      const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+
+      if (typeof ToolSufDownload !== 'undefined') {
+        await ToolSufDownload.downloadFile({
+          blob,
+          originalName: files[0].name,
+          featureName: 'image-compressor',
+          extension: 'zip',
+          defaultName: 'compressed-images'
+        });
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `toolsuf-${files[0].name.replace(/\.[^.]+$/, '')}-image-compressor.zip`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 1000);
+      }
+    }
+
+    showAlert('✓ ' + files.length + t.success, 'ok');
+  } catch (err) {
+    console.error(err);
+    showAlert(t.failed || 'Gagal memproses file.', 'err');
+  } finally {
+    btn.disabled = false;
+    if (typeof CuteLoading !== 'undefined') {
+      CuteLoading.hide('zprog');
+    } else {
+      $('zprog').style.display = 'none';
+    }
+  }
 }
 
 function showAlert(msg, type) {
@@ -251,7 +291,7 @@ function resetAll() {
   $('resizeW').value = '1920';
   $('resizeH').value = '1080';
   $('aspectLock').checked = true;
-  $('zprog').style.display = 'none';
+  if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('zprog'); } else { $('zprog').style.display = 'none'; }
   $('alertBox').className = 'alert';
 }
 

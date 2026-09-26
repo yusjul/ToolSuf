@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Background Remover</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../../shared/cute-loading.css">
+  <script src="../../shared/maintenance.js"></script>
   <script type="module" src="script.js"></script>
 </head>
 <body>
@@ -36,36 +38,46 @@
         <div class="drop-s" id="lblDropSub">Mendukung format JPG, PNG, WEBP, dan lainnya</div>
       </div>
 
-      <!-- Progress Section -->
-      <div id="progressSection" class="progress-card" style="display:none">
-        <div class="zinfo" id="statusLabel">Menyiapkan model AI...</div>
-        <div class="prog-w">
-          <div class="prog-f" id="progressBar" style="width:0%"></div>
-        </div>
+      <!-- Loading State -->
+      <div id="progressSection" class="cute-loading" role="status" aria-live="polite" aria-busy="false" data-cute-loading="1">
+        <div class="cute-loading-text" id="statusLabel">Sabar yahh..</div>
+        <div class="cute-loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
       </div>
 
       <!-- Preview Section -->
       <div class="section-title" id="secPreview">Pratinjau Hasil</div>
-      <div class="card">
+      <div class="card preview-card">
         <div class="cmp" id="cmpContainer">
-          <div class="cmp-empty" id="cmpEmpty">Pilih gambar untuk memproses dan melihat hasil</div>
+          <div class="cmp-empty" id="cmpEmpty">
+            <div class="cmp-empty-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="4" ry="4"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <div class="cmp-empty-title" id="cmpEmptyTitle">Pilih gambar untuk memproses dan melihat hasil</div>
+          </div>
           <div id="cmpImages" style="display:none">
-            <img id="cmpOriginal" alt="Original">
-            <!-- Output container has transparent checkerboard background -->
-            <div class="cmp-after" id="cmpAfter">
-              <div class="checkerboard-bg" id="bgOverlay"></div>
-              <img id="cmpResult" alt="No Background">
-            </div>
-            <div class="cmp-handle" id="cmpHandle">
-              <div class="cmp-handle-knob">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M7 8l-4 4l4 4"/><path d="M17 8l4 4l-4 4"/><path d="M3 12l18 0"/>
-                </svg>
+            <div class="cmp-stage" id="cmpStage">
+              <img id="cmpOriginal" alt="Original">
+              <!-- Output container has transparent checkerboard background -->
+              <div class="cmp-after" id="cmpAfter">
+                <div class="checkerboard-bg" id="bgOverlay"></div>
+                <img id="cmpResult" alt="No Background">
               </div>
-            </div>
-            <div class="cmp-labels" id="cmpLabels">
-              <span>Asli</span>
-              <span>Bersih</span>
+              <div class="cmp-handle" id="cmpHandle" role="slider" tabindex="0" aria-label="Perbandingan Sebelum dan Sesudah" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                <div class="cmp-handle-knob">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="7 6 3 10 7 14"/>
+                    <polyline points="13 6 17 10 13 14"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="cmp-labels" id="cmpLabels">
+                <span class="cmp-badge">Asli</span>
+                <span class="cmp-badge">Bersih</span>
+              </div>
             </div>
           </div>
         </div>
@@ -111,5 +123,7 @@
       <div class="alert" id="alertBox"></div>
     </div>
   </div>
+  <script src="../../shared/cute-loading.js"></script>
+  <script src="../../shared/toolsuf-download.js"></script>
 </body>
 </html>

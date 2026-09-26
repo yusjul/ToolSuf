@@ -1,124 +1,59 @@
-// --- Web Monitor Logic Engine ---
+// --- Web Monitor Logic Engine (Single Website Monitor) ---
+
+// =============================================================================
+// KONFIGURASI WEBSITE YANG DIPANTAU (SINGLE SITE MONITORING)
+// =============================================================================
+// Ubah objek di bawah ini jika ingin mengganti website yang dipantau:
+const MONITORED_SITE = {
+  name: "Website Saya",
+  url: "https://domain-saya.com"
+};
+
+const CHECK_INTERVAL = 30000; // 30 detik interval monitoring
+const MAX_HISTORY = 30; // Maksimal 30 titik riwayat latensi
+const BACKEND_API_BASE = 'http://localhost:3001/api/web-monitor';
+
+// =============================================================================
+// KONFIGURASI AUTENTIKASI WEB MONITOR
+// =============================================================================
+const AUTH_CONFIG = {
+  username: "yusjul",
+  password: "yusjul2024"
+};
+
+const AUTH_SESSION_KEY = 'isAuthenticated';
+const STORAGE_KEY = 'toolsuf_single_monitor_v1';
+
+const isAuthenticated = () => {
+  try {
+    return sessionStorage.getItem(AUTH_SESSION_KEY) === 'true';
+  } catch (e) {
+    return false;
+  }
+};
+
+const setSessionAuthenticated = (val) => {
+  try {
+    if (val) {
+      sessionStorage.setItem(AUTH_SESSION_KEY, 'true');
+    } else {
+      sessionStorage.removeItem(AUTH_SESSION_KEY);
+    }
+  } catch (e) {
+    console.warn('sessionStorage error:', e);
+  }
+};
 
 document.addEventListener('DOMContentLoaded', () => {
-  // --- Translation Dictionary (English & Indonesian) ---
+  // --- Translation Dictionary (Indonesian & English) ---
   const translations = {
-    en: {
-      toolTitle: 'Web Monitor',
-      toolSubtitle: 'Monitor website availability & latencies privately',
-      addSite: 'Add Site',
-      metricTotal: 'Total Sites',
-      metricOnline: 'Online',
-      metricOffline: 'Offline',
-      metricLatency: 'Avg Latency',
-      monitoredList: 'Monitored Sites',
-      resetDefaults: 'Reset to Defaults',
-      noSites: 'No sites monitored. Add your first site to begin!',
-      historyLogs: 'Activity Logs',
-      clearLogs: 'Clear',
-      noLogs: 'No logs available yet.',
-      addSiteTitle: 'Add Site',
-      editSiteTitle: 'Edit Site',
-      labelName: 'Site Name',
-      labelUrl: 'URL Address',
-      labelInterval: 'Check Interval',
-      labelMethod: 'Check Method',
-      labelProxy: 'Proxy URL (Optional)',
-      labelAlerts: 'Enable Alerts',
-      alertSoundLabel: 'Audio Alarm',
-      alertPushLabel: 'Push Notification',
-      cancelBtn: 'Cancel',
-      saveBtn: 'Save',
-      int10s: '10 Seconds',
-      int30s: '30 Seconds',
-      int1m: '1 Minute',
-      int5m: '5 Minutes',
-      int15m: '15 Minutes',
-      methodNocors: 'Standard (No-CORS)',
-      methodProxy: 'CORS Proxy',
-      statusOnline: 'Online',
-      statusOffline: 'Offline',
-      statusChecking: 'Checking...',
-      toastSiteAdded: 'Site added successfully!',
-      toastSiteUpdated: 'Site updated successfully!',
-      toastSiteDeleted: 'Site deleted successfully!',
-      toastLogsCleared: 'Activity logs cleared!',
-      toastDefaultsReset: 'Sites list reset to sample data!',
-      toastPermDenied: 'Push notification permission denied.',
-      notifTitleOffline: '⚠️ Website Offline!',
-      notifBodyOffline: 'is OFFLINE! Latency could not be retrieved.',
-      notifTitleOnline: '✅ Website Online!',
-      notifBodyOnline: 'is back ONLINE. Response time:',
-      logMsgOffline: 'went OFFLINE (connection failed or timed out)',
-      logMsgOnline: 'went ONLINE with latency',
-      tabWebsites: 'Websites',
-      tabAnalytics: 'User Analytics',
-      metricTotalLaunches: 'Total Opened',
-      metricPopularTool: 'Most Popular',
-      metricLastActiveTool: 'Last Used',
-      metricTrackingState: 'Tracking Status',
-      trackingLocal: 'Local Only',
-      usageChartTitle: 'Tool Usage Statistics',
-      resetAnalytics: 'Reset Stats',
-      recentToolActivity: 'Tool Launch History',
-      noAnalyticsLogs: 'No activity logged yet.',
-      toastAnalyticsReset: 'Usage statistics reset!',
-      exportSites: 'Export',
-      importSites: 'Import',
-      toastExportSuccess: 'Site configurations exported successfully!',
-      toastImportSuccess: 'Site configurations imported successfully!',
-      toastImportError: 'Invalid configuration file.'
-    },
     id: {
       toolTitle: 'Pemantau Situs Web',
       toolSubtitle: 'Monitor ketersediaan & latensi situs secara privat',
-      addSite: 'Tambah Situs',
-      metricTotal: 'Total Situs',
-      metricOnline: 'Online',
-      metricOffline: 'Offline',
-      metricLatency: 'Avg Latensi',
-      monitoredList: 'Situs yang Dipantau',
-      resetDefaults: 'Reset ke Contoh',
-      noSites: 'Belum ada situs yang dipantau. Tambahkan situs pertama Anda!',
-      historyLogs: 'Log Aktivitas',
-      clearLogs: 'Bersihkan',
-      noLogs: 'Belum ada aktivitas log.',
-      addSiteTitle: 'Tambah Situs',
-      editSiteTitle: 'Edit Situs',
-      labelName: 'Nama Situs',
-      labelUrl: 'Alamat URL',
-      labelInterval: 'Interval Cek',
-      labelMethod: 'Metode Cek',
-      labelProxy: 'Proksi URL (Opsional)',
-      labelAlerts: 'Aktifkan Alarm',
-      alertSoundLabel: 'Alarm Suara',
-      alertPushLabel: 'Notifikasi Push',
-      cancelBtn: 'Batal',
-      saveBtn: 'Simpan',
-      int10s: '10 Detik',
-      int30s: '30 Detik',
-      int1m: '1 Menit',
-      int5m: '5 Menit',
-      int15m: '15 Menit',
-      methodNocors: 'Standar (No-CORS)',
-      methodProxy: 'Proksi CORS',
-      statusOnline: 'Aktif',
-      statusOffline: 'Mati',
-      statusChecking: 'Memeriksa...',
-      toastSiteAdded: 'Situs berhasil ditambahkan!',
-      toastSiteUpdated: 'Situs berhasil diperbarui!',
-      toastSiteDeleted: 'Situs berhasil dihapus!',
-      toastLogsCleared: 'Log aktivitas dibersihkan!',
-      toastDefaultsReset: 'Daftar situs di-reset ke contoh bawaan!',
-      toastPermDenied: 'Izin notifikasi push ditolak.',
-      notifTitleOffline: '⚠️ Situs Tidak Aktif!',
-      notifBodyOffline: 'tidak aktif! Latensi tidak dapat diambil.',
-      notifTitleOnline: '✅ Situs Aktif Kembali!',
-      notifBodyOnline: 'aktif kembali. Waktu respons:',
-      logMsgOffline: 'mati / OFFLINE (koneksi gagal atau habis waktu)',
-      logMsgOnline: 'aktif / ONLINE dengan latensi',
+      logoutBtn: 'Keluar',
       tabWebsites: 'Pemantau Situs',
       tabAnalytics: 'Analisis Penggunaan',
+      tabMaintenance: 'Pemeliharaan Fitur',
       metricTotalLaunches: 'Total Dibuka',
       metricPopularTool: 'Alat Terpopuler',
       metricLastActiveTool: 'Terakhir Digunakan',
@@ -129,983 +64,779 @@ document.addEventListener('DOMContentLoaded', () => {
       recentToolActivity: 'Log Penggunaan Alat',
       noAnalyticsLogs: 'Belum ada aktivitas alat.',
       toastAnalyticsReset: 'Statistik penggunaan berhasil di-reset!',
-      exportSites: 'Ekspor',
-      importSites: 'Impor',
-      toastExportSuccess: 'Konfigurasi situs berhasil diekspor!',
-      toastImportSuccess: 'Konfigurasi situs berhasil diimpor!',
-      toastImportError: 'File konfigurasi tidak valid.'
+      metricTotalFeatures: 'Total Alat',
+      metricActiveFeatures: 'Alat Normal',
+      metricMaintenanceFeatures: 'Maintenance',
+      metricGlobalStatus: 'Kunci Global',
+      globalOff: 'Non-aktif',
+      globalOn: 'AKTIF',
+      maintenanceTitle: 'Pemeliharaan Fitur',
+      maintenanceSubtitle: 'Atur status akses dan pemeliharaan untuk setiap tool ToolSuf',
+      resetMaintenance: 'Aktifkan Semua',
+      globalBannerTitle: 'Mode Pemeliharaan Global',
+      globalBannerDesc: 'Kunci dan masukkan seluruh tool ke mode maintenance secara bersamaan',
+      resetMsgBtn: 'Gunakan Bawaan',
+      saveMsgBtn: 'Simpan Pesan',
+      statusNormal: 'Aktif',
+      statusMnt: 'Maintenance',
+      toastMntToggled: 'Status pemeliharaan fitur berhasil diperbarui!',
+      toastGlobalMntToggled: 'Mode pemeliharaan global berhasil diubah!',
+      toastMntResetAll: 'Semua fitur berhasil diaktifkan kembali!',
+      toastMsgSaved: 'Pesan pemeliharaan berhasil disimpan!'
+    },
+    en: {
+      toolTitle: 'Web Monitor',
+      toolSubtitle: 'Monitor website availability & latencies privately',
+      logoutBtn: 'Logout',
+      tabWebsites: 'Web Monitor',
+      tabAnalytics: 'User Analytics',
+      tabMaintenance: 'Feature Maintenance',
+      metricTotalLaunches: 'Total Opened',
+      metricPopularTool: 'Most Popular',
+      metricLastActiveTool: 'Last Used',
+      metricTrackingState: 'Tracking Status',
+      trackingLocal: 'Local Only',
+      usageChartTitle: 'Tool Usage Statistics',
+      resetAnalytics: 'Reset Stats',
+      recentToolActivity: 'Tool Launch History',
+      noAnalyticsLogs: 'No activity logged yet.',
+      toastAnalyticsReset: 'Usage statistics reset!',
+      metricTotalFeatures: 'Total Tools',
+      metricActiveFeatures: 'Normal Tools',
+      metricMaintenanceFeatures: 'In Maintenance',
+      metricGlobalStatus: 'Global Lock',
+      globalOff: 'Inactive',
+      globalOn: 'ACTIVE',
+      maintenanceTitle: 'Feature Maintenance',
+      maintenanceSubtitle: 'Manage access and maintenance mode for all ToolSuf tools',
+      resetMaintenance: 'Activate All',
+      globalBannerTitle: 'Global Maintenance Mode',
+      globalBannerDesc: 'Lock and put all ToolSuf tools into maintenance mode simultaneously',
+      resetMsgBtn: 'Use Default Message',
+      saveMsgBtn: 'Save Message',
+      statusNormal: 'Active',
+      statusMnt: 'Maintenance',
+      toastMntToggled: 'Feature maintenance status updated!',
+      toastGlobalMntToggled: 'Global maintenance mode updated!',
+      toastMntResetAll: 'All tools set to normal active mode!',
+      toastMsgSaved: 'Maintenance message saved!'
     }
   };
 
-  // --- State Variables ---
-  let currentLang = 'id';
-  let sites = [];
-  let logs = [];
-  let pollIntervals = {}; // Store timer references
-  let globalMuted = false;
+  const currentLang = 'id';
+
+  // --- Storage Helper ---
+  const loadStoredData = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return {
+      history: [],
+      uptime: { totalChecks: 0, onlineChecks: 0 },
+      logs: [],
+      theme: 'dark',
+      muted: false
+    };
+  };
+
+  const saveStoredData = (data) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {}
+  };
+
+  let state = loadStoredData();
+  let monitorTimer = null;
+  let isChecking = false;
+  let lastStatus = null;
   let audioCtx = null;
+  let cachedPublicIp = null;
+  let isDashboardInitialized = false;
 
-  // --- Sample/Default Sites (to pre-load immediately on first launch) ---
-  const defaultSites = [
-    {
-      id: 'default-google',
-      name: 'Google Indonesia',
-      url: 'https://www.google.co.id',
-      interval: 10000, // 10s
-      method: 'nocors',
-      proxy: '',
-      alertSound: true,
-      alertPush: false,
-      history: [45, 48, 52, 42, 50, 48, 47, 49, 44, 46],
-      status: 'online',
-      lastChecked: '--:--:--',
-      avgLatency: 47
-    },
-    {
-      id: 'default-github',
-      name: 'GitHub Portal',
-      url: 'https://github.com',
-      interval: 30000, // 30s
-      method: 'nocors',
-      proxy: '',
-      alertSound: false,
-      alertPush: true,
-      history: [110, 115, 120, 108, 125, 118, 122, 114, 116, 112],
-      status: 'online',
-      lastChecked: '--:--:--',
-      avgLatency: 116
-    },
-    {
-      id: 'default-broken',
-      name: 'Simulated Broken Web',
-      url: 'https://simulated-offline-test-site.example',
-      interval: 10000, // 10s
-      method: 'nocors',
-      proxy: '',
-      alertSound: true,
-      alertPush: false,
-      history: [0, 0, 0, 0, 0, 0, 0, 0],
-      status: 'offline',
-      lastChecked: '--:--:--',
-      avgLatency: 0
-    }
-  ];
+  // --- DOM Element References ---
+  const loginView = document.getElementById('loginView');
+  const dashboardView = document.getElementById('dashboardView');
+  const loginForm = document.getElementById('loginForm');
+  const loginUsernameInput = document.getElementById('loginUsername');
+  const loginPasswordInput = document.getElementById('loginPassword');
+  const loginAlert = document.getElementById('loginAlert');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginBtnText = document.getElementById('loginBtnText');
+  const loginBtnSpinner = document.getElementById('loginBtnSpinner');
+  const togglePasswordBtn = document.getElementById('togglePassword');
+  const eyeIcon = document.getElementById('eyeIcon');
+  const eyeOffIcon = document.getElementById('eyeOffIcon');
 
-  // --- DOM Elements ---
-  const addSiteBtn = document.getElementById('addSiteBtn');
+  // Header Elements & Device Tracking Elements (Req 11)
+  const deviceInfoBtn = document.getElementById('deviceInfoBtn');
+  const devicePopover = document.getElementById('devicePopover');
+  const devicePopoverWrapper = document.getElementById('devicePopoverWrapper');
+  const headerDeviceBadge = document.getElementById('headerDeviceBadge');
+  const popoverCounterBadge = document.getElementById('popoverCounterBadge');
+  const deviceSessionsListPopover = document.getElementById('deviceSessionsListPopover');
+  const activeDevicesCountBadge = document.getElementById('activeDevicesCountBadge');
+  const connectedDevicesList = document.getElementById('connectedDevicesList');
+  const refreshDevicesBtn = document.getElementById('refreshDevicesBtn');
+  const testEmailBtn = document.getElementById('testEmailBtn');
   const muteAllBtn = document.getElementById('muteAllBtn');
   const muteIcon = document.getElementById('muteIcon');
-  const resetDefaultsBtn = document.getElementById('resetDefaultsBtn');
-  const clearLogsBtn = document.getElementById('clearLogsBtn');
-  
-  const metricTotalVal = document.getElementById('metricTotalVal');
-  const metricOnlineVal = document.getElementById('metricOnlineVal');
-  const metricOfflineVal = document.getElementById('metricOfflineVal');
-  const metricLatencyVal = document.getElementById('metricLatencyVal');
-  
-  const sitesGrid = document.getElementById('sitesGrid');
-  const logsList = document.getElementById('logsList');
-  const emptyState = document.getElementById('emptyState');
-  const emptyLogs = document.getElementById('emptyLogs');
-  
-  const siteModal = document.getElementById('siteModal');
-  const siteForm = document.getElementById('siteForm');
-  const modalTitle = document.getElementById('modalTitle');
-  const closeModalBtn = document.getElementById('closeModalBtn');
-  const cancelModalBtn = document.getElementById('cancelModalBtn');
-  
-  const editSiteIdInput = document.getElementById('editSiteId');
-  const siteNameInput = document.getElementById('siteName');
-  const siteUrlInput = document.getElementById('siteUrl');
-  const siteIntervalInput = document.getElementById('siteInterval');
-  const siteMethodInput = document.getElementById('siteMethod');
-  const siteProxyInput = document.getElementById('siteProxy');
-  const proxyInputGroup = document.getElementById('proxyInputGroup');
-  const alertSoundInput = document.getElementById('alertSound');
-  const alertPushInput = document.getElementById('alertPush');
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  const themeIcon = document.getElementById('themeIcon');
+  const logoutBtn = document.getElementById('logoutBtn');
 
-  // Tabs and Analytics Elements
+  // Monitored Site Hero Elements
+  const monitoredSiteName = document.getElementById('monitoredSiteName');
+  const monitoredSiteUrl = document.getElementById('monitoredSiteUrl');
+  const monitoredSiteUrlText = document.getElementById('monitoredSiteUrlText');
+  const monitoredStatusPill = document.getElementById('monitoredStatusPill');
+  const monitoredStatusText = document.getElementById('monitoredStatusText');
+  const manualCheckBtn = document.getElementById('manualCheckBtn');
+
+  // 5 Single Metrics Elements
+  const metricStatusIcon = document.getElementById('metricStatusIcon');
+  const metricStatusVal = document.getElementById('metricStatusVal');
+  const metricLatencyVal = document.getElementById('metricLatencyVal');
+  const metricUptimeVal = document.getElementById('metricUptimeVal');
+  const metricAvgLatencyVal = document.getElementById('metricAvgLatencyVal');
+  const metricLastCheckVal = document.getElementById('metricLastCheckVal');
+
+  // Chart & Logs Elements
+  const latencyChartSvg = document.getElementById('latencyChartSvg');
+  const chartMinMaxLabel = document.getElementById('chartMinMaxLabel');
+  const chartTooltip = document.getElementById('chartTooltip');
+  const logsList = document.getElementById('logsList');
+  const emptyLogs = document.getElementById('emptyLogs');
+  const clearLogsBtn = document.getElementById('clearLogsBtn');
+
+  // Tabs Elements
   const tabWebsites = document.getElementById('tabWebsites');
   const tabAnalytics = document.getElementById('tabAnalytics');
-  const sitesMetricsRow = document.getElementById('sitesMetricsRow');
-  const analyticsMetricsRow = document.getElementById('analyticsMetricsRow');
+  const tabMaintenance = document.getElementById('tabMaintenance');
   const workspaceWebsites = document.getElementById('workspaceWebsites');
   const workspaceAnalytics = document.getElementById('workspaceAnalytics');
-  const usageChartCanvas = document.getElementById('usageChartCanvas');
-  const analyticsLogsList = document.getElementById('analyticsLogsList');
-  const resetAnalyticsBtn = document.getElementById('resetAnalyticsBtn');
-  const emptyAnalyticsLogs = document.getElementById('emptyAnalyticsLogs');
+  const workspaceMaintenance = document.getElementById('workspaceMaintenance');
 
+  // Analytics Elements
   const metricTotalLaunchesVal = document.getElementById('metricTotalLaunchesVal');
   const metricPopularToolVal = document.getElementById('metricPopularToolVal');
   const metricLastActiveToolVal = document.getElementById('metricLastActiveToolVal');
+  const usageChartCanvas = document.getElementById('usageChartCanvas');
+  const analyticsLogsList = document.getElementById('analyticsLogsList');
+  const emptyAnalyticsLogs = document.getElementById('emptyAnalyticsLogs');
+  const resetAnalyticsBtn = document.getElementById('resetAnalyticsBtn');
 
-  // Export/Import Elements
-  const exportSitesBtn = document.getElementById('exportSitesBtn');
-  const importSitesBtn = document.getElementById('importSitesBtn');
-  const importFileInput = document.getElementById('importFileInput');
+  // Maintenance Elements
+  const globalMaintenanceSwitch = document.getElementById('globalMaintenanceSwitch');
+  const resetAllMaintenanceBtn = document.getElementById('resetAllMaintenanceBtn');
+  const maintenanceSearchInput = document.getElementById('maintenanceSearchInput');
+  const maintenanceGrid = document.getElementById('maintenanceGrid');
+  const metricTotalFeaturesVal = document.getElementById('metricTotalFeaturesVal');
+  const metricActiveFeaturesVal = document.getElementById('metricActiveFeaturesVal');
+  const metricMaintenanceFeaturesVal = document.getElementById('metricMaintenanceFeaturesVal');
+  const metricGlobalStatusVal = document.getElementById('metricGlobalStatusVal');
+  const maintenanceMsgModal = document.getElementById('maintenanceMsgModal');
+  const editMaintenanceFeatureId = document.getElementById('editMaintenanceFeatureId');
+  const maintenanceFeatureNameDisplay = document.getElementById('maintenanceFeatureNameDisplay');
+  const maintenanceCustomMsgInput = document.getElementById('maintenanceCustomMsgInput');
+  const closeMaintenanceMsgBtn = document.getElementById('closeMaintenanceMsgBtn');
+  const cancelMaintenanceMsgBtn = document.getElementById('cancelMaintenanceMsgBtn');
+  const resetMaintenanceMsgBtn = document.getElementById('resetMaintenanceMsgBtn');
+  const maintenanceMsgForm = document.getElementById('maintenanceMsgForm');
 
-  // --- Initialize Tool ---
-  const init = () => {
-    // Get language param
-    const urlParams = new URLSearchParams(window.location.search);
-    const langParam = urlParams.get('lang');
-    if (langParam === 'en' || langParam === 'id') {
-      currentLang = langParam;
-    } else {
-      currentLang = localStorage.getItem('lang') === 'en' ? 'en' : 'id';
-    }
-
-    // Apply translations
-    applyLanguage(currentLang);
-
-    // Load Mute State
-    globalMuted = localStorage.getItem('monitor_muted') === 'true';
-    updateMuteUi();
-
-    // Load Data
-    const cachedSites = localStorage.getItem('monitor_sites');
-    const cachedLogs = localStorage.getItem('monitor_logs');
-    
-    if (cachedSites) {
-      sites = JSON.parse(cachedSites);
-    } else {
-      sites = JSON.parse(JSON.stringify(defaultSites)); // Clone defaults
-      localStorage.setItem('monitor_sites', JSON.stringify(sites));
-    }
-
-    if (cachedLogs) {
-      logs = JSON.parse(cachedLogs);
-    } else {
-      logs = [];
-    }
-
-    // Setup tab listeners
-    tabWebsites.addEventListener('click', () => switchTab('websites'));
-    tabAnalytics.addEventListener('click', () => switchTab('analytics'));
-    resetAnalyticsBtn.addEventListener('click', resetAnalyticsData);
-
-    // Setup Export/Import listeners
-    exportSitesBtn.addEventListener('click', exportSitesData);
-    importSitesBtn.addEventListener('click', () => importFileInput.click());
-    importFileInput.addEventListener('change', importSitesData);
-
-    // Render components
-    renderSites();
-    renderLogs();
-    updateMetrics();
-
-    // Start polling intervals
-    startAllPolling();
-
-    // Register push notification check
-    if (Notification.permission === 'default') {
-      // Prompt on user action if alertPush is enabled
-    }
-  };
-
-  // --- Segmented Tab Switcher Controller ---
-  const switchTab = (tabKey) => {
-    if (tabKey === 'websites') {
-      tabWebsites.classList.add('active');
-      tabAnalytics.classList.remove('active');
-      
-      sitesMetricsRow.style.display = 'grid';
-      analyticsMetricsRow.style.display = 'none';
-      
-      workspaceWebsites.style.display = 'grid';
-      workspaceAnalytics.style.display = 'none';
-      
-      // Force redrawing cards sparklines
-      sites.forEach(site => drawSparkline(site));
-    } else {
-      tabWebsites.classList.remove('active');
-      tabAnalytics.classList.add('active');
-      
-      sitesMetricsRow.style.display = 'none';
-      analyticsMetricsRow.style.display = 'grid';
-      
-      workspaceWebsites.style.display = 'none';
-      workspaceAnalytics.style.display = 'grid';
-      
-      // Render user activity charts
-      renderAnalytics();
-    }
-  };
-
-  // --- Translation Engine ---
-  const applyLanguage = (lang) => {
-    currentLang = lang;
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-      const key = el.getAttribute('data-i18n');
-      if (translations[lang] && translations[lang][key]) {
-        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-          el.placeholder = translations[lang][key];
-        } else {
-          el.textContent = translations[lang][key];
-        }
-      }
-    });
-  };
-
-  // PostMessage Event Listener from parent window
-  window.addEventListener('message', (e) => {
-    if (e.data) {
-      if (e.data.type === 'syncTheme') {
-        if (e.data.dark) {
-          document.body.className = 'dark-theme';
-        } else {
-          document.body.className = '';
-        }
-        // Force redraw active charts depending on tab
-        if (tabAnalytics.classList.contains('active')) {
-          renderAnalytics();
-        } else {
-          sites.forEach(site => drawSparkline(site));
-        }
-      } else if (e.data.type === 'syncLang') {
-        applyLanguage(e.data.lang);
-        if (tabAnalytics.classList.contains('active')) {
-          renderAnalytics();
-        }
-      } else if (e.data.type === 'syncAnalytics') {
-        if (tabAnalytics.classList.contains('active')) {
-          renderAnalytics();
-        }
-      }
-    }
-  });
-
-  // Safe PostMessage to parent toast triggers
+  // --- Toast Notification Helper ---
   const showToast = (message) => {
-    window.parent.postMessage({ type: 'showToast', message }, '*');
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
   };
 
-  // --- Web Audio API Alerts (Offline Warning) ---
-  const playAlarm = () => {
-    if (globalMuted) return;
+  // --- Sound Alert Helper ---
+  const playAlertSound = () => {
+    if (state.muted) return;
     try {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
-      
-      const now = audioCtx.currentTime;
-      
-      // Apple-style double alarm chime (F5, C6)
-      const osc1 = audioCtx.createOscillator();
-      const osc2 = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(698.46, now); // F5
-      osc1.frequency.setValueAtTime(1046.50, now + 0.18); // C6
-      
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(349.23, now); // F4 sub harmonic
-      
-      gainNode.gain.setValueAtTime(0, now);
-      gainNode.gain.linearRampToValueAtTime(0.18, now + 0.05);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-      
-      gainNode.gain.setValueAtTime(0, now + 0.45);
-      gainNode.gain.linearRampToValueAtTime(0.15, now + 0.5);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.95);
-      
-      osc1.connect(gainNode);
-      osc2.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      
-      osc1.start(now);
-      osc2.start(now);
-      osc1.stop(now + 1.0);
-      osc2.stop(now + 1.0);
-    } catch (err) {
-      console.warn('Web Audio synthesis failed:', err);
-    }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.35);
+      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.35);
+    } catch (e) {}
   };
 
-  // --- Push Notifications ---
-  const triggerPushNotification = (title, body) => {
-    if (Notification.permission === 'granted') {
-      try {
-        new Notification(title, {
-          body,
-          icon: '../../favicon.png'
-        });
-      } catch (err) {
-        console.warn('Web Notification instantiation failed', err);
+  const updateMuteUi = () => {
+    if (muteAllBtn && muteIcon) {
+      if (state.muted) {
+        muteAllBtn.classList.add('active-alert');
+        muteIcon.innerHTML = `
+          <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+          <line x1="23" y1="9" x2="17" y2="15"></line>
+          <line x1="17" y1="9" x2="23" y2="15"></line>
+        `;
+        muteAllBtn.title = 'Sound: Muted';
+      } else {
+        muteAllBtn.classList.remove('active-alert');
+        muteIcon.innerHTML = `
+          <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        `;
+        muteAllBtn.title = 'Sound: Active';
       }
     }
   };
 
-  const requestNotificationPermission = () => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().then(permission => {
-        if (permission === 'denied') {
-          showToast(translations[currentLang].toastPermDenied);
-        }
-      });
+  // --- Theme Controller (Dark / Light Mode) ---
+  const applyTheme = (theme) => {
+    state.theme = theme;
+    saveStoredData(state);
+    if (theme === 'light') {
+      document.body.classList.remove('dark-theme');
+      document.body.classList.add('light-theme');
+      if (themeIcon) {
+        // Moon icon for light mode
+        themeIcon.innerHTML = `
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        `;
+      }
+      if (themeToggleBtn) themeToggleBtn.title = 'Ganti ke Mode Gelap';
+    } else {
+      document.body.classList.remove('light-theme');
+      document.body.classList.add('dark-theme');
+      if (themeIcon) {
+        // Sun icon for dark mode
+        themeIcon.innerHTML = `
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        `;
+      }
+      if (themeToggleBtn) themeToggleBtn.title = 'Ganti ke Mode Terang';
     }
   };
 
-  // --- Ping Core Controller ---
-  const performPingCheck = async (site) => {
-    // Intercept simulated offline website to avoid network errors
-    if (site.url === 'https://simulated-offline-test-site.example') {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve({ online: false, latency: 0 });
-        }, 1200); // simulate delay
-      });
+  // --- Device Info Detection (Req 15, 16, 17) ---
+  const getDeviceInfo = () => {
+    const ua = navigator.userAgent || '';
+    let device = 'Desktop PC';
+    let os = 'Windows';
+    let browser = 'Browser';
+
+    if (/android/i.test(ua)) {
+      device = 'Android Device';
+      os = 'Android';
+    } else if (/ipad|iphone|ipod/i.test(ua)) {
+      device = 'Apple Mobile';
+      os = 'iOS';
+    } else if (/macintosh|mac os x/i.test(ua)) {
+      device = 'Mac';
+      os = 'macOS';
+    } else if (/windows nt 10.0/i.test(ua)) {
+      device = 'Windows PC';
+      os = 'Windows 11';
+    } else if (/windows nt 6.3/i.test(ua)) {
+      device = 'Windows PC';
+      os = 'Windows 8.1';
+    } else if (/windows nt 6.1/i.test(ua)) {
+      device = 'Windows PC';
+      os = 'Windows 7';
+    } else if (/linux/i.test(ua)) {
+      device = 'Linux PC';
+      os = 'Linux';
     }
 
+    if (/edg\//i.test(ua)) {
+      browser = 'Edge';
+    } else if (/chrome|crios/i.test(ua) && !/opr|opera/i.test(ua)) {
+      browser = 'Chrome';
+    } else if (/firefox|fxios/i.test(ua)) {
+      browser = 'Firefox';
+    } else if (/safari/i.test(ua) && !/chrome/i.test(ua)) {
+      browser = 'Safari';
+    } else if (/opr|opera/i.test(ua)) {
+      browser = 'Opera';
+    }
+
+    const resolution = `${window.screen.width} × ${window.screen.height}`;
+    return { device, os, browser, resolution };
+  };
+
+  const fetchPublicIp = async () => {
+    if (cachedPublicIp) return cachedPublicIp;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.ip && !data.ip.startsWith('127.') && !data.ip.startsWith('192.168.')) {
+          cachedPublicIp = data.ip;
+          return data.ip;
+        }
+      }
+    } catch (e) {
+      try {
+        const controller2 = new AbortController();
+        const timeoutId2 = setTimeout(() => controller2.abort(), 4000);
+        const res2 = await fetch('https://ipapi.co/json/', { signal: controller2.signal });
+        clearTimeout(timeoutId2);
+        if (res2.ok) {
+          const data2 = await res2.json();
+          if (data2 && data2.ip && !data2.ip.startsWith('127.') && !data2.ip.startsWith('192.168.')) {
+            cachedPublicIp = data2.ip;
+            return data2.ip;
+          }
+        }
+      } catch (err) {}
+    }
+    return 'Tidak tersedia';
+  };
+
+  const renderDeviceInfoPanel = async () => {
+    const info = getDeviceInfo();
+    if (deviceTypeVal) deviceTypeVal.textContent = info.device;
+    if (deviceOsBrowserVal) deviceOsBrowserVal.textContent = `${info.os} · ${info.browser}`;
+    if (deviceResolutionVal) deviceResolutionVal.textContent = info.resolution;
+    if (devicePublicIpVal) {
+      devicePublicIpVal.textContent = 'Memeriksa...';
+      const ip = await fetchPublicIp();
+      devicePublicIpVal.textContent = ip;
+    }
+  };
+
+  // --- Realtime Pinging Engine (Req 6, 7, 8, 23) ---
+  const performCheck = async () => {
+    const url = MONITORED_SITE.url;
     const start = performance.now();
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8-second cutoff
+
+    // 1. Coba lewat backend server lokal (port 3001) jika aktif untuk akurasi tinggi & bebas CORS
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const backendRes = await fetch(`${BACKEND_API_BASE}/ping`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (backendRes.ok) {
+        const data = await backendRes.json();
+        if (data && data.success && data.result) {
+          const res = data.result;
+          if (res.online) {
+            return { status: 'ONLINE', latency: res.latency || 1, error: null };
+          } else if (res.statusCode >= 500) {
+            return { status: 'ERROR', latency: res.latency || 0, error: res.error || 'Server Error' };
+          } else {
+            return { status: 'OFFLINE', latency: 0, error: res.error || 'Host Unreachable' };
+          }
+        }
+      }
+    } catch (e) {
+      // Backend lokal tidak aktif, fallback ke browser client check
+    }
+
+    // 2. Client Browser Fallback
+    if (!navigator.onLine) {
+      return { status: 'OFFLINE', latency: 0, error: 'Tidak Ada Koneksi Internet' };
+    }
 
     try {
-      if (site.method === 'nocors') {
-        // no-cors mode returns opaque responses, but is 100% bypass of client CORS
-        await fetch(site.url, { 
-          mode: 'no-cors', 
-          cache: 'no-store', 
-          signal: controller.signal 
-        });
-      } else {
-        // CORS Proxy method
-        const proxyBase = site.proxy || 'https://api.allorigins.win/get?url=';
-        const finalUrl = proxyBase + encodeURIComponent(site.url);
-        await fetch(finalUrl, { 
-          cache: 'no-store', 
-          signal: controller.signal 
-        });
-      }
-      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      // no-cors fetch allows detecting reachability
+      await fetch(url, {
+        mode: 'no-cors',
+        cache: 'no-store',
+        signal: controller.signal
+      });
       clearTimeout(timeoutId);
-      const latency = Math.round(performance.now() - start);
-      return { online: true, latency };
+      const latency = Math.max(1, Math.round(performance.now() - start));
+      return { status: 'ONLINE', latency, error: null };
     } catch (err) {
-      clearTimeout(timeoutId);
-      return { online: false, latency: 0 };
-    }
-  };
-
-  // --- Polling Lifecycle ---
-  const startPolling = (site) => {
-    // Clear existing timer if any
-    if (pollIntervals[site.id]) {
-      clearInterval(pollIntervals[site.id]);
-    }
-
-    // Set polling trigger
-    const intervalTime = parseInt(site.interval) || 30000;
-    
-    // Execute immediately on startup
-    executeCheck(site.id);
-    
-    pollIntervals[site.id] = setInterval(() => {
-      executeCheck(site.id);
-    }, intervalTime);
-  };
-
-  const startAllPolling = () => {
-    sites.forEach(site => {
-      startPolling(site);
-    });
-  };
-
-  const stopPolling = (siteId) => {
-    if (pollIntervals[siteId]) {
-      clearInterval(pollIntervals[siteId]);
-      delete pollIntervals[siteId];
-    }
-  };
-
-  const stopAllPolling = () => {
-    Object.keys(pollIntervals).forEach(id => {
-      clearInterval(pollIntervals[id]);
-    });
-    pollIntervals = {};
-  };
-
-  // Execute a single check action
-  const executeCheck = async (siteId) => {
-    const siteIdx = sites.findIndex(s => s.id === siteId);
-    if (siteIdx === -1) return;
-
-    const site = sites[siteIdx];
-    const prevStatus = site.status;
-    
-    // UI feedback: transition to checking status
-    site.status = 'checking';
-    updateCardStatusUi(site);
-
-    const result = await performPingCheck(site);
-    
-    // Re-verify site still exists in array (avoid race conditions during deletes)
-    const latestSiteIdx = sites.findIndex(s => s.id === siteId);
-    if (latestSiteIdx === -1) return;
-    
-    const latestSite = sites[latestSiteIdx];
-    latestSite.status = result.online ? 'online' : 'offline';
-    latestSite.lastChecked = new Date().toLocaleTimeString();
-
-    // Push into history queue (max 15 items)
-    if (!latestSite.history) latestSite.history = [];
-    latestSite.history.push(result.latency);
-    if (latestSite.history.length > 15) {
-      latestSite.history.shift();
-    }
-
-    // Recalculate average latency
-    const validHistory = latestSite.history.filter(h => h > 0);
-    if (validHistory.length > 0) {
-      const sum = validHistory.reduce((a, b) => a + b, 0);
-      latestSite.avgLatency = Math.round(sum / validHistory.length);
-    } else {
-      latestSite.avgLatency = 0;
-    }
-
-    // Check status changes to trigger log & notification alerts
-    if (prevStatus !== 'checking' && prevStatus !== latestSite.status) {
-      logStatusChange(latestSite, result.latency);
-    }
-
-    // Save sites configuration
-    localStorage.setItem('monitor_sites', JSON.stringify(sites));
-    
-    // Update dashboard visual stats
-    updateMetrics();
-    updateCardStatusUi(latestSite);
-    drawSparkline(latestSite);
-  };
-
-  // --- Logs and Warnings ---
-  const logStatusChange = (site, latency) => {
-    const now = new Date().toLocaleTimeString();
-    let message = '';
-    const t = translations[currentLang];
-
-    if (site.status === 'online') {
-      message = `${t.logMsgOnline} ${latency} ms`;
-      
-      // Trigger alerts if enabled
-      if (site.alertPush) {
-        triggerPushNotification(
-          `${t.notifTitleOnline} ${site.name}`,
-          `${site.url} ${t.notifBodyOnline} ${latency} ms`
-        );
+      if (err.name === 'AbortError') {
+        return { status: 'OFFLINE', latency: 0, error: 'Connection Timeout' };
       }
-    } else {
-      message = t.logMsgOffline;
-      
-      if (site.alertSound) {
-        playAlarm();
+      if (!navigator.onLine) {
+        return { status: 'OFFLINE', latency: 0, error: 'Koneksi Terputus' };
       }
-      
-      if (site.alertPush) {
-        triggerPushNotification(
-          `${t.notifTitleOffline} ${site.name}`,
-          `${site.url} ${t.notifBodyOffline}`
-        );
+      if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
+        return { status: 'BLOCKED', latency: 0, error: 'CORS / Browser Policy Blocked' };
       }
+      return { status: 'ERROR', latency: 0, error: err.message || 'Check Error' };
     }
+  };
 
-    const logEntry = {
-      time: now,
-      siteName: site.name,
-      status: site.status,
-      message
+  // --- Format Time Helper ---
+  const formatTime = (date = new Date()) => {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  };
+
+  // --- Add Log Helper (Req 13) ---
+  const addLog = (type, text) => {
+    const entry = {
+      time: formatTime(),
+      type, // 'online' | 'offline' | 'error' | 'blocked' | 'info'
+      text
     };
-
-    logs.unshift(logEntry);
-    
-    // Cap logs length at 50
-    if (logs.length > 50) {
-      logs.pop();
-    }
-
-    localStorage.setItem('monitor_logs', JSON.stringify(logs));
+    if (!state.logs) state.logs = [];
+    state.logs.unshift(entry);
+    if (state.logs.length > 50) state.logs.pop();
+    saveStoredData(state);
     renderLogs();
   };
 
-  // --- Render Functions ---
-  const renderSites = () => {
-    // Clean nodes but keep emptyState template
-    const cardNodes = sitesGrid.querySelectorAll('.site-card');
-    cardNodes.forEach(node => node.remove());
-
-    if (sites.length === 0) {
-      emptyState.style.display = 'flex';
-      return;
-    }
-
-    emptyState.style.display = 'none';
-
-    sites.forEach(site => {
-      const card = createSiteCardElement(site);
-      sitesGrid.appendChild(card);
-      // Wait slightly for DOM injection and draw the canvas sparkline
-      setTimeout(() => {
-        drawSparkline(site);
-      }, 50);
-    });
-  };
-
-  const createSiteCardElement = (site) => {
-    const card = document.createElement('article');
-    card.className = 'site-card animate-fade-in';
-    card.id = `card-${site.id}`;
-    
-    const t = translations[currentLang];
-
-    card.innerHTML = `
-      <div class="site-card-header">
-        <div class="site-info-wrapper">
-          <h3 class="site-name" title="${site.name}">${site.name}</h3>
-          <span class="site-url" title="${site.url}">${site.url}</span>
-        </div>
-        <div class="status-badge checking">
-          <span class="status-dot"></span>
-          <span class="status-text">${t.statusChecking}</span>
-        </div>
-      </div>
-      
-      <div class="site-stats-row">
-        <div class="stat-item">
-          <span class="stat-label">Latensi</span>
-          <span class="stat-value site-latency-val">-- ms</span>
-        </div>
-        
-        <div class="sparkline-container">
-          <canvas class="sparkline-canvas" id="canvas-${site.id}"></canvas>
-          <span class="sparkline-label" data-i18n="uptime">Uptime Trend</span>
-        </div>
-      </div>
-
-      <div class="card-actions">
-        <div class="action-left">
-          <button class="btn-card-action alert-sound-toggle ${site.alertSound ? 'active-alert' : ''}" title="${t.alertSoundLabel}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" class="sound-waves"></path>
-            </svg>
-          </button>
-          <button class="btn-card-action alert-push-toggle ${site.alertPush ? 'active-alert' : ''}" title="${t.alertPushLabel}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-          </button>
-        </div>
-        <div class="action-right">
-          <button class="btn-card-action edit-btn" title="Edit Site">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-          </button>
-          <button class="btn-card-action danger-btn delete-btn" title="Delete Site">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              <line x1="10" y1="11" x2="10" y2="17"></line>
-              <line x1="14" y1="11" x2="14" y2="17"></line>
-            </svg>
-          </button>
-        </div>
-      </div>
-    `;
-
-    // Connect Card Interactions
-    card.querySelector('.alert-sound-toggle').addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleCardAlert(site.id, 'sound');
-    });
-
-    card.querySelector('.alert-push-toggle').addEventListener('click', (e) => {
-      e.stopPropagation();
-      requestNotificationPermission();
-      toggleCardAlert(site.id, 'push');
-    });
-
-    card.querySelector('.edit-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      openEditModal(site);
-    });
-
-    card.querySelector('.delete-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      deleteSite(site.id);
-    });
-
-    return card;
-  };
-
-  const updateCardStatusUi = (site) => {
-    const card = document.getElementById(`card-${site.id}`);
-    if (!card) return;
-
-    const t = translations[currentLang];
-    const badge = card.querySelector('.status-badge');
-    const badgeText = badge.querySelector('.status-text');
-    const latencyVal = card.querySelector('.site-latency-val');
-    
-    // Clear classes
-    badge.className = 'status-badge';
-
-    if (site.status === 'online') {
-      badge.classList.add('online');
-      badgeText.textContent = t.statusOnline;
-      
-      const lastLatency = site.history && site.history.length > 0 ? site.history[site.history.length - 1] : 0;
-      latencyVal.textContent = `${lastLatency} ms`;
-      latencyVal.className = 'stat-value site-latency-val text-green';
-    } else if (site.status === 'offline') {
-      badge.classList.add('offline');
-      badgeText.textContent = t.statusOffline;
-      
-      latencyVal.textContent = '--';
-      latencyVal.className = 'stat-value site-latency-val text-red';
-    } else {
-      badge.classList.add('checking');
-      badgeText.textContent = t.statusChecking;
-      latencyVal.className = 'stat-value site-latency-val';
-    }
-  };
-
   const renderLogs = () => {
-    logsList.innerHTML = '';
-    
+    if (!logsList) return;
+    const logs = state.logs || [];
     if (logs.length === 0) {
-      emptyLogs.style.display = 'block';
+      if (emptyLogs) emptyLogs.style.display = 'block';
+      logsList.innerHTML = '<div class="empty-logs" id="emptyLogs">Belum ada aktivitas log.</div>';
       return;
     }
-
-    emptyLogs.style.display = 'none';
-
-    logs.forEach(log => {
+    if (emptyLogs) emptyLogs.style.display = 'none';
+    logsList.innerHTML = '';
+    logs.forEach(l => {
       const item = document.createElement('div');
-      item.className = `log-item ${log.status}`;
+      item.className = `log-item ${l.type === 'online' ? 'online' : (l.type === 'info' ? '' : 'offline')}`;
       item.innerHTML = `
-        <span class="log-time">[${log.time}]</span>
-        <span class="log-msg"><strong>${log.siteName}</strong> ${log.message}</span>
+        <span class="log-time">[${l.time}]</span>
+        <span class="log-msg">${l.text}</span>
       `;
       logsList.appendChild(item);
     });
   };
 
-  // Update Global Summary Metric Boxes
-  const updateMetrics = () => {
-    const total = sites.length;
-    const online = sites.filter(s => s.status === 'online').length;
-    const offline = sites.filter(s => s.status === 'offline').length;
-    
-    const onlineSites = sites.filter(s => s.status === 'online' && s.avgLatency > 0);
-    let avg = 0;
-    if (onlineSites.length > 0) {
-      const sum = onlineSites.reduce((acc, curr) => acc + curr.avgLatency, 0);
-      avg = Math.round(sum / onlineSites.length);
+  // --- Update Single Site UI (Req 4, 5, 7, 8, 10, 11, 12) ---
+  const updateStatusPill = (status) => {
+    if (!monitoredStatusPill || !monitoredStatusText) return;
+    monitoredStatusPill.className = `site-status-pill ${status.toLowerCase()}`;
+    monitoredStatusText.textContent = status;
+
+    if (metricStatusVal) {
+      metricStatusVal.textContent = status;
+      metricStatusVal.className = `metric-value ${status === 'ONLINE' ? 'text-green' : (status === 'OFFLINE' ? 'text-red' : 'text-orange')}`;
     }
 
-    metricTotalVal.textContent = total;
-    metricOnlineVal.textContent = online;
-    metricOfflineVal.textContent = offline;
-    metricLatencyVal.textContent = total === 0 || online === 0 ? '-- ms' : `${avg} ms`;
+    if (metricStatusIcon) {
+      metricStatusIcon.className = `metric-icon ${status === 'ONLINE' ? 'green' : (status === 'OFFLINE' ? 'red' : 'orange')}`;
+    }
   };
 
-  // --- High-DPI Sparkline Canvas Renderer ---
-  const drawSparkline = (site) => {
-    const canvas = document.getElementById(`canvas-${site.id}`);
-    if (!canvas) return;
+  const updateMetrics = (lastResult = null) => {
+    // 1. Latensi (Req 8)
+    if (metricLatencyVal) {
+      if (lastResult && lastResult.status === 'ONLINE' && lastResult.latency > 0) {
+        metricLatencyVal.textContent = `${lastResult.latency} ms`;
+      } else {
+        metricLatencyVal.textContent = '--';
+      }
+    }
 
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    const width = 90;
-    const height = 24;
+    // 2. Uptime (Req 10)
+    if (metricUptimeVal) {
+      const uptime = state.uptime || { totalChecks: 0, onlineChecks: 0 };
+      if (uptime.totalChecks < 2) {
+        metricUptimeVal.textContent = 'Belum cukup data';
+      } else {
+        const pct = ((uptime.onlineChecks / uptime.totalChecks) * 100).toFixed(1);
+        metricUptimeVal.textContent = `${pct}%`;
+      }
+    }
 
-    // Scale canvas pixels for high-DPI screens
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    ctx.scale(dpr, dpr);
+    // 3. Avg Latensi (Req 11)
+    if (metricAvgLatencyVal) {
+      const history = state.history || [];
+      const valid = history.filter(h => h.status === 'ONLINE' && h.latency > 0);
+      if (valid.length === 0) {
+        metricAvgLatencyVal.textContent = '--';
+      } else {
+        const sum = valid.reduce((acc, curr) => acc + curr.latency, 0);
+        const avg = Math.round(sum / valid.length);
+        metricAvgLatencyVal.textContent = `${avg} ms`;
+      }
+    }
 
-    ctx.clearRect(0, 0, width, height);
+    // 4. Last Check (Req 12)
+    if (metricLastCheckVal) {
+      const history = state.history || [];
+      if (history.length > 0 && history[0].time) {
+        metricLastCheckVal.textContent = history[0].time;
+      } else {
+        metricLastCheckVal.textContent = 'Belum diperiksa';
+      }
+    }
+  };
 
-    const history = site.history || [];
-    if (history.length < 2) {
-      // Draw standard flat checking line
-      ctx.beginPath();
-      ctx.moveTo(0, height / 2);
-      ctx.lineTo(width, height / 2);
-      ctx.strokeStyle = 'var(--text-tertiary)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+  // --- Latency History SVG Chart (Req 9) ---
+  const drawLatencyChart = () => {
+    if (!latencyChartSvg) return;
+    const history = (state.history || []).slice().reverse(); // Urutan kronologis dari lama ke baru
+    const valid = history.filter(h => h.latency > 0);
+
+    const svgWidth = 600;
+    const svgHeight = 220;
+    const padLeft = 46;
+    const padRight = 20;
+    const padTop = 20;
+    const padBottom = 34;
+
+    const plotW = svgWidth - padLeft - padRight;
+    const plotH = svgHeight - padTop - padBottom;
+
+    if (history.length === 0) {
+      if (chartMinMaxLabel) chartMinMaxLabel.textContent = 'Min: -- · Max: --';
+      latencyChartSvg.innerHTML = `
+        <text x="${svgWidth / 2}" y="${svgHeight / 2}" text-anchor="middle" fill="var(--text-secondary)" font-size="13" font-family="inherit">
+          Belum ada riwayat latensi. Menunggu monitoring...
+        </text>
+      `;
       return;
     }
 
-    // Determine min/max height range bounds
-    const cleanHistory = history.map(h => (site.status === 'offline' ? 0 : h));
-    const maxVal = Math.max(...cleanHistory, 80); // Cap bottom range at 80ms minimum for scaling view
-    const activePings = cleanHistory.filter(h => h > 0);
-    const minVal = activePings.length > 0 ? Math.min(...activePings) : 10;
-    const range = maxVal - minVal || 10;
+    const minLatency = valid.length > 0 ? Math.min(...valid.map(v => v.latency)) : 50;
+    const maxLatency = valid.length > 0 ? Math.max(...valid.map(v => v.latency)) : 200;
+    const range = Math.max(maxLatency - minLatency, 20);
 
-    const padding = 3;
-    const chartHeight = height - padding * 2;
-    const xStep = width / (history.length - 1);
+    if (chartMinMaxLabel) {
+      chartMinMaxLabel.textContent = valid.length > 0
+        ? `Min: ${minLatency} ms · Max: ${maxLatency} ms · Terakhir: ${history[history.length - 1].latency || '--'} ms`
+        : 'Min: -- · Max: --';
+    }
 
-    const points = history.map((val, index) => {
-      const x = index * xStep;
-      let y = height / 2;
-      
-      if (site.status === 'offline') {
-        y = height - padding; // flat baseline offline
-      } else if (val > 0) {
-        y = height - padding - ((val - minVal) / range) * chartHeight;
-      } else {
-        // offline values inside history show as flat zero
-        y = height - padding;
-      }
-      return { x, y };
+    // Grid lines
+    let gridSvg = '';
+    const gridSteps = 4;
+    for (let i = 0; i <= gridSteps; i++) {
+      const yVal = padTop + (plotH / gridSteps) * i;
+      const latVal = Math.round(maxLatency - (range / gridSteps) * i);
+      gridSvg += `
+        <line x1="${padLeft}" y1="${yVal}" x2="${svgWidth - padRight}" y2="${yVal}" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="${padLeft - 8}" y="${yVal + 4}" text-anchor="end" fill="var(--text-tertiary)" font-size="10" font-family="inherit">${latVal}ms</text>
+      `;
+    }
+
+    // Calculate Coordinates
+    const points = history.map((item, idx) => {
+      const x = padLeft + (idx / Math.max(history.length - 1, 1)) * plotW;
+      const y = item.status === 'ONLINE' && item.latency > 0
+        ? padTop + ((maxLatency - item.latency) / range) * plotH
+        : svgHeight - padBottom;
+      return { x, y, item, idx };
     });
 
-    // Draw Line Area Gradient Fill
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, height);
-    points.forEach(pt => ctx.lineTo(pt.x, pt.y));
-    ctx.lineTo(points[points.length - 1].x, height);
-    ctx.closePath();
-    
-    const grad = ctx.createLinearGradient(0, 0, 0, height);
-    if (site.status === 'online') {
-      grad.addColorStop(0, 'rgba(48, 209, 88, 0.3)');
-      grad.addColorStop(1, 'rgba(48, 209, 88, 0)');
-      ctx.fillStyle = grad;
-    } else {
-      grad.addColorStop(0, 'rgba(255, 69, 58, 0.3)');
-      grad.addColorStop(1, 'rgba(255, 69, 58, 0)');
-      ctx.fillStyle = grad;
-    }
-    ctx.fill();
+    // Area & Line Path
+    let linePathD = `M ${points[0].x} ${points[0].y}`;
+    points.slice(1).forEach(pt => {
+      linePathD += ` L ${pt.x} ${pt.y}`;
+    });
 
-    // Draw Line stroke
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    points.forEach(pt => ctx.lineTo(pt.x, pt.y));
-    
-    ctx.strokeStyle = site.status === 'online' ? 'var(--color-green)' : 'var(--color-red)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    const areaPathD = `${linePathD} L ${points[points.length - 1].x} ${svgHeight - padBottom} L ${points[0].x} ${svgHeight - padBottom} Z`;
 
-    // Draw last check dot indicator
-    const lastPt = points[points.length - 1];
-    ctx.beginPath();
-    ctx.arc(lastPt.x - 2, lastPt.y, 3, 0, 2 * Math.PI);
-    ctx.fillStyle = site.status === 'online' ? 'var(--color-green)' : 'var(--color-red)';
-    ctx.fill();
-  };
-
-  // --- Modal Forms Controller ---
-  const openAddModal = () => {
-    modalTitle.textContent = translations[currentLang].addSiteTitle;
-    editSiteIdInput.value = '';
-    siteForm.reset();
-    proxyInputGroup.classList.add('hidden');
-    
-    siteModal.classList.add('active');
-  };
-
-  const openEditModal = (site) => {
-    modalTitle.textContent = translations[currentLang].editSiteTitle;
-    editSiteIdInput.value = site.id;
-    siteNameInput.value = site.name;
-    siteUrlInput.value = site.url;
-    siteIntervalInput.value = site.interval;
-    siteMethodInput.value = site.method;
-    siteProxyInput.value = site.proxy || '';
-    
-    if (site.method === 'proxy') {
-      proxyInputGroup.classList.remove('hidden');
-    } else {
-      proxyInputGroup.classList.add('hidden');
-    }
-
-    alertSoundInput.checked = site.alertSound;
-    alertPushInput.checked = site.alertPush;
-
-    siteModal.classList.add('active');
-  };
-
-  const closeModal = () => {
-    siteModal.classList.remove('active');
-  };
-
-  // Form submit handler
-  siteForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const id = editSiteIdInput.value;
-    const name = siteNameInput.value.trim();
-    const url = siteUrlInput.value.trim();
-    const interval = parseInt(siteIntervalInput.value);
-    const method = siteMethodInput.value;
-    const proxy = siteProxyInput.value.trim();
-    const alertSound = alertSoundInput.checked;
-    const alertPush = alertPushInput.checked;
-
-    if (!name || !url) return;
-
-    if (id) {
-      // Edit mode
-      const idx = sites.findIndex(s => s.id === id);
-      if (idx !== -1) {
-        sites[idx] = {
-          ...sites[idx],
-          name,
-          url,
-          interval,
-          method,
-          proxy,
-          alertSound,
-          alertPush
-        };
-        showToast(translations[currentLang].toastSiteUpdated);
-        // Restart polling loop with new interval/configurations
-        startPolling(sites[idx]);
-      }
-    } else {
-      // Add mode
-      const newSite = {
-        id: 'site-' + Date.now(),
-        name,
-        url,
-        interval,
-        method,
-        proxy,
-        alertSound,
-        alertPush,
-        history: [],
-        status: 'checking',
-        lastChecked: '--:--:--',
-        avgLatency: 0
-      };
-      sites.push(newSite);
-      showToast(translations[currentLang].toastSiteAdded);
-      startPolling(newSite);
-    }
-
-    localStorage.setItem('monitor_sites', JSON.stringify(sites));
-    renderSites();
-    updateMetrics();
-    closeModal();
-  });
-
-  // Toggle single card alarm alerts
-  const toggleCardAlert = (siteId, alertType) => {
-    const idx = sites.findIndex(s => s.id === siteId);
-    if (idx === -1) return;
-
-    if (alertType === 'sound') {
-      sites[idx].alertSound = !sites[idx].alertSound;
-      const card = document.getElementById(`card-${siteId}`);
-      if (card) {
-        const btn = card.querySelector('.alert-sound-toggle');
-        btn.classList.toggle('active-alert');
-      }
-    } else if (alertType === 'push') {
-      sites[idx].alertPush = !sites[idx].alertPush;
-      const card = document.getElementById(`card-${siteId}`);
-      if (card) {
-        const btn = card.querySelector('.alert-push-toggle');
-        btn.classList.toggle('active-alert');
-      }
-    }
-
-    localStorage.setItem('monitor_sites', JSON.stringify(sites));
-  };
-
-  const deleteSite = (siteId) => {
-    stopPolling(siteId);
-    sites = sites.filter(s => s.id !== siteId);
-    localStorage.setItem('monitor_sites', JSON.stringify(sites));
-    
-    renderSites();
-    updateMetrics();
-    showToast(translations[currentLang].toastSiteDeleted);
-  };
-
-  // --- Trigger Listeners & Actions ---
-  addSiteBtn.addEventListener('click', openAddModal);
-  closeModalBtn.addEventListener('click', closeModal);
-  cancelModalBtn.addEventListener('click', closeModal);
-  
-  // Close modal on background touch/click
-  siteModal.addEventListener('click', (e) => {
-    if (e.target === siteModal) closeModal();
-  });
-
-  siteMethodInput.addEventListener('change', () => {
-    if (siteMethodInput.value === 'proxy') {
-      proxyInputGroup.classList.remove('hidden');
-    } else {
-      proxyInputGroup.classList.add('hidden');
-    }
-  });
-
-  // Global Audio Mute button controller
-  muteAllBtn.addEventListener('click', () => {
-    globalMuted = !globalMuted;
-    localStorage.setItem('monitor_muted', globalMuted);
-    updateMuteUi();
-  });
-
-  const updateMuteUi = () => {
-    if (globalMuted) {
-      muteAllBtn.classList.add('active-alert');
-      // Draw muted icon waves strike-through
-      muteIcon.innerHTML = `
-        <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-        <line x1="23" y1="9" x2="17" y2="15"></line>
-        <line x1="17" y1="9" x2="23" y2="15"></line>
+    // Dots & Hover Interactivity
+    let dotsSvg = '';
+    points.forEach(pt => {
+      const isOnline = pt.item.status === 'ONLINE' && pt.item.latency > 0;
+      const color = isOnline ? 'var(--accent-color)' : 'var(--color-red)';
+      dotsSvg += `
+        <circle cx="${pt.x}" cy="${pt.y}" r="4" fill="${color}" stroke="var(--bg-secondary)" stroke-width="2" class="chart-point" data-idx="${pt.idx}" style="cursor: pointer; transition: r 0.15s ease;"/>
       `;
-    } else {
-      muteAllBtn.classList.remove('active-alert');
-      muteIcon.innerHTML = `
-        <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-      `;
+    });
+
+    latencyChartSvg.innerHTML = `
+      <defs>
+        <linearGradient id="latencyAreaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--accent-color)" stop-opacity="0.28"/>
+          <stop offset="100%" stop-color="var(--accent-color)" stop-opacity="0.0"/>
+        </linearGradient>
+      </defs>
+      ${gridSvg}
+      <path d="${areaPathD}" fill="url(#latencyAreaGrad)"/>
+      <path d="${linePathD}" fill="none" stroke="var(--accent-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${dotsSvg}
+    `;
+
+    // Tooltip listeners on chart points
+    const pointElements = latencyChartSvg.querySelectorAll('.chart-point');
+    pointElements.forEach(el => {
+      el.addEventListener('mouseenter', (e) => {
+        const idx = parseInt(el.getAttribute('data-idx'));
+        const pt = points[idx];
+        if (!pt || !chartTooltip) return;
+        el.setAttribute('r', '6');
+        chartTooltip.style.display = 'block';
+        chartTooltip.innerHTML = `
+          <div><strong>${pt.item.time}</strong></div>
+          <div>Status: <span class="${pt.item.status === 'ONLINE' ? 'text-green' : 'text-red'}">${pt.item.status}</span></div>
+          <div>Latensi: <strong>${pt.item.latency > 0 ? pt.item.latency + ' ms' : '--'}</strong></div>
+        `;
+        const rect = latencyChartSvg.getBoundingClientRect();
+        const svgPtX = (pt.x / svgWidth) * rect.width;
+        const svgPtY = (pt.y / svgHeight) * rect.height;
+        chartTooltip.style.left = `${svgPtX}px`;
+        chartTooltip.style.top = `${svgPtY}px`;
+      });
+      el.addEventListener('mouseleave', () => {
+        el.setAttribute('r', '4');
+        if (chartTooltip) chartTooltip.style.display = 'none';
+      });
+    });
+  };
+
+  // --- Monitoring Execution Loop (Req 6, 21, 22) ---
+  const executeCheck = async () => {
+    if (isChecking) return;
+    isChecking = true;
+
+    if (monitoredStatusPill && monitoredStatusText) {
+      monitoredStatusPill.className = 'site-status-pill checking';
+      monitoredStatusText.textContent = 'MEMERIKSA...';
+    }
+
+    try {
+      const result = await performCheck();
+      const nowStr = formatTime();
+
+      // Uptime calculation (Req 10)
+      if (!state.uptime) state.uptime = { totalChecks: 0, onlineChecks: 0 };
+      state.uptime.totalChecks += 1;
+      if (result.status === 'ONLINE') {
+        state.uptime.onlineChecks += 1;
+      }
+
+      // Latency history queue (Req 9)
+      if (!state.history) state.history = [];
+      state.history.unshift({
+        time: nowStr,
+        latency: result.latency,
+        status: result.status
+      });
+      if (state.history.length > MAX_HISTORY) {
+        state.history.pop();
+      }
+
+      // Status Change & Error Logging (Req 13)
+      if (lastStatus && lastStatus !== result.status) {
+        if (result.status === 'ONLINE') {
+          addLog('online', `Website kembali ONLINE (${result.latency} ms)`);
+        } else if (result.status === 'OFFLINE') {
+          addLog('offline', `Website OFFLINE (${result.error || 'Host Unreachable'})`);
+          playAlertSound();
+        } else if (result.status === 'BLOCKED') {
+          addLog('blocked', `Website BLOCKED (CORS / Policy restriction)`);
+        } else {
+          addLog('error', `Website ERROR (${result.error || 'Server Error'})`);
+        }
+      } else if (!lastStatus) {
+        // Log check pertama
+        if (result.status === 'ONLINE') {
+          addLog('online', `Website ONLINE (${result.latency} ms)`);
+        } else {
+          addLog('offline', `Website status: ${result.status} (${result.error || ''})`);
+        }
+      }
+
+      lastStatus = result.status;
+      saveStoredData(state);
+
+      // Realtime UI updates (Req 22)
+      updateStatusPill(result.status);
+      updateMetrics(result);
+      drawLatencyChart();
+    } catch (err) {
+      console.warn('executeCheck error:', err);
+    } finally {
+      isChecking = false;
     }
   };
 
-  resetDefaultsBtn.addEventListener('click', () => {
-    stopAllPolling();
-    sites = JSON.parse(JSON.stringify(defaultSites));
-    localStorage.setItem('monitor_sites', JSON.stringify(sites));
-    
-    renderSites();
-    updateMetrics();
-    startAllPolling();
-    showToast(translations[currentLang].toastDefaultsReset);
-  });
+  const startMonitoring = () => {
+    // Single loop guarantee (Req 21)
+    if (monitorTimer) {
+      clearInterval(monitorTimer);
+      monitorTimer = null;
+    }
 
-  // Tool names translation mapping
+    addLog('info', `Monitoring aktif untuk ${MONITORED_SITE.name} (${CHECK_INTERVAL / 1000}s interval)`);
+    executeCheck();
+    monitorTimer = setInterval(executeCheck, CHECK_INTERVAL);
+  };
+
+  const stopMonitoring = () => {
+    if (monitorTimer) {
+      clearInterval(monitorTimer);
+      monitorTimer = null;
+    }
+    addLog('info', 'Monitoring dihentikan.');
+  };
+
+  // --- Tab Navigation Controller ---
+  const switchTab = (tabName) => {
+    const tabs = [
+      { id: 'websites', btn: tabWebsites, view: workspaceWebsites },
+      { id: 'analytics', btn: tabAnalytics, view: workspaceAnalytics },
+      { id: 'maintenance', btn: tabMaintenance, view: workspaceMaintenance }
+    ];
+
+    tabs.forEach(t => {
+      if (t.id === tabName) {
+        if (t.btn) t.btn.classList.add('active');
+        if (t.view) {
+          t.view.style.display = t.id === 'websites' ? 'flex' : 'grid';
+          t.view.classList.add('active');
+        }
+      } else {
+        if (t.btn) t.btn.classList.remove('active');
+        if (t.view) {
+          t.view.style.display = 'none';
+          t.view.classList.remove('active');
+        }
+      }
+    });
+
+    if (tabName === 'analytics') {
+      renderAnalytics();
+    } else if (tabName === 'maintenance') {
+      renderMaintenance();
+    } else if (tabName === 'websites') {
+      drawLatencyChart();
+    }
+  };
+
+  // --- User Analytics Controller ---
   const toolNames = {
-    en: {
-      password: 'Password Generator',
-      renamer: 'Batch Renamer Pro',
-      compressor: 'Media Compressor',
-      'bg-remover': 'Background Remover',
-      'image-to-pdf': 'Image to PDF',
-      'pdf-to-docs': 'PDF to Docs',
-      'video-to-uhd': 'UHD Video Upscaler',
-      'watermark-remover': 'Watermark Remover',
-      'qr-code-master': 'QR Code Master',
-      'ai-workflow-assistant': 'AI Workflow Assistant',
-      'metadata-cleaner': 'Metadata Cleaner',
-      'web-monitor': 'Web Monitor'
-    },
     id: {
       password: 'Generator Kata Sandi',
       renamer: 'Batch Renamer Pro',
@@ -1113,30 +844,27 @@ document.addEventListener('DOMContentLoaded', () => {
       'bg-remover': 'Penghapus Latar Belakang',
       'image-to-pdf': 'Gambar ke PDF',
       'pdf-to-docs': 'PDF ke Dokumen',
+      'pdf-compressor': 'Kompresor PDF',
       'video-to-uhd': 'Peningkat Video UHD',
       'watermark-remover': 'Hapus Watermark Video',
       'qr-code-master': 'Master Kode QR',
       'ai-workflow-assistant': 'Asisten Alur Kerja AI',
-      'metadata-cleaner': 'Penghapus Metadata',
-      'web-monitor': 'Pemantau Situs Web'
+      'metadata-cleaner': 'Penghapus Metadata'
     }
   };
 
-  // Render User Analytics Tab
   const renderAnalytics = () => {
-    let analyticsData = localStorage.getItem('toolsuf_analytics');
-    if (analyticsData) {
-      analyticsData = JSON.parse(analyticsData);
-    } else {
-      analyticsData = { launchCount: {}, history: [] };
-    }
+    let analyticsData = null;
+    try {
+      const raw = localStorage.getItem('toolsuf_analytics');
+      if (raw) analyticsData = JSON.parse(raw);
+    } catch (e) {}
 
-    const counts = analyticsData.launchCount || {};
-    const historyList = analyticsData.history || [];
+    const counts = (analyticsData && analyticsData.launchCount) || {};
+    const historyList = (analyticsData && analyticsData.history) || [];
 
-    // Calculate metrics
     const totalLaunches = Object.values(counts).reduce((acc, curr) => acc + curr, 0);
-    
+
     let popularToolKey = '-';
     let maxLaunchCount = 0;
     Object.entries(counts).forEach(([key, val]) => {
@@ -1145,60 +873,60 @@ document.addEventListener('DOMContentLoaded', () => {
         popularToolKey = key;
       }
     });
-    
-    const isEn = currentLang === 'en';
-    const popularToolName = popularToolKey !== '-' ? (toolNames[currentLang][popularToolKey] || popularToolKey) : '-';
+
+    const popularToolName = popularToolKey !== '-' ? (toolNames.id[popularToolKey] || popularToolKey) : '-';
     const popularDisplay = popularToolKey !== '-' ? `${popularToolName} (${maxLaunchCount}x)` : '-';
 
     let lastActiveTool = '-';
     if (historyList.length > 0) {
       const lastToolKey = historyList[0].tool;
-      const lastToolName = toolNames[currentLang][lastToolKey] || lastToolKey;
+      const lastName = toolNames.id[lastToolKey] || lastToolKey;
       const lastTime = new Date(historyList[0].time).toLocaleTimeString();
-      lastActiveTool = `${lastToolName} @ ${lastTime}`;
+      lastActiveTool = `${lastName} @ ${lastTime}`;
     }
 
-    metricTotalLaunchesVal.textContent = totalLaunches;
-    metricPopularToolVal.textContent = popularDisplay;
-    metricPopularToolVal.title = popularDisplay;
-    metricLastActiveToolVal.textContent = lastActiveTool;
-    metricLastActiveToolVal.title = lastActiveTool;
-
-    // Render Recent Analytics Logs
-    analyticsLogsList.innerHTML = '';
-    if (historyList.length === 0) {
-      emptyAnalyticsLogs.style.display = 'block';
-    } else {
-      emptyAnalyticsLogs.style.display = 'none';
-      historyList.forEach(item => {
-        const logItem = document.createElement('div');
-        logItem.className = 'log-item online'; // Greenish styling for usage logs
-        const toolName = toolNames[currentLang][item.tool] || item.tool;
-        const timeStr = new Date(item.time).toLocaleTimeString();
-        const dateStr = new Date(item.time).toLocaleDateString();
-        logItem.innerHTML = `
-          <span class="log-time">[${dateStr} ${timeStr}]</span>
-          <span class="log-msg"><strong>${toolName}</strong> ${isEn ? 'was opened' : 'berhasil dibuka'}</span>
-        `;
-        analyticsLogsList.appendChild(logItem);
-      });
+    if (metricTotalLaunchesVal) metricTotalLaunchesVal.textContent = totalLaunches;
+    if (metricPopularToolVal) {
+      metricPopularToolVal.textContent = popularDisplay;
+      metricPopularToolVal.title = popularDisplay;
+    }
+    if (metricLastActiveToolVal) {
+      metricLastActiveToolVal.textContent = lastActiveTool;
+      metricLastActiveToolVal.title = lastActiveTool;
     }
 
-    // Render Canvas Bar Chart
+    if (analyticsLogsList) {
+      analyticsLogsList.innerHTML = '';
+      if (historyList.length === 0) {
+        if (emptyAnalyticsLogs) emptyAnalyticsLogs.style.display = 'block';
+      } else {
+        if (emptyAnalyticsLogs) emptyAnalyticsLogs.style.display = 'none';
+        historyList.forEach(item => {
+          const logItem = document.createElement('div');
+          logItem.className = 'log-item online';
+          const name = toolNames.id[item.tool] || item.tool;
+          const timeStr = new Date(item.time).toLocaleTimeString();
+          const dateStr = new Date(item.time).toLocaleDateString();
+          logItem.innerHTML = `
+            <span class="log-time">[${dateStr} ${timeStr}]</span>
+            <span class="log-msg"><strong>${name}</strong> berhasil dibuka</span>
+          `;
+          analyticsLogsList.appendChild(logItem);
+        });
+      }
+    }
+
     drawAnalyticsChart(counts);
   };
 
-  // Draw Horizontal Bar Chart
   const drawAnalyticsChart = (counts) => {
     const canvas = usageChartCanvas;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
     const container = canvas.parentElement;
 
-    // Retrieve container height/width
-    const width = container.clientWidth - 48; // accounting for card padding
+    const width = container.clientWidth - 48;
     const height = Math.max(container.clientHeight - 48, 380);
 
     canvas.width = width * dpr;
@@ -1206,11 +934,10 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     ctx.scale(dpr, dpr);
-
     ctx.clearRect(0, 0, width, height);
 
     const isDark = document.body.classList.contains('dark-theme');
-    const toolsKeys = Object.keys(toolNames[currentLang]);
+    const toolsKeys = Object.keys(toolNames.id);
     const maxCount = Math.max(...Object.values(counts), 1);
 
     const rowHeight = height / toolsKeys.length;
@@ -1220,16 +947,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     toolsKeys.forEach((key, idx) => {
       const count = counts[key] || 0;
-      const name = toolNames[currentLang][key] || key;
+      const name = toolNames.id[key] || key;
       const y = idx * rowHeight + (rowHeight - barHeight) / 2;
 
-      // Draw label name text
       ctx.fillStyle = isDark ? '#FCFCFD' : '#1C1C1E';
-      ctx.font = '500 ' + (width < 480 ? '10px' : '12px') + ' -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.font = '500 ' + (width < 480 ? '10px' : '12px') + ' -apple-system, BlinkMacSystemFont, sans-serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
 
-      // Truncate text label if too long for screen
       let displayName = name;
       const maxTextW = labelWidth - 10;
       if (ctx.measureText(displayName).width > maxTextW) {
@@ -1238,43 +963,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         displayName += '...';
       }
-
       ctx.fillText(displayName, 0, y + barHeight / 2);
 
-      // Draw horizontal bar gutters
       const barX = labelWidth;
       const barW = (count / maxCount) * maxBarWidth;
 
       ctx.beginPath();
-      if (ctx.roundRect) {
-        ctx.roundRect(barX, y, maxBarWidth, barHeight, 4);
-      } else {
-        ctx.rect(barX, y, maxBarWidth, barHeight);
-      }
+      if (ctx.roundRect) ctx.roundRect(barX, y, maxBarWidth, barHeight, 4);
+      else ctx.rect(barX, y, maxBarWidth, barHeight);
       ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)';
       ctx.fill();
 
-      // Draw active data bar
       if (count > 0) {
         ctx.beginPath();
-        if (ctx.roundRect) {
-          ctx.roundRect(barX, y, barW, barHeight, 4);
-        } else {
-          ctx.rect(barX, y, barW, barHeight);
-        }
-
+        if (ctx.roundRect) ctx.roundRect(barX, y, barW, barHeight, 4);
+        else ctx.rect(barX, y, barW, barHeight);
         const grad = ctx.createLinearGradient(barX, y, barX + barW, y);
         grad.addColorStop(0, '#007AFF');
-        grad.addColorStop(1, '#8E5AFF'); // Apple accent gradient
+        grad.addColorStop(1, '#8E5AFF');
         ctx.fillStyle = grad;
         ctx.fill();
 
-        // Draw counter badge text
         ctx.fillStyle = '#FFFFFF';
         ctx.font = '700 10px -apple-system, BlinkMacSystemFont, sans-serif';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
-        
         if (barW > 24) {
           ctx.fillText(count.toString(), barX + barW - 6, y + barHeight / 2);
         } else {
@@ -1283,7 +996,6 @@ document.addEventListener('DOMContentLoaded', () => {
           ctx.fillText(count.toString(), barX + barW + 6, y + barHeight / 2);
         }
       } else {
-        // Zero count placeholder
         ctx.fillStyle = 'var(--text-secondary)';
         ctx.font = '500 10px -apple-system, BlinkMacSystemFont, sans-serif';
         ctx.textAlign = 'left';
@@ -1293,20 +1005,791 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  // Reset Analytics counter data
-  const resetAnalyticsData = () => {
-    localStorage.removeItem('toolsuf_analytics');
-    renderAnalytics();
-    showToast(translations[currentLang].toastAnalyticsReset);
+  // --- Feature Maintenance Controller (Req: web-monitor removed) ---
+  const FEATURE_ICONS = {
+    'password': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>',
+    'renamer': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>',
+    'compressor': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>',
+    'bg-remover': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>',
+    'image-to-pdf': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>',
+    'pdf-to-docs': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
+    'pdf-compressor': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><polyline points="12 18 12 12"></polyline><polyline points="9 15 12 18 15 15"></polyline></svg>',
+    'video-to-uhd': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>',
+    'watermark-remover': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>',
+    'qr-code-master': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>',
+    'ai-workflow-assistant': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>',
+    'metadata-cleaner': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><circle cx="12" cy="14" r="3"></circle><line x1="12" y1="14" x2="12.01" y2="14"></line></svg>'
   };
 
-  clearLogsBtn.addEventListener('click', () => {
-    logs = [];
-    localStorage.removeItem('monitor_logs');
-    renderLogs();
-    showToast(translations[currentLang].toastLogsCleared);
-  });
+  const notifyMaintenanceChange = () => {
+    window.dispatchEvent(new Event('toolsuf-maintenance-changed'));
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.dispatchEvent(new Event('toolsuf-maintenance-changed'));
+      }
+    } catch (e) {}
+  };
 
-  // Run init
-  init();
+  const renderMaintenance = () => {
+    if (!maintenanceGrid) return;
+    if (typeof ToolSufMaintenance === 'undefined') {
+      maintenanceGrid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><p>Modul pemeliharaan tidak ditemukan.</p></div>';
+      return;
+    }
+
+    const config = ToolSufMaintenance.getConfig();
+    const isGlobal = !!config.global;
+    if (globalMaintenanceSwitch) {
+      globalMaintenanceSwitch.checked = isGlobal;
+    }
+
+    const features = config.features || {};
+    // Pastikan web-monitor tidak pernah ada di UI fitur pemeliharaan
+    delete features['web-monitor'];
+    const featureIds = Object.keys(features).filter(id => id !== 'web-monitor');
+    const searchQuery = (maintenanceSearchInput ? maintenanceSearchInput.value : '').toLowerCase().trim();
+
+    let totalCount = featureIds.length;
+    let mntCount = 0;
+
+    featureIds.forEach(id => {
+      if (features[id].enabled || isGlobal) mntCount++;
+    });
+
+    const activeCount = isGlobal ? 0 : (totalCount - mntCount);
+
+    if (metricTotalFeaturesVal) metricTotalFeaturesVal.textContent = totalCount;
+    if (metricActiveFeaturesVal) metricActiveFeaturesVal.textContent = activeCount;
+    if (metricMaintenanceFeaturesVal) metricMaintenanceFeaturesVal.textContent = isGlobal ? totalCount : mntCount;
+    if (metricGlobalStatusVal) {
+      metricGlobalStatusVal.textContent = isGlobal ? 'AKTIF' : 'Non-aktif';
+      metricGlobalStatusVal.className = 'metric-value ' + (isGlobal ? 'text-red' : 'text-green');
+    }
+
+    const filteredIds = featureIds.filter(id => {
+      if (!searchQuery) return true;
+      const feat = features[id];
+      const name = (feat.name || id).toLowerCase();
+      return name.includes(searchQuery) || id.toLowerCase().includes(searchQuery);
+    });
+
+    maintenanceGrid.innerHTML = '';
+
+    if (filteredIds.length === 0) {
+      maintenanceGrid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><p>Tidak ada alat yang cocok dengan pencarian.</p></div>';
+      return;
+    }
+
+    filteredIds.forEach(id => {
+      const feat = features[id];
+      const isFeatureMnt = isGlobal || !!feat.enabled;
+      const card = document.createElement('div');
+      card.className = 'maintenance-card' + (isFeatureMnt ? ' is-maintenance' : '');
+      card.id = `mnt-card-${id}`;
+
+      const iconSvg = FEATURE_ICONS[id] || '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>';
+
+      card.innerHTML = `
+        <div class="maintenance-card-top">
+          <div class="maintenance-card-icon">
+            ${iconSvg}
+          </div>
+          <span class="maintenance-card-badge ${isFeatureMnt ? 'maintenance' : 'normal'}">
+            ${isFeatureMnt ? 'Maintenance' : 'Aktif'}
+          </span>
+        </div>
+        <div class="maintenance-card-content">
+          <div class="maintenance-card-title" title="${feat.name || id}">${feat.name || id}</div>
+          <div class="maintenance-card-id">${id}</div>
+        </div>
+        <div class="maintenance-card-actions">
+          <button type="button" class="maintenance-msg-btn" title="Kustomisasi Pesan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Pesan</span>
+          </button>
+          <label class="apple-switch" title="Toggle Maintenance" aria-label="Toggle Maintenance ${feat.name || id}">
+            <input type="checkbox" class="feature-mnt-toggle" ${isFeatureMnt ? 'checked' : ''} ${isGlobal ? 'disabled' : ''}>
+            <span class="apple-switch-slider"></span>
+          </label>
+        </div>
+      `;
+
+      const toggleInput = card.querySelector('.feature-mnt-toggle');
+      toggleInput.addEventListener('change', () => {
+        const checked = toggleInput.checked;
+        ToolSufMaintenance.setFeatureMaintenance(id, checked);
+        notifyMaintenanceChange();
+        showToast('Status maintenance berhasil diubah!');
+        renderMaintenance();
+      });
+
+      const msgBtn = card.querySelector('.maintenance-msg-btn');
+      msgBtn.addEventListener('click', () => {
+        openMaintenanceMsgModal(id);
+      });
+
+      maintenanceGrid.appendChild(card);
+    });
+  };
+
+  const openMaintenanceMsgModal = (featureId) => {
+    if (!maintenanceMsgModal || typeof ToolSufMaintenance === 'undefined') return;
+    const config = ToolSufMaintenance.getConfig();
+    const feat = (config.features && config.features[featureId]) || {};
+    if (editMaintenanceFeatureId) editMaintenanceFeatureId.value = featureId;
+    if (maintenanceFeatureNameDisplay) maintenanceFeatureNameDisplay.value = feat.name || featureId;
+    if (maintenanceCustomMsgInput) maintenanceCustomMsgInput.value = feat.message || '';
+    maintenanceMsgModal.classList.add('active');
+  };
+
+  const closeMaintenanceMsgModal = () => {
+    if (maintenanceMsgModal) maintenanceMsgModal.classList.remove('active');
+  };
+
+  // --- Backend Email Handlers ---
+  const handleTestEmail = async () => {
+    if (!testEmailBtn) return;
+    testEmailBtn.disabled = true;
+    showToast('Mengirim email test laporan...');
+
+    try {
+      const res = await fetch(`${BACKEND_API_BASE}/test-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`Email test berhasil dikirim ke ${data.recipient || 'email Anda'}!`);
+      } else {
+        showToast(`Gagal kirim email: ${data.error || 'Terjadi kesalahan SMTP'}`);
+      }
+    } catch (err) {
+      showToast('Gagal terhubung ke server email backend (Port 3001)');
+    } finally {
+      testEmailBtn.disabled = false;
+    }
+  };
+
+  // =============================================================================
+  // DETEKSI PERANGKAT LENGKAP & SESSION TRACKER (iPhone, iPad, Android, Windows, Mac)
+  // =============================================================================
+  let mySessionId = sessionStorage.getItem('toolsuf_monitor_session_id');
+  if (!mySessionId) {
+    mySessionId = 'sess-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36);
+    sessionStorage.setItem('toolsuf_monitor_session_id', mySessionId);
+  }
+
+  let heartbeatInterval = null;
+  let cachedDeviceList = [];
+
+  const escapeHtml = (str) => {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
+
+  const detectBrowser = (ua) => {
+    // 1. Browser di iOS
+    if (/CriOS\/(\d+(\.\d+)?)/i.test(ua)) return 'Chrome';
+    if (/FxiOS\/(\d+(\.\d+)?)/i.test(ua)) return 'Firefox';
+    if (/EdgiOS\/(\d+(\.\d+)?)/i.test(ua)) return 'Edge';
+    if (/OPiOS\/(\d+(\.\d+)?)/i.test(ua)) return 'Opera';
+
+    // 2. Browser Modern Umum
+    if (/EdgA?\/(\d+(\.\d+)?)/i.test(ua)) return 'Edge';
+    if (/SamsungBrowser\/(\d+(\.\d+)?)/i.test(ua)) return 'Samsung Internet';
+    if (/OPR\/(\d+(\.\d+)?)|Opera/i.test(ua)) return 'Opera';
+    if (/Chrome\/(\d+(\.\d+)?)/i.test(ua)) return 'Chrome';
+    if (/Firefox\/(\d+(\.\d+)?)/i.test(ua)) return 'Firefox';
+    if (/Version\/(\d+(\.\d+)?).*Safari/i.test(ua) || /Safari/i.test(ua)) return 'Safari';
+
+    return 'Browser';
+  };
+
+  const detectDetailedDevice = () => {
+    const ua = navigator.userAgent || '';
+    const platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
+    const maxTouchPoints = navigator.maxTouchPoints || 0;
+    const hasTouch = 'ontouchstart' in window || maxTouchPoints > 0;
+
+    let device = 'Unknown Device';
+    let os = 'Unknown';
+    let type = 'desktop';
+
+    // 1. DETEKSI iPhone (WAJIB PERTAMA)
+    if (/iPhone|iPod/i.test(ua) || /iPhone|iPod/i.test(platform)) {
+      device = 'iPhone';
+      os = 'iOS';
+      type = 'mobile';
+    }
+    // 2. DETEKSI iPad (Termasuk iPadOS 13+ yang menggunakan Desktop-Class Safari)
+    // Safari di iPad mengirimkan 'Macintosh'/'MacIntel' tetapi memiliki multi-touch (maxTouchPoints > 1)
+    else if (/iPad/i.test(ua) || ((/Macintosh/i.test(ua) || /MacIntel/i.test(platform)) && maxTouchPoints > 1)) {
+      device = 'iPad';
+      os = 'iPadOS';
+      type = 'tablet';
+    }
+    // 3. DETEKSI Android (Phone vs Tablet)
+    else if (/Android/i.test(ua)) {
+      os = 'Android';
+      if (/Mobile/i.test(ua)) {
+        device = 'Android Phone';
+        type = 'mobile';
+      } else {
+        device = 'Android Tablet';
+        type = 'tablet';
+      }
+    }
+    // 4. DETEKSI Windows
+    else if (/Windows NT|Windows/i.test(ua)) {
+      device = (hasTouch && /Touch/i.test(ua)) ? 'Windows Laptop' : 'Windows PC';
+      if (/Windows NT 10\.0/i.test(ua)) os = 'Windows 11';
+      else if (/Windows NT 6\.3/i.test(ua)) os = 'Windows 8.1';
+      else if (/Windows NT 6\.2/i.test(ua)) os = 'Windows 8';
+      else if (/Windows NT 6\.1/i.test(ua)) os = 'Windows 7';
+      else os = 'Windows';
+      type = 'desktop';
+    }
+    // 5. DETEKSI macOS (Pasti bukan iPad karena iPad sudah ditangani di langkah 2)
+    else if (/Macintosh|Mac OS X/i.test(ua) || /MacIntel/i.test(platform)) {
+      device = 'MacBook';
+      os = 'macOS';
+      type = 'laptop';
+    }
+    // 6. DETEKSI Linux
+    else if (/Linux|X11/i.test(ua)) {
+      device = 'Linux';
+      os = 'Linux';
+      type = 'desktop';
+    }
+    // 7. Unknown Fallback
+    else {
+      device = 'Unknown Device';
+      os = 'Unknown';
+      type = 'desktop';
+    }
+
+    const browser = detectBrowser(ua);
+    return { device, os, browser, type };
+  };
+
+  const getDeviceIconSvg = (type, device) => {
+    // Smartphone SVG
+    if (type === 'mobile' || /iPhone|Android Phone/i.test(device)) {
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+      </svg>`;
+    }
+    // Tablet SVG
+    if (type === 'tablet' || /iPad|Android Tablet/i.test(device)) {
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+      </svg>`;
+    }
+    // Laptop SVG
+    if (type === 'laptop' || /MacBook|Laptop/i.test(device)) {
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+        <line x1="2" y1="20" x2="22" y2="20"></line>
+      </svg>`;
+    }
+    // Desktop / Monitor SVG
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+      <line x1="8" y1="21" x2="16" y2="21"></line>
+      <line x1="12" y1="17" x2="12" y2="21"></line>
+    </svg>`;
+  };
+
+  const resolvePublicIp = async () => {
+    if (cachedPublicIp) return cachedPublicIp;
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2500);
+      const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+      clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.ip) {
+          cachedPublicIp = data.ip;
+          sessionStorage.setItem('toolsuf_monitor_public_ip', cachedPublicIp);
+          return cachedPublicIp;
+        }
+      }
+    } catch (e) {}
+    return '127.0.0.1 (Local)';
+  };
+
+  const formatRelativeActiveTime = (isoString) => {
+    if (!isoString) return 'Aktif sekarang';
+    const diffMs = Math.max(0, Date.now() - new Date(isoString).getTime());
+    if (diffMs < 45000) return 'Aktif sekarang';
+    if (diffMs < 90000) return `Aktif ${Math.round(diffMs / 1000)} detik lalu`;
+    if (diffMs < 3600000) return `Aktif ${Math.floor(diffMs / 60000)} menit lalu`;
+    return `Aktif ${Math.floor(diffMs / 3600000)} jam lalu`;
+  };
+
+  const renderConnectedDevices = (devices = []) => {
+    cachedDeviceList = devices;
+    const count = devices.length || 1;
+    const countText = `${count} Aktif`;
+
+    if (headerDeviceBadge) headerDeviceBadge.textContent = count;
+    if (popoverCounterBadge) popoverCounterBadge.textContent = countText;
+    if (activeDevicesCountBadge) activeDevicesCountBadge.textContent = countText;
+
+    const renderCard = (dev) => {
+      const isCurrent = dev.sessionId === mySessionId;
+      const iconSvg = getDeviceIconSvg(dev.type, dev.device);
+      const timeText = formatRelativeActiveTime(dev.lastSeen);
+      const isNow = timeText === 'Aktif sekarang';
+
+      return `
+        <div class="device-session-card ${isCurrent ? 'current-device' : ''}">
+          <div class="device-card-icon-box" title="${escapeHtml(dev.type)}">
+            ${iconSvg}
+          </div>
+          <div class="device-card-info">
+            <div class="device-card-title-row">
+              <span class="device-card-name">${escapeHtml(dev.device)}</span>
+              ${isCurrent ? '<span class="this-device-tag">Perangkat ini</span>' : ''}
+            </div>
+            <div class="device-card-meta">${escapeHtml(dev.browser)} · ${escapeHtml(dev.os)}</div>
+            <div class="device-card-ip">IP: ${escapeHtml(dev.ip || '127.0.0.1')}</div>
+            <div class="device-card-status ${isNow ? '' : 'idle'}">
+              <span class="device-status-dot ${isNow ? 'active-now' : ''}"></span>
+              <span class="device-status-text">${timeText}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    };
+
+    const cardsHtml = devices.map(renderCard).join('');
+
+    if (connectedDevicesList) {
+      connectedDevicesList.innerHTML = cardsHtml || '<div class="empty-logs">Tidak ada perangkat aktif.</div>';
+    }
+
+    if (deviceSessionsListPopover) {
+      deviceSessionsListPopover.innerHTML = cardsHtml || '<div class="empty-logs">Tidak ada perangkat aktif.</div>';
+    }
+  };
+
+  const sendDeviceHeartbeat = async () => {
+    const info = detectDetailedDevice();
+    const ip = await resolvePublicIp();
+    const payload = {
+      sessionId: mySessionId,
+      device: info.device,
+      os: info.os,
+      browser: info.browser,
+      type: info.type,
+      screen: `${window.screen.width}x${window.screen.height}`,
+      ip: ip
+    };
+
+    try {
+      const res = await fetch(`${BACKEND_API_BASE}/device-heartbeat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.devices) {
+          renderConnectedDevices(data.devices);
+          return;
+        }
+      }
+    } catch (e) {
+      // Backend offline fallback
+    }
+
+    // Standalone fallback: render perangkat saat ini
+    renderConnectedDevices([{
+      sessionId: mySessionId,
+      device: info.device,
+      os: info.os,
+      browser: info.browser,
+      type: info.type,
+      ip: ip,
+      lastSeen: new Date().toISOString()
+    }]);
+  };
+
+  const startDeviceTracker = () => {
+    sendDeviceHeartbeat();
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    heartbeatInterval = setInterval(sendDeviceHeartbeat, 15000); // Heartbeat setiap 15 detik
+  };
+
+  const stopDeviceTracker = () => {
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval);
+      heartbeatInterval = null;
+    }
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(`${BACKEND_API_BASE}/device-disconnect`, JSON.stringify({ sessionId: mySessionId }));
+      }
+    } catch (e) {}
+  };
+
+  // --- Logout Controller (Req 20) ---
+  const handleLogout = () => {
+    stopMonitoring();
+    stopDeviceTracker();
+    setSessionAuthenticated(false);
+    if (loginForm) loginForm.reset();
+    if (loginAlert) loginAlert.classList.add('hidden');
+    showLoginView();
+    showToast('Berhasil keluar.');
+  };
+
+  // --- View Display Switches ---
+  const showLoginView = () => {
+    if (loginView) loginView.style.display = 'flex';
+    if (dashboardView) dashboardView.style.display = 'none';
+  };
+
+  const showDashboardView = () => {
+    if (loginView) loginView.style.display = 'none';
+    if (dashboardView) dashboardView.style.display = 'block';
+    initDashboard();
+  };
+
+  // --- Initialize Dashboard View ---
+  const initDashboard = () => {
+    if (!isAuthenticated()) {
+      showLoginView();
+      return;
+    }
+
+    // Set Monitored Site Target Info
+    if (monitoredSiteName) monitoredSiteName.textContent = MONITORED_SITE.name;
+    if (monitoredSiteUrl) monitoredSiteUrl.href = MONITORED_SITE.url;
+    if (monitoredSiteUrlText) monitoredSiteUrlText.textContent = MONITORED_SITE.url;
+
+    // Apply saved theme & audio mute settings
+    applyTheme(state.theme || 'dark');
+    updateMuteUi();
+
+    // Render Initial UI State
+    updateMetrics();
+    renderLogs();
+    drawLatencyChart();
+
+    // Start Real Device Tracking & Session Heartbeat (Req 11)
+    startDeviceTracker();
+
+    // Kirim notifikasi email penggunaan Web Monitor
+    notifyWebMonitorUsage();
+
+    // Setup Listeners
+    if (!isDashboardInitialized) {
+      setupDashboardEventListeners();
+      isDashboardInitialized = true;
+    }
+
+    // Start Single Monitoring Engine (Req 20)
+    startMonitoring();
+  };
+
+  const notifyWebMonitorUsage = async () => {
+    try {
+      const info = detectDetailedDevice();
+      const ip = await resolvePublicIp();
+
+      let analyticsData = {};
+      try {
+        const raw = localStorage.getItem('toolsuf_analytics');
+        if (raw) analyticsData = JSON.parse(raw);
+      } catch (e) {}
+
+      const launchCount = analyticsData.launchCount || {};
+      launchCount['web-monitor'] = (launchCount['web-monitor'] || 0) + 1;
+
+      const usedTools = Object.keys(launchCount).map(k => ({
+        key: k,
+        name: k === 'web-monitor' ? 'Web Monitor (Pemantau Situs Web)' : k,
+        count: launchCount[k]
+      }));
+
+      fetch(`${BACKEND_API_BASE}/notify-tool-usage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: mySessionId,
+          toolKey: 'web-monitor',
+          toolName: 'Web Monitor (Pemantau Situs Web)',
+          device: info.device,
+          os: info.os,
+          browser: info.browser,
+          type: info.type,
+          ip: ip,
+          usedTools
+        })
+      }).catch(() => {});
+    } catch (e) {}
+  };
+
+  // --- Setup Dashboard Event Listeners ---
+  const setupDashboardEventListeners = () => {
+    // Manual Check Button
+    if (manualCheckBtn) {
+      manualCheckBtn.addEventListener('click', () => {
+        executeCheck();
+        showToast('Memeriksa status website...');
+      });
+    }
+
+    // Device Popover (Req 11, 15, 16, 17)
+    if (deviceInfoBtn && devicePopover) {
+      deviceInfoBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = devicePopover.style.display === 'block';
+        if (!isOpen) {
+          sendDeviceHeartbeat();
+          devicePopover.style.display = 'block';
+        } else {
+          devicePopover.style.display = 'none';
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (devicePopover && devicePopoverWrapper && !devicePopoverWrapper.contains(e.target)) {
+          devicePopover.style.display = 'none';
+        }
+      });
+    }
+
+    // Tombol Perbarui Daftar Perangkat
+    if (refreshDevicesBtn) {
+      refreshDevicesBtn.addEventListener('click', () => {
+        sendDeviceHeartbeat();
+        showToast('Daftar perangkat diperbarui!');
+      });
+    }
+
+    // Kirim sinyal disconnect saat browser/tab ditutup
+    window.addEventListener('beforeunload', () => {
+      try {
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(`${BACKEND_API_BASE}/device-disconnect`, JSON.stringify({ sessionId: mySessionId }));
+        }
+      } catch (e) {}
+    });
+
+    // Email Test Button
+    if (testEmailBtn) testEmailBtn.addEventListener('click', handleTestEmail);
+
+    // Mute Alarm Button
+    if (muteAllBtn) {
+      muteAllBtn.addEventListener('click', () => {
+        state.muted = !state.muted;
+        saveStoredData(state);
+        updateMuteUi();
+        showToast(state.muted ? 'Alarm suara dimatikan' : 'Alarm suara diaktifkan');
+      });
+    }
+
+    // Theme Toggle (Req 18)
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const nextTheme = state.theme === 'light' ? 'dark' : 'light';
+        applyTheme(nextTheme);
+        showToast(nextTheme === 'light' ? 'Mode Terang diaktifkan' : 'Mode Gelap diaktifkan');
+        // Redraw canvas/svg chart for theme alignment
+        drawLatencyChart();
+        if (workspaceAnalytics && workspaceAnalytics.classList.contains('active')) {
+          renderAnalytics();
+        }
+      });
+    }
+
+    // Clear Logs Button
+    if (clearLogsBtn) {
+      clearLogsBtn.addEventListener('click', () => {
+        state.logs = [];
+        saveStoredData(state);
+        renderLogs();
+        showToast('Log aktivitas dibersihkan!');
+      });
+    }
+
+    // Tabs
+    if (tabWebsites) tabWebsites.addEventListener('click', () => switchTab('websites'));
+    if (tabAnalytics) tabAnalytics.addEventListener('click', () => switchTab('analytics'));
+    if (tabMaintenance) tabMaintenance.addEventListener('click', () => switchTab('maintenance'));
+
+    if (resetAnalyticsBtn) {
+      resetAnalyticsBtn.addEventListener('click', () => {
+        localStorage.removeItem('toolsuf_analytics');
+        renderAnalytics();
+        showToast('Statistik penggunaan berhasil di-reset!');
+      });
+    }
+
+    // Maintenance Event Listeners
+    if (globalMaintenanceSwitch) {
+      globalMaintenanceSwitch.addEventListener('change', () => {
+        const checked = globalMaintenanceSwitch.checked;
+        if (typeof ToolSufMaintenance !== 'undefined') {
+          ToolSufMaintenance.setGlobalMaintenance(checked);
+          notifyMaintenanceChange();
+          showToast('Mode pemeliharaan global berhasil diubah!');
+          renderMaintenance();
+        }
+      });
+    }
+
+    if (resetAllMaintenanceBtn) {
+      resetAllMaintenanceBtn.addEventListener('click', () => {
+        if (typeof ToolSufMaintenance !== 'undefined') {
+          ToolSufMaintenance.setGlobalMaintenance(false);
+          const config = ToolSufMaintenance.getConfig();
+          if (config.features) {
+            Object.keys(config.features).forEach(id => {
+              if (id !== 'web-monitor') {
+                ToolSufMaintenance.setFeatureMaintenance(id, false);
+              }
+            });
+          }
+          notifyMaintenanceChange();
+          showToast('Semua fitur berhasil diaktifkan kembali!');
+          renderMaintenance();
+        }
+      });
+    }
+
+    if (maintenanceSearchInput) {
+      maintenanceSearchInput.addEventListener('input', () => {
+        renderMaintenance();
+      });
+    }
+
+    if (closeMaintenanceMsgBtn) closeMaintenanceMsgBtn.addEventListener('click', closeMaintenanceMsgModal);
+    if (cancelMaintenanceMsgBtn) cancelMaintenanceMsgBtn.addEventListener('click', closeMaintenanceMsgModal);
+
+    if (maintenanceMsgModal) {
+      maintenanceMsgModal.addEventListener('click', (e) => {
+        if (e.target === maintenanceMsgModal) closeMaintenanceMsgModal();
+      });
+    }
+
+    if (maintenanceMsgForm) {
+      maintenanceMsgForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const featId = editMaintenanceFeatureId.value;
+        const msg = (maintenanceCustomMsgInput.value || '').trim();
+        if (featId && typeof ToolSufMaintenance !== 'undefined') {
+          const config = ToolSufMaintenance.getConfig();
+          const currentEnabled = config.features && config.features[featId] ? config.features[featId].enabled : false;
+          ToolSufMaintenance.setFeatureMaintenance(featId, currentEnabled, msg);
+          notifyMaintenanceChange();
+          closeMaintenanceMsgModal();
+          showToast('Pesan berhasil disimpan!');
+          renderMaintenance();
+        }
+      });
+    }
+
+    if (resetMaintenanceMsgBtn) {
+      resetMaintenanceMsgBtn.addEventListener('click', () => {
+        const featId = editMaintenanceFeatureId.value;
+        if (featId && typeof ToolSufMaintenance !== 'undefined') {
+          const config = ToolSufMaintenance.getConfig();
+          const currentEnabled = config.features && config.features[featId] ? config.features[featId].enabled : false;
+          ToolSufMaintenance.setFeatureMaintenance(featId, currentEnabled, null);
+          notifyMaintenanceChange();
+          if (maintenanceCustomMsgInput) maintenanceCustomMsgInput.value = '';
+          closeMaintenanceMsgModal();
+          showToast('Pesan di-reset ke bawaan!');
+          renderMaintenance();
+        }
+      });
+    }
+
+    // Logout
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+  };
+
+  // --- Login Form Controller ---
+  if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = (loginUsernameInput.value || '').trim();
+      const password = (loginPasswordInput.value || '').trim();
+
+      if (!username || !password) {
+        if (loginAlert) {
+          loginAlert.textContent = 'Harap isi nama pengguna dan kata sandi.';
+          loginAlert.classList.remove('hidden');
+        }
+        return;
+      }
+
+      if (loginBtn) loginBtn.disabled = true;
+      if (loginBtnText) loginBtnText.textContent = 'Memverifikasi...';
+      if (loginBtnSpinner) loginBtnSpinner.classList.remove('hidden');
+
+      setTimeout(() => {
+        if (username === AUTH_CONFIG.username && password === AUTH_CONFIG.password) {
+          setSessionAuthenticated(true);
+          if (loginAlert) loginAlert.classList.add('hidden');
+          showDashboardView();
+        } else {
+          if (loginAlert) {
+            loginAlert.textContent = 'Nama pengguna atau kata sandi salah.';
+            loginAlert.classList.remove('hidden');
+          }
+        }
+        if (loginBtn) loginBtn.disabled = false;
+        if (loginBtnText) loginBtnText.textContent = 'Masuk';
+        if (loginBtnSpinner) loginBtnSpinner.classList.add('hidden');
+      }, 350);
+    });
+  }
+
+  if (togglePasswordBtn) {
+    togglePasswordBtn.addEventListener('click', () => {
+      const isPassword = loginPasswordInput.type === 'password';
+      loginPasswordInput.type = isPassword ? 'text' : 'password';
+      if (eyeIcon) eyeIcon.classList.toggle('hidden', isPassword);
+      if (eyeOffIcon) eyeOffIcon.classList.toggle('hidden', !isPassword);
+    });
+  }
+
+  // --- Initial Access Guard & Route Check ---
+  const checkInitialAccess = () => {
+    const isAuth = isAuthenticated();
+    const pathname = window.location.pathname.toLowerCase();
+    const isYusjulAdminRoute = pathname.includes('yusjul-admin');
+
+    if (!isAuth && !isYusjulAdminRoute) {
+      if (window.top === window.self) {
+        const base = window.location.pathname.replace(/\/tools\/web-monitor.*$/, '').replace(/\/$/, '');
+        window.location.replace((base || '') + '/yusjul-admin/');
+        return;
+      }
+    }
+
+    if (isAuth) {
+      showDashboardView();
+    } else {
+      showLoginView();
+    }
+  };
+
+  checkInitialAccess();
 });

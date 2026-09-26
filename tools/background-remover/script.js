@@ -61,14 +61,62 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.dataTransfer.files.length) processImage(e.dataTransfer.files[0]);
   });
 
-  // Slider controls
+  // Slider controls (mouse, touch, keyboard)
   const cmp = $('cmpContainer');
-  cmp.addEventListener('mousedown', e => { if (!processedBlob) return; cmpDragging = true; updateCmpPos(e); });
-  document.addEventListener('mousemove', e => { if (cmpDragging) updateCmpPos(e); });
-  document.addEventListener('mouseup', () => { cmpDragging = false; });
-  cmp.addEventListener('touchstart', e => { if (!processedBlob) return; cmpDragging = true; updateCmpPos(e.touches[0]); });
-  document.addEventListener('touchmove', e => { if (cmpDragging) updateCmpPos(e.touches[0]); });
-  document.addEventListener('touchend', () => { cmpDragging = false; });
+  const handle = $('cmpHandle');
+
+  function startDrag(e) {
+    if (!processedBlob) return;
+    cmpDragging = true;
+    cmp.classList.add('dragging');
+    updateCmpPos(e.touches ? e.touches[0] : e);
+  }
+
+  function moveDrag(e) {
+    if (!cmpDragging) return;
+    if (e.cancelable) e.preventDefault();
+    updateCmpPos(e.touches ? e.touches[0] : e);
+  }
+
+  function endDrag() {
+    if (cmpDragging) {
+      cmpDragging = false;
+      cmp.classList.remove('dragging');
+    }
+  }
+
+  cmp.addEventListener('mousedown', startDrag);
+  window.addEventListener('mousemove', moveDrag);
+  window.addEventListener('mouseup', endDrag);
+
+  cmp.addEventListener('touchstart', startDrag, { passive: false });
+  window.addEventListener('touchmove', moveDrag, { passive: false });
+  window.addEventListener('touchend', endDrag);
+  window.addEventListener('touchcancel', endDrag);
+
+  if (handle) {
+    handle.addEventListener('keydown', e => {
+      if (!processedBlob) return;
+      const step = e.shiftKey ? 10 : 2;
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        cmpPos = Math.max(0, cmpPos - step);
+        updateSlider();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        cmpPos = Math.min(100, cmpPos + step);
+        updateSlider();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        cmpPos = 0;
+        updateSlider();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        cmpPos = 100;
+        updateSlider();
+      }
+    });
+  }
 
   // Color options listeners
   document.querySelectorAll('.color-btn').forEach(btn => {
@@ -91,13 +139,16 @@ document.addEventListener('DOMContentLoaded', () => {
 function updateCmpPos(e) {
   const cmp = $('cmpContainer');
   const rect = cmp.getBoundingClientRect();
-  cmpPos = Math.max(5, Math.min(95, ((e.clientX - rect.left) / rect.width) * 100));
+  if (rect.width <= 0) return;
+  const raw = ((e.clientX - rect.left) / rect.width) * 100;
+  cmpPos = Math.max(0, Math.min(100, raw));
   updateSlider();
 }
 
 function updateSlider() {
   $('cmpAfter').style.clipPath = `inset(0 0 0 ${cmpPos}%)`;
   $('cmpHandle').style.left = cmpPos + '%';
+  $('cmpHandle').setAttribute('aria-valuenow', Math.round(cmpPos));
 }
 
 function resetSlider() {
@@ -155,54 +206,38 @@ async function processImage(file) {
   // Load original preview
   $('cmpOriginal').src = URL.createObjectURL(file);
   
-  // Show progress card
+  // Tampilkan CuteLoading
   const progressSection = $('progressSection');
-  const statusLabel = $('statusLabel');
-  const progressBar = $('progressBar');
+  const statusLabel = { set textContent(v) { CuteLoading.setText('progressSection', v); } };
+  const progressBar = { style: { set width(_) {} } }; // dummy - tidak ditampilkan ke user
   
-  progressSection.style.display = 'block';
-  statusLabel.textContent = currentLang === 'id' ? 'Menyiapkan model AI...' : 'Preparing AI model...';
-  progressBar.style.width = '0%';
+  CuteLoading.show('progressSection', 'Sabar yahh..');
 
   try {
-    statusLabel.textContent = currentLang === 'id'
-      ? 'Memuat library AI...'
-      : 'Loading AI library...';
-
     const fn = await getRemoveBackgroundLib();
-
-    statusLabel.textContent = currentLang === 'id'
-      ? 'Mengunduh model AI (~284MB, hanya sekali)...'
-      : 'Downloading AI model (~284MB, one-time only)...';
-    progressBar.style.width = '0%';
-
     const config = {
-      progress: (key, current, total) => {
-        const pct = Math.round((current / total) * 100);
-        const name = getFriendlyKey(key, currentLang);
-        statusLabel.textContent = currentLang === 'id'
-          ? `Mengunduh ${name}: ${pct}%`
-          : `Downloading ${name}: ${pct}%`;
-        progressBar.style.width = pct + '%';
-      },
-      debug: true,
+      progress: (key, current, total) => {},
+      debug: false,
     };
 
     const resultBlob = await fn(file, config);
     processedBlob = resultBlob;
 
-    statusLabel.textContent = currentLang === 'id'
-      ? 'Memproses gambar...'
-      : 'Processing image...';
-    progressBar.style.width = '100%';
+    // proses selesai - sembunyikan loading
+    const processedUrl2 = URL.createObjectURL(resultBlob);
 
     if (processedUrl) URL.revokeObjectURL(processedUrl);
-    processedUrl = URL.createObjectURL(resultBlob);
+    processedUrl = processedUrl2;
 
     $('cmpResult').src = processedUrl;
 
-    progressSection.style.display = 'none';
-    $('cmpImages').style.display = 'block';
+    CuteLoading.hide('progressSection');
+    const cmpImages = $('cmpImages');
+    cmpImages.style.display = 'block';
+    cmpImages.classList.remove('cmp-show');
+    void cmpImages.offsetWidth; // trigger reflow for smooth transition
+    cmpImages.classList.add('cmp-show');
+
     $('downloadBtn').disabled = false;
     $('bgOptionsTitle').style.display = 'block';
     $('bgOptionsCard').style.display = 'block';
@@ -213,8 +248,8 @@ async function processImage(file) {
 
   } catch (e) {
     console.error(e);
-    progressSection.style.display = 'none';
-    $('cmpEmpty').style.display = 'block';
+    CuteLoading.hide('progressSection');
+    $('cmpEmpty').style.display = 'flex';
     const msg = e.message || String(e);
     showAlert(
       currentLang === 'id'
@@ -229,13 +264,20 @@ async function processImage(file) {
 async function downloadResult() {
   if (!processedBlob || !originalFile) return;
 
-  const originalName = originalFile.name.replace(/\.[^/.]+$/, "");
-  const extension = selectedColor === 'transparent' ? '.png' : '.png';
-  const downloadName = `${originalName}_no_bg${extension}`;
+  const downloadOpts = {
+    originalName: originalFile.name,
+    featureName: 'background-remover',
+    extension: 'png',
+    mimeType: 'image/png'
+  };
 
   if (selectedColor === 'transparent') {
-    // Download directly
-    triggerFileDownload(processedBlob, downloadName);
+    // Download directly using global ToolSuf download system
+    if (typeof ToolSufDownload !== 'undefined') {
+      await ToolSufDownload.downloadFile({ ...downloadOpts, blob: processedBlob });
+    } else {
+      triggerFileDownload(processedBlob, originalFile.name);
+    }
   } else {
     // Draw canvas with colored background
     try {
@@ -259,8 +301,12 @@ async function downloadResult() {
       ctx.drawImage(img, 0, 0);
 
       // Export canvas
-      canvas.toBlob(blob => {
-        triggerFileDownload(blob, downloadName);
+      canvas.toBlob(async blob => {
+        if (typeof ToolSufDownload !== 'undefined') {
+          await ToolSufDownload.downloadFile({ ...downloadOpts, blob });
+        } else {
+          triggerFileDownload(blob, originalFile.name);
+        }
       }, 'image/png');
 
     } catch (e) {
@@ -270,12 +316,20 @@ async function downloadResult() {
   }
 }
 
-function triggerFileDownload(blob, filename) {
+function triggerFileDownload(blob, rawName) {
+  const filename = typeof ToolSufDownload !== 'undefined'
+    ? ToolSufDownload.generateFilename({ originalName: rawName, featureName: 'background-remover', extension: 'png' })
+    : `toolsuf-${rawName.replace(/\.[^/.]+$/, '')}-background-remover.png`;
+
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
+  document.body.appendChild(a);
   a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 100);
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }, 1000);
 }
 
 function showAlert(msg, type) {
@@ -293,11 +347,12 @@ function resetAll() {
   
   $('fi').value = '';
   $('cmpImages').style.display = 'none';
-  $('cmpEmpty').style.display = 'block';
+  $('cmpImages').classList.remove('cmp-show');
+  $('cmpEmpty').style.display = 'flex';
   $('downloadBtn').disabled = true;
   $('bgOptionsTitle').style.display = 'none';
   $('bgOptionsCard').style.display = 'none';
-  $('progressSection').style.display = 'none';
+  $('progressSection') && CuteLoading.hide('progressSection');
   $('alertBox').className = 'alert';
 }
 
@@ -361,8 +416,9 @@ window.syncLang = function(lang) {
   $('lblDropSub').textContent = d.lblDropSub;
   $('secPreview').textContent = d.secPreview;
   
-  if ($('cmpEmpty') && !processedBlob) {
-    $('cmpEmpty').textContent = d.cmpEmpty;
+  if (!processedBlob) {
+    const emptyTitle = $('cmpEmptyTitle') || $('cmpEmpty');
+    if (emptyTitle) emptyTitle.textContent = d.cmpEmpty;
   }
 
   const labels = $('cmpLabels').children;

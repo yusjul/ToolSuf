@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Media Compressor</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../../shared/cute-loading.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="../../shared/cute-loading.js"></script>
+  <script src="../../shared/maintenance.js"></script>
   <script src="script.js"></script>
 </head>
 <body>
@@ -49,7 +52,6 @@
           <div class="stat"><div class="stat-n" id="stEst">-</div><div class="stat-l" id="lblStatEst">Estimasi</div></div>
         </div>
         <div class="fc" id="fc"></div>
-        <div class="prog-w"><div class="prog-f" id="pf" style="width:100%"></div></div>
       </div>
 
       <div class="section-title" id="lblSettings">Pengaturan Kompresi</div>
@@ -157,12 +159,14 @@
         </button>
       </div>
 
-      <div class="zprog" id="zprog">
-        <div class="zinfo" id="zinfo">Menyiapkan ZIP...</div>
-        <div class="prog-w"><div class="prog-f" id="zpf"></div></div>
+      <!-- CuteLoading -->
+      <div class="cute-loading" id="zprog" role="status" aria-live="polite" aria-busy="false" data-cute-loading="1">
+        <div class="cute-loading-text" id="zinfo">Sabar yahh..</div>
+        <div class="cute-loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
       </div>
       <div class="alert" id="alertBox"></div>
     </div>
   </div>
+  <script src="../../shared/toolsuf-download.js"></script>
 </body>
 </html>

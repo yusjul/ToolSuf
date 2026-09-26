@@ -1,0 +1,277 @@
+﻿/* ToolSuf — Maintenance Page Styles */
+
+.ts-maintenance-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+  background: var(--bg-primary, #F5F5F7);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+html.dark .ts-maintenance-page,
+body.dark-theme .ts-maintenance-page,
+body[data-theme="dark"] .ts-maintenance-page {
+  background: var(--bg-primary, #0A0A0C);
+}
+
+.ts-maintenance-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  padding: 40px 32px;
+  background: #FFFFFF;
+  border: 1px solid #E5E5EA;
+  border-radius: 20px;
+  gap: 0;
+}
+
+html.dark .ts-maintenance-card,
+body.dark-theme .ts-maintenance-card {
+  background: #1C1C1E;
+  border-color: #2C2C2E;
+}
+
+/* Icon */
+.ts-maintenance-icon {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F2F2F7;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  color: #636366;
+}
+
+html.dark .ts-maintenance-icon,
+body.dark-theme .ts-maintenance-icon {
+  background: #2C2C2E;
+  color: #8E8E93;
+}
+
+.ts-maintenance-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+/* Badge */
+.ts-maintenance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: #FFF3CD;
+  border: 1px solid #F0C040;
+  color: #8A6000;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+html.dark .ts-maintenance-badge,
+body.dark-theme .ts-maintenance-badge {
+  background: rgba(255, 214, 10, 0.12);
+  border-color: rgba(255, 214, 10, 0.25);
+  color: #FFD60A;
+}
+
+.ts-maintenance-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #F0A500;
+  animation: ts-pulse 2s ease-in-out infinite;
+}
+
+html.dark .ts-maintenance-badge-dot,
+body.dark-theme .ts-maintenance-badge-dot {
+  background: #FFD60A;
+}
+
+@keyframes ts-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Title */
+.ts-maintenance-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #1C1C1E;
+  letter-spacing: -0.3px;
+  margin: 0 0 10px 0;
+  line-height: 1.3;
+}
+
+html.dark .ts-maintenance-title,
+body.dark-theme .ts-maintenance-title {
+  color: #FCFCFD;
+}
+
+/* Description */
+.ts-maintenance-desc {
+  font-size: 14px;
+  color: #636366;
+  line-height: 1.6;
+  margin: 0 0 4px 0;
+  max-width: 320px;
+}
+
+.ts-maintenance-desc--sub {
+  color: #8E8E93;
+  font-size: 13px;
+  margin-bottom: 0;
+}
+
+html.dark .ts-maintenance-desc,
+body.dark-theme .ts-maintenance-desc {
+  color: #8E8E93;
+}
+
+html.dark .ts-maintenance-desc--sub,
+body.dark-theme .ts-maintenance-desc--sub {
+  color: #636366;
+}
+
+/* Meta info grid */
+.ts-maintenance-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px;
+  margin: 24px 0 28px;
+  padding: 16px 20px;
+  background: #F5F5F7;
+  border-radius: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+html.dark .ts-maintenance-meta,
+body.dark-theme .ts-maintenance-meta {
+  background: #2C2C2E;
+}
+
+.ts-maintenance-meta-label {
+  font-size: 12px;
+  color: #8E8E93;
+  font-weight: 500;
+  align-self: center;
+}
+
+.ts-maintenance-meta-value {
+  font-size: 13px;
+  color: #3A3A3C;
+  font-weight: 600;
+  align-self: center;
+}
+
+html.dark .ts-maintenance-meta-value,
+body.dark-theme .ts-maintenance-meta-value {
+  color: #E5E5EA;
+}
+
+.ts-maintenance-status {
+  color: #F0A500;
+}
+
+html.dark .ts-maintenance-status,
+body.dark-theme .ts-maintenance-status {
+  color: #FFD60A;
+}
+
+/* Back button */
+.ts-maintenance-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  background: #1C1C1E;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  font-family: inherit;
+  letter-spacing: -0.1px;
+}
+
+.ts-maintenance-back-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.ts-maintenance-back-btn:hover {
+  opacity: 0.82;
+  transform: translateY(-1px);
+}
+
+.ts-maintenance-back-btn:active {
+  transform: translateY(0);
+  opacity: 0.65;
+}
+
+html.dark .ts-maintenance-back-btn,
+body.dark-theme .ts-maintenance-back-btn {
+  background: #FCFCFD;
+  color: #1C1C1E;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .ts-maintenance-card {
+    padding: 32px 20px;
+    border-radius: 16px;
+  }
+
+  .ts-maintenance-title {
+    font-size: 17px;
+  }
+}
+
+/* Tool Card Badge — for app.js integration */
+.tool-maintenance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: rgba(255, 214, 10, 0.15);
+  border: 1px solid rgba(255, 214, 10, 0.3);
+  color: #B8860B;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+html.dark .tool-maintenance-badge {
+  color: #FFD60A;
+  background: rgba(255, 214, 10, 0.12);
+  border-color: rgba(255, 214, 10, 0.25);
+}
+
+.tool-maintenance-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.8;
+  animation: ts-pulse 2s ease-in-out infinite;
+}

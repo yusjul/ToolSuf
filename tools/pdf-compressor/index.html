@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>PDF Compressor - ToolSuf</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../../shared/cute-loading.css">
+  <script src="../../shared/maintenance.js"></script>
 </head>
 <body>
   <div class="container" id="app">
@@ -127,12 +129,12 @@
 
     <!-- Progress Section -->
     <section class="mac-section" id="progressSection" style="display: none;">
-      <div class="mac-section-header" data-i18n="progressTitle">STATUS KOMPRESI</div>
-      <div class="progress-card">
-        <div class="progress-header" id="progressText" data-i18n="statusPreparing">Menyiapkan PDF...</div>
-        <div class="progress-track">
-          <div class="progress-fill" id="progressBar"></div>
-        </div>
+      <div class="cute-loading" id="progressLoading" role="status" aria-live="polite" aria-busy="false" data-cute-loading="1">
+        <div class="cute-loading-sparkle" aria-hidden="true"></div>
+        <div class="cute-loading-text" id="progressText">Sabar yahh..</div>
+        <div class="cute-loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+      </div>
+      <div style="display:flex; justify-content:center; margin-top: 12px;">
         <button type="button" class="btn-secondary" id="cancelBtn">
           <span data-i18n="cancelBtn">Batal</span>
         </button>
@@ -200,6 +202,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="../../shared/cute-loading.js"></script>
+  <script src="../../shared/toolsuf-download.js"></script>
   <script type="module" src="script.js?v=2.1"></script>
 </body>
 </html>

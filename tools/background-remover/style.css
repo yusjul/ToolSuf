@@ -64,8 +64,12 @@ body {
 .header-icon svg { width: 36px; height: 36px; stroke: white; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
 .section-title {
-  font-size: 13px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.5px; color: var(--apple-label); padding: 0 4px 8px;
+  font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.6px; color: var(--apple-label); padding: 0 4px;
+  margin-top: 24px; margin-bottom: 10px;
+}
+.section-title:first-of-type {
+  margin-top: 0;
 }
 
 .drop {
@@ -73,7 +77,7 @@ body {
   border-radius: var(--apple-radius);
   padding: 28px 16px; text-align: center; cursor: pointer;
   background: var(--apple-card);
-  transition: all 0.2s ease; margin-bottom: 16px;
+  transition: all 0.2s ease; margin-bottom: 20px;
 }
 .drop:hover, .drop.over { background: var(--apple-secondary-bg); border-color: var(--apple-blue); }
 .drop-icon { color: var(--apple-blue); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; }
@@ -87,7 +91,7 @@ body {
   border-radius: var(--apple-radius);
   padding: 16px 20px;
   border: 0.5px solid var(--apple-separator);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 .zinfo { font-size: 13px; font-weight: 500; color: var(--apple-text); margin-bottom: 8px; text-align: center; }
 .prog-w { height: 6px; background: var(--apple-secondary-bg); border-radius: 99px; overflow: hidden; }
@@ -96,9 +100,15 @@ body {
 /* ===== Settings Card & Color Buttons ===== */
 .settings-card {
   background: var(--apple-card);
-  border-radius: var(--apple-radius-lg);
+  border-radius: 20px;
+  border: 1px solid var(--apple-separator);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
   overflow: hidden;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+}
+html.dark .settings-card {
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
 }
 .setting-row {
   display: flex; align-items: center; justify-content: space-between;
@@ -137,66 +147,233 @@ body {
 
 .card {
   background: var(--apple-card);
-  border-radius: var(--apple-radius-lg);
-  padding: 0; overflow: hidden;
-  margin-bottom: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--apple-separator);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  padding: 0;
+  overflow: hidden;
+  margin-bottom: 24px;
+  position: relative;
+}
+html.dark .card {
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
 }
 
 /* ===== Comparison Image Area ===== */
-.cmp { position: relative; width: 100%; user-select: none; }
-.cmp img { display: block; width: 100%; height: auto; }
-.cmp-after { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; }
-.cmp-handle {
-  position: absolute; top: 0; bottom: 0; width: 3px;
-  background: white; cursor: ew-resize; z-index: 2;
-  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+.cmp {
+  position: relative;
+  width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
 }
-.cmp-handle-knob {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  width: 32px; height: 32px; border-radius: 50%;
-  background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  display: flex; align-items: center; justify-content: center;
-}
-.cmp-handle-knob svg { width: 16px; height: 16px; stroke: var(--apple-blue); fill: none; stroke-width: 1.5; }
-.cmp-empty {
-  padding: 40px 20px; text-align: center;
-  color: var(--apple-label); font-size: 14px;
-}
-.cmp-labels {
-  position: absolute; top: 0; left: 0; right: 0;
-  display: flex; justify-content: space-between;
-  padding: 10px 14px; pointer-events: none;
-  font-size: 11px; font-weight: 600; color: white;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-  z-index: 3;
+.cmp.dragging {
+  cursor: col-resize !important;
 }
 
-/* ===== Transparent Checkerboard Background Pattern ===== */
+#cmpImages {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+#cmpImages.cmp-show {
+  animation: cmpFadeSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes cmpFadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cmp-stage {
+  position: relative;
+  width: 100%;
+  max-height: 520px;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--apple-card);
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.cmp-stage img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  object-fit: contain;
+  vertical-align: middle;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cmp-after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  clip-path: inset(0 0 0 50%);
+  pointer-events: none;
+}
+
+/* Slider Divider (1-2px, clean, minimal) */
+.cmp-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+  cursor: col-resize;
+  z-index: 10;
+  touch-action: none;
+  outline: none;
+}
+
+/* Sentuhan ekstra luas agar mudah digeser di desktop maupun mobile */
+.cmp-handle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -20px;
+  width: 42px;
+  cursor: col-resize;
+}
+
+/* Modern minimal handle knob */
+.cmp-handle-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  color: #1C1C1E;
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22), 0 0 1px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.18s ease;
+}
+.cmp-handle-knob svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+}
+.cmp-handle:hover .cmp-handle-knob,
+.cmp-handle:focus-visible .cmp-handle-knob,
+.cmp.dragging .cmp-handle-knob {
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28), 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Empty State Card */
+.cmp-empty {
+  padding: 56px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  background: var(--apple-card);
+  min-height: 220px;
+}
+.cmp-empty-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: var(--apple-secondary-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--apple-label);
+}
+.cmp-empty-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+}
+.cmp-empty-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--apple-label);
+  max-width: 280px;
+  line-height: 1.4;
+}
+
+/* Badges Asli & Bersih: semi-transparent pill dengan backdrop blur */
+.cmp-labels {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 12;
+}
+.cmp-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: #FFFFFF;
+  background: rgba(28, 28, 30, 0.55);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+  user-select: none;
+}
+
+/* Subtle Transparent Checkerboard Background Pattern */
 .checkerboard-bg {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #FFFFFF;
-  background-image: linear-gradient(45deg, #EBEBEB 25%, transparent 25%),
-                    linear-gradient(-45deg, #EBEBEB 25%, transparent 25%),
-                    linear-gradient(45deg, transparent 75%, #EBEBEB 75%),
-                    linear-gradient(-45deg, transparent 75%, #EBEBEB 75%);
-  background-size: 16px 16px;
-  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-color: #FAFAFC;
+  background-image: linear-gradient(45deg, #ECECEF 25%, transparent 25%),
+                    linear-gradient(-45deg, #ECECEF 25%, transparent 25%),
+                    linear-gradient(45deg, transparent 75%, #ECECEF 75%),
+                    linear-gradient(-45deg, transparent 75%, #ECECEF 75%);
+  background-size: 14px 14px;
+  background-position: 0 0, 0 7px, 7px -7px, -7px 0;
   z-index: 0;
 }
 html.dark .checkerboard-bg {
-  background-color: #121212;
-  background-image: linear-gradient(45deg, #222 25%, transparent 25%),
-                    linear-gradient(-45deg, #222 25%, transparent 25%),
-                    linear-gradient(45deg, transparent 75%, #222 75%),
-                    linear-gradient(-45deg, transparent 75%, #222 75%);
+  background-color: #141416;
+  background-image: linear-gradient(45deg, #202024 25%, transparent 25%),
+                    linear-gradient(-45deg, #202024 25%, transparent 25%),
+                    linear-gradient(45deg, transparent 75%, #202024 75%),
+                    linear-gradient(-45deg, transparent 75%, #202024 75%);
 }
 
 #cmpResult {
   position: relative;
   z-index: 1;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* ===== Buttons ===== */
@@ -283,12 +460,23 @@ html.dark .checkerboard-bg {
     width: 14px;
     height: 14px;
   }
+  .card, .settings-card {
+    border-radius: 18px;
+    margin-bottom: 20px;
+  }
   .cmp-empty {
-    padding: 24px 12px;
+    padding: 38px 16px;
+  }
+  .cmp-empty-title {
     font-size: 12px;
   }
   .cmp-labels {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+  }
+  .cmp-badge {
     font-size: 10px;
-    padding: 8px 10px;
+    padding: 4px 10px;
   }
 }

@@ -764,7 +764,21 @@ function stripWebpMetadata(arrayBuffer) {
 }
 
 // Download Helper
-function downloadBlob(blob, filename) {
+function downloadBlob(blob, originalName, extension) {
+  const cleanExt = extension || (originalName && originalName.includes('.') ? originalName.split('.').pop() : 'jpg');
+
+  if (typeof ToolSufDownload !== 'undefined') {
+    ToolSufDownload.downloadFile({
+      blob,
+      originalName,
+      featureName: 'metadata-cleaner',
+      extension: cleanExt
+    });
+    return;
+  }
+
+  const base = (originalName || 'foto').replace(/\.[^.]+$/, '');
+  const filename = `toolsuf-${base}-metadata-cleaner.${cleanExt}`;
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -772,7 +786,7 @@ function downloadBlob(blob, filename) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // --- Action Operations ---
@@ -789,7 +803,7 @@ function cleanActiveImage() {
     activeFile.status = 'cleaned';
     
     // Download cleaned file
-    downloadBlob(activeFile.cleanedBlob, 'clean_' + activeFile.name);
+    downloadBlob(activeFile.cleanedBlob, activeFile.name);
     notifyParent(translations[currentLang].cleanSuccess);
     
     renderFileList();
@@ -813,12 +827,13 @@ function cleanAllImages() {
       fileObj.cleanedBlob = new Blob([cleanBuffer], { type: fileObj.type });
       fileObj.status = 'cleaned';
       
-      zip.file('clean_' + fileObj.name, fileObj.cleanedBlob);
+      zip.file(fileObj.name, fileObj.cleanedBlob);
       processedCount++;
       
       if (processedCount === uploadedFiles.length) {
         zip.generateAsync({ type: 'blob' }).then(zipBlob => {
-          downloadBlob(zipBlob, 'cleaned_images.zip');
+          const zipBase = uploadedFiles[0] ? uploadedFiles[0].name : 'photos';
+          downloadBlob(zipBlob, zipBase, 'zip');
           notifyParent(translations[currentLang].zipSuccess);
           renderFileList();
           renderInspector();

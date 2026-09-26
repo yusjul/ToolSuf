@@ -1028,7 +1028,7 @@ function clearAll() {
   images = [];
   fileInput.value = '';
   renderPreview();
-  progressCard.style.display = 'none';
+  if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
   alertBox.style.display = 'none';
 }
 
@@ -1039,9 +1039,13 @@ function showAlert(msg, type) {
 }
 
 function setProgress(pct, text) {
-  progressCard.style.display = 'block';
-  pf.style.width = pct + '%';
-  progressText.textContent = text || t('processing');
+  // Progress tetap berjalan di internal logic
+  // UI hanya tampilkan CuteLoading - tanpa persentase teknis
+  if (typeof CuteLoading !== 'undefined') {
+    CuteLoading.show('progressCard', 'Sabar yahh..');
+  } else {
+    progressCard.style.display = 'block';
+  }
 }
 
 function getPageSizeMM(size) {
@@ -1408,8 +1412,7 @@ async function applyModalToAllPages() {
     img.thumbUrl = await generateThumbnail(img);
   }
 
-  setProgress(100, t('processing'));
-  setTimeout(() => { progressCard.style.display = 'none'; }, 200);
+  if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
   renderPreview();
   closeEditorModal();
 }
@@ -1514,18 +1517,10 @@ async function generatePDF() {
     }
 
     let baseName = '';
-    if (images[0] && images[0].name) {
-      baseName = images[0].name.replace(/\.[^/.]+$/, '').trim();
-      baseName = baseName.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_');
-    }
-    if (!baseName || baseName.toLowerCase() === 'image') {
-      const today = new Date().toISOString().slice(0, 10);
-      baseName = `scan-${today}`;
-    }
-    if (!baseName.toLowerCase().startsWith('toolsuf-')) {
-      baseName = `toolsuf-${baseName}`;
-    }
-    const pdfFileName = `${baseName}.pdf`;
+    const rawInputName = (images[0] && images[0].name) ? images[0].name : 'foto';
+    const pdfFileName = typeof ToolSufDownload !== 'undefined'
+      ? ToolSufDownload.generateFilename({ originalName: rawInputName, featureName: 'image-to-pdf', extension: 'pdf', defaultName: 'foto' })
+      : `toolsuf-${rawInputName.replace(/\.[^/.]+$/, '')}-image-to-pdf.pdf`;
 
     setProgress(100, t('processing'));
     await new Promise(r => setTimeout(r, 150));
@@ -1535,7 +1530,7 @@ async function generatePDF() {
     const pdfBlob = new Blob([pdfData], {
       type: 'application/pdf'
     });
-    await downloadBlob(pdfBlob, pdfFileName);
+    await downloadBlob(pdfBlob, rawInputName);
 
     showAlert(t('success'), 'ok');
   } catch (e) {
@@ -1543,7 +1538,7 @@ async function generatePDF() {
     showAlert(t('error'), 'err');
   } finally {
     genBtn.disabled = false;
-    setTimeout(() => { progressCard.style.display = 'none'; }, 400);
+    if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
   }
 }
 
@@ -1552,88 +1547,87 @@ async function generatePDF() {
  * Executes in the top-level window context to prevent Chromium from ignoring
  * the download attribute in iframe subframes and saving as an extensionless UUID.
  */
-async function downloadBlob(blob, fileName) {
+async function downloadBlob(blob, inputName) {
   try {
-    let validName = (fileName || 'document.pdf').trim();
-    if (!validName.toLowerCase().endsWith('.pdf')) {
-      validName += '.pdf';
-    }
-    validName = validName.replace(/[/\\?%*:|"<>]/g, '_');
-    if (!validName.toLowerCase().startsWith('toolsuf-')) {
-      validName = `toolsuf-${validName}`;
-    }
-
-    // Ensure MIME type is strictly application/pdf
     const finalBlob = (blob instanceof Blob && blob.type === 'application/pdf')
       ? blob
       : new Blob([blob], { type: 'application/pdf' });
 
-    let downloaded = false;
-
-    // 1. Primary: Direct DOM injection into TOP-LEVEL window (window.top or window.parent)
-    // If running inside ToolSuf's modal iframe, creating and clicking the <a> tag
-    // in window.top.document bypasses Chromium's subframe blob restrictions,
-    // guaranteeing that the filename (e.g. 'scan-2026-09-06.pdf') is fully honored.
-    try {
-      const topWin = (window.top && window.top.document && window.top.document.body) ? window.top :
-                     (window.parent && window.parent.document && window.parent.document.body) ? window.parent : null;
-      if (topWin) {
-        const topBlob = new (topWin.Blob || Blob)([finalBlob], { type: 'application/pdf' });
-        const topUrl = (topWin.URL || window.URL).createObjectURL(topBlob);
-        const a = topWin.document.createElement('a');
-        a.style.position = 'fixed';
-        a.style.left = '-9999px';
-        a.style.top = '-9999px';
-        a.href = topUrl;
-        a.download = validName;
-        a.setAttribute('download', validName);
-        topWin.document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          try {
-            if (a.parentNode) a.parentNode.removeChild(a);
-          } catch (e) {}
-          (topWin.URL || window.URL).revokeObjectURL(topUrl);
-        }, 15000);
-        downloaded = true;
-      }
-    } catch (err) {
-      console.warn('Direct top window download failed, trying postMessage:', err);
+    if (typeof ToolSufDownload !== 'undefined') {
+      await ToolSufDownload.downloadFile({
+        blob: finalBlob,
+        originalName: inputName,
+        featureName: 'image-to-pdf',
+        extension: 'pdf',
+        mimeType: 'application/pdf'
+      });
+      return;
     }
 
-    // 2. Cross-origin fallback: delegate to parent window via postMessage
-    if (!downloaded && window.parent && window.parent !== window) {
+    const validName = `toolsuf-${(inputName || 'foto').replace(/\.[^.]+$/, '')}-image-to-pdf.pdf`;
+
+    // 1. Primary: Delegate to parent window via postMessage (bila di dalam iframe modal ToolSuf)
+    // app.js sudah memiliki handler 'downloadFile' yang mengeksekusi download di top window secara aman
+    if (window.parent && window.parent !== window) {
       try {
+        const buffer = await finalBlob.arrayBuffer();
         window.parent.postMessage({
           type: 'downloadFile',
           filename: validName,
-          blob: finalBlob
+          blob: finalBlob,
+          buffer: buffer
         }, '*');
-        downloaded = true;
+        return;
       } catch (postErr) {
-        console.warn('postMessage failed:', postErr);
+        console.warn('postMessage to parent failed:', postErr);
       }
     }
 
-    // 3. Standalone window fallback (when window.top is this window)
-    if (!downloaded) {
-      const url = URL.createObjectURL(finalBlob);
-      const a = document.createElement('a');
-      a.style.position = 'fixed';
-      a.style.left = '-9999px';
-      a.style.top = '-9999px';
-      a.href = url;
-      a.download = validName;
-      a.setAttribute('download', validName);
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        try {
-          if (a.parentNode) a.parentNode.removeChild(a);
-        } catch (e) {}
-        URL.revokeObjectURL(url);
-      }, 15000);
+    // 2. File System Access API (jika didukung)
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: validName,
+          types: [{
+            description: 'PDF Document',
+            accept: { 'application/pdf': ['.pdf'] }
+          }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(finalBlob);
+        await writable.close();
+        return;
+      } catch (e) {
+        if (e.name === 'AbortError') return;
+      }
     }
+
+    // 3. Fallback saveAs dari FileSaver jika ada
+    const saver = window.saveAs || (window.top && window.top.saveAs);
+    if (saver) {
+      try {
+        saver(finalBlob, validName);
+        return;
+      } catch (e) {}
+    }
+
+    // 4. Standalone anchor fallback (direct download di konteks saat ini)
+    const url = URL.createObjectURL(finalBlob);
+    const a = document.createElement('a');
+    a.style.position = 'fixed';
+    a.style.left = '-9999px';
+    a.style.top = '-9999px';
+    a.href = url;
+    a.download = validName;
+    a.setAttribute('download', validName);
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      try {
+        if (a.parentNode) a.parentNode.removeChild(a);
+      } catch (e) {}
+      URL.revokeObjectURL(url);
+    }, 15000);
   } catch (err) {
     console.error('downloadBlob error:', err);
   }

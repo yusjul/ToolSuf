@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PDF ke Dokumen</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../../shared/cute-loading.css">
+  <script src="../../shared/maintenance.js"></script>
 </head>
 <body>
   <div class="container" id="app">
@@ -114,10 +116,10 @@
       <span data-i18n="clear">Hapus</span>
     </button>
 
-    <!-- Progress -->
-    <div class="progress-card" id="progressCard" style="display:none">
-      <div class="zinfo" id="progressText" data-i18n="processing">Memproses...</div>
-      <div class="prog-w"><div class="prog-f" id="pf"></div></div>
+    <!-- CuteLoading -->
+    <div class="cute-loading" id="progressCard" role="status" aria-live="polite" aria-busy="false" data-cute-loading="1">
+      <div class="cute-loading-text" id="progressText">Sabar yahh..</div>
+      <div class="cute-loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
     </div>
 
     <div class="alert" id="alertBox"></div>
@@ -126,6 +128,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="../../shared/cute-loading.js"></script>
+  <script src="../../shared/toolsuf-download.js"></script>
   <script src="script.js?v=3"></script>
 </body>
 </html>

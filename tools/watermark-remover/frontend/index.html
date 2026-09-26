@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hapus Watermark Video</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../../../shared/cute-loading.css">
+  <script src="../../../shared/maintenance.js"></script>
 </head>
 <body>
   <div class="container">
@@ -170,11 +172,11 @@
       <span data-i18n="clear">Hapus</span>
     </button>
 
-    <div class="progress-card" id="progressCard" style="display:none">
-      <div class="progress-bar-track">
-        <div class="progress-bar-fill" id="progressFill"></div>
-      </div>
-      <div class="zinfo" id="progressText" data-i18n="processing">Memproses...</div>
+    <!-- CuteLoading -->
+    <div class="cute-loading" id="progressCard" role="status" aria-live="polite" aria-busy="false" data-cute-loading="1">
+      <div class="cute-loading-sparkle" aria-hidden="true"></div>
+      <div class="cute-loading-text" id="progressText">Sabar yahh..</div>
+      <div class="cute-loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
     </div>
 
     <section class="mac-section" id="resultSection" style="display:none">
@@ -202,6 +204,8 @@
     <div class="alert" id="alertBox"></div>
   </div>
 
+  <script src="../../../shared/cute-loading.js"></script>
+  <script src="../../../shared/toolsuf-download.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
