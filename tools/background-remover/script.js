@@ -25,25 +25,465 @@ function getFriendlyKey(key, lang) {
   return lang === 'id' ? 'Model AI' : 'AI Model';
 }
 
-// Load the library dynamically from jsDelivr CDN
-async function getRemoveBackgroundLib() {
-  if (removeBackgroundFn) return removeBackgroundFn;
-  const urls = [
-    'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm',
-    'https://esm.sh/@imgly/background-removal@1.7.0',
-  ];
-  for (const url of urls) {
-    try {
-      const module = await import(/* @vite-ignore */ url);
-      if (module && typeof module.removeBackground === 'function') {
-        removeBackgroundFn = module.removeBackground;
-        return removeBackgroundFn;
-      }
-    } catch (e) {
-      console.warn('CDN import failed for', url, e);
+// =============================================================================
+// ADAPTIVE BACKGROUND REMOVAL ENGINE (Pure Client-side, High-Precision)
+// Supports White, Black, Gray, Red, Green, Blue, Solid Colors, and Gradients.
+// Protects internal object pixels with Connected Component Boundary Flood-Fill.
+// =============================================================================
+
+/**
+ * Perceptual Color Difference (Compucolor / Redmean metric)
+ * Very fast, perceptual, and accurate for whites, blacks, grays, and saturated colors.
+ */
+function getPerceptualColorDistance(r1, g1, b1, r2, g2, b2) {
+  const rMean = (r1 + r2) * 0.5;
+  const dR = r1 - r2;
+  const dG = g1 - g2;
+  const dB = b1 - b2;
+  const weightR = 2.0 + rMean / 256.0;
+  const weightG = 4.0;
+  const weightB = 2.0 + (255.0 - rMean) / 256.0;
+  return Math.sqrt(weightR * dR * dR + weightG * dG * dG + weightB * dB * dB);
+}
+
+/**
+ * Pipeline Step 1 & 2: detectBackground() and buildBackgroundModel()
+ * Samples perimeter pixels + 8 key landmarks (corners & edge centers).
+ * Builds a multi-sample adaptive background model.
+ */
+function detectAndBuildBackgroundModel(data, width, height) {
+  const samples = [];
+  const strideX = Math.max(1, Math.floor(width / 160));
+  const strideY = Math.max(1, Math.floor(height / 160));
+
+  const samplePixel = (x, y) => {
+    x = Math.max(0, Math.min(width - 1, x));
+    y = Math.max(0, Math.min(height - 1, y));
+    const idx = (y * width + x) * 4;
+    const a = data[idx + 3];
+    if (a < 30) return null; // Ignore already transparent pixels
+    return {
+      r: data[idx],
+      g: data[idx + 1],
+      b: data[idx + 2],
+      a: a,
+      lum: 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2],
+      x, y
+    };
+  };
+
+  // 1. Top & Bottom borders (sample 0, 1, 2 pixels in depth for robust noise rejection)
+  for (let x = 0; x < width; x += strideX) {
+    for (let depth = 0; depth < Math.min(3, height); depth++) {
+      const topP = samplePixel(x, depth);
+      if (topP) samples.push(topP);
+      const btmP = samplePixel(x, height - 1 - depth);
+      if (btmP) samples.push(btmP);
     }
   }
-  throw new Error('All CDN URLs failed for @imgly/background-removal');
+
+  // 2. Left & Right borders
+  for (let y = 0; y < height; y += strideY) {
+    for (let depth = 0; depth < Math.min(3, width); depth++) {
+      const leftP = samplePixel(depth, y);
+      if (leftP) samples.push(leftP);
+      const rightP = samplePixel(width - 1 - depth, y);
+      if (rightP) samples.push(rightP);
+    }
+  }
+
+  // 3. 8 Key Landmark anchors (corners and midpoints)
+  const landmarks = [
+    [0, 0], [Math.floor(width / 2), 0], [width - 1, 0],
+    [0, Math.floor(height / 2)], [width - 1, Math.floor(height / 2)],
+    [0, height - 1], [Math.floor(width / 2), height - 1], [width - 1, height - 1]
+  ];
+  for (const [lx, ly] of landmarks) {
+    const p = samplePixel(lx, ly);
+    if (p) {
+      samples.push(p);
+      samples.push(p);
+    }
+  }
+
+  if (samples.length === 0) {
+    // Entire perimeter is already transparent
+    return {
+      primary: { r: 255, g: 255, b: 255 },
+      clusters: [{ r: 255, g: 255, b: 255, count: 1 }],
+      innerTol: 25,
+      outerTol: 45,
+      isDark: false
+    };
+  }
+
+  // Cluster border samples by perceptual color distance
+  const clusterDistThresh = 24;
+  const clusters = [];
+
+  for (const s of samples) {
+    let matched = null;
+    let minDist = Infinity;
+    for (const c of clusters) {
+      const d = getPerceptualColorDistance(s.r, s.g, s.b, c.r, c.g, c.b);
+      if (d < clusterDistThresh && d < minDist) {
+        minDist = d;
+        matched = c;
+      }
+    }
+    if (matched) {
+      matched.sumR += s.r;
+      matched.sumG += s.g;
+      matched.sumB += s.b;
+      matched.count++;
+      matched.r = Math.round(matched.sumR / matched.count);
+      matched.g = Math.round(matched.sumG / matched.count);
+      matched.b = Math.round(matched.sumB / matched.count);
+      matched.samples.push(s);
+    } else {
+      clusters.push({
+        r: s.r,
+        g: s.g,
+        b: s.b,
+        sumR: s.r,
+        sumG: s.g,
+        sumB: s.b,
+        count: 1,
+        samples: [s]
+      });
+    }
+  }
+
+  // Sort clusters by frequency descending
+  clusters.sort((a, b) => b.count - a.count);
+  const primaryCluster = clusters[0];
+
+  // Calculate variance / standard deviation of primary cluster samples
+  let sumSqDist = 0;
+  for (const s of primaryCluster.samples) {
+    const d = getPerceptualColorDistance(s.r, s.g, s.b, primaryCluster.r, primaryCluster.g, primaryCluster.b);
+    sumSqDist += d * d;
+  }
+  const sigma = Math.sqrt(sumSqDist / Math.max(1, primaryCluster.samples.length));
+
+  // Determine brightness characteristics
+  const primaryLum = 0.299 * primaryCluster.r + 0.587 * primaryCluster.g + 0.114 * primaryCluster.b;
+  const isDark = primaryLum < 55;
+  const isLight = primaryLum > 200;
+
+  // Adaptive threshold calculation
+  let innerTol;
+  let outerTol;
+
+  if (sigma < 4) {
+    // Very clean, solid uniform background (clean logo / vector graphics)
+    innerTol = isDark ? 22 : 24;
+    outerTol = innerTol + 18;
+  } else if (sigma < 12) {
+    // Slight noise, mild gradient or JPEG compression artifacts
+    innerTol = Math.round(25 + sigma * 0.9);
+    outerTol = innerTol + 20;
+  } else {
+    // Noticeable gradient or compression noise
+    innerTol = Math.round(Math.min(42, 28 + sigma * 0.7));
+    outerTol = innerTol + 24;
+  }
+
+  // Keep top clusters that represent significant border coverage (> 8% of samples)
+  // to seamlessly support gradients (e.g. top is dark gray, bottom is black, or corners differ)
+  const validClusters = clusters.filter(c => c.count >= Math.max(3, samples.length * 0.08)).slice(0, 4);
+
+  return {
+    primary: { r: primaryCluster.r, g: primaryCluster.g, b: primaryCluster.b },
+    clusters: validClusters.length > 0 ? validClusters : [primaryCluster],
+    innerTol,
+    outerTol,
+    sigma,
+    isDark,
+    isLight
+  };
+}
+
+/**
+ * Pipeline Step 3 & 4: createForegroundMask() and connectedComponent()
+ * Flood fills strictly from perimeter inwards.
+ * Same color pixels enclosed inside foreground objects are NEVER reached and stay 100% opaque.
+ */
+function floodFillBackgroundConnected(data, width, height, bgModel) {
+  const totalPixels = width * height;
+  const visited = new Uint8Array(totalPixels);
+  const distMap = new Float32Array(totalPixels);
+
+  // Helper to compute minimum distance from pixel (r, g, b) to any background cluster
+  const getMinDistToClusters = (r, g, b) => {
+    let minD = Infinity;
+    for (let i = 0; i < bgModel.clusters.length; i++) {
+      const c = bgModel.clusters[i];
+      const d = getPerceptualColorDistance(r, g, b, c.r, c.g, c.b);
+      if (d < minD) minD = d;
+    }
+    return minD;
+  };
+
+  // High performance BFS queue using double buffering
+  let currentQueue = new Int32Array(totalPixels);
+  let nextQueue = new Int32Array(totalPixels);
+  let currentTail = 0;
+  let nextTail = 0;
+
+  const pushCurrent = (idx) => {
+    currentQueue[currentTail++] = idx;
+  };
+
+  const pushNext = (idx) => {
+    nextQueue[nextTail++] = idx;
+  };
+
+  // Seed BFS strictly with pixels along the 4 borders
+  const seedBorderPixel = (x, y) => {
+    const idx = y * width + x;
+    if (visited[idx]) return;
+
+    const pIdx = idx * 4;
+    const a = data[pIdx + 3];
+
+    // Already transparent pixel: always background
+    if (a < 30) {
+      visited[idx] = 1;
+      distMap[idx] = 0;
+      pushCurrent(idx);
+      return;
+    }
+
+    const d = getMinDistToClusters(data[pIdx], data[pIdx + 1], data[pIdx + 2]);
+    distMap[idx] = d;
+
+    if (d <= bgModel.outerTol) {
+      visited[idx] = 1;
+      pushCurrent(idx);
+    }
+  };
+
+  // Scan top and bottom borders
+  for (let x = 0; x < width; x++) {
+    seedBorderPixel(x, 0);
+    seedBorderPixel(x, height - 1);
+  }
+  // Scan left and right borders
+  for (let y = 0; y < height; y++) {
+    seedBorderPixel(0, y);
+    seedBorderPixel(width - 1, y);
+  }
+
+  // BFS flood-fill traversal
+  while (currentTail > 0) {
+    for (let i = 0; i < currentTail; i++) {
+      const idx = currentQueue[i];
+      const x = idx % width;
+      const y = Math.floor(idx / width);
+
+      // 4-connected neighbors
+      const neighbors = [
+        x > 0 ? idx - 1 : -1,
+        x < width - 1 ? idx + 1 : -1,
+        y > 0 ? idx - width : -1,
+        y < height - 1 ? idx + width : -1
+      ];
+
+      for (let j = 0; j < 4; j++) {
+        const nIdx = neighbors[j];
+        if (nIdx !== -1 && !visited[nIdx]) {
+          const npIdx = nIdx * 4;
+          const a = data[npIdx + 3];
+
+          if (a < 30) {
+            visited[nIdx] = 1;
+            distMap[nIdx] = 0;
+            pushNext(nIdx);
+            continue;
+          }
+
+          const d = getMinDistToClusters(data[npIdx], data[npIdx + 1], data[npIdx + 2]);
+          distMap[nIdx] = d;
+
+          if (d <= bgModel.outerTol) {
+            visited[nIdx] = 1;
+            pushNext(nIdx);
+          }
+        }
+      }
+    }
+
+    // Swap queues for next level
+    const temp = currentQueue;
+    currentQueue = nextQueue;
+    nextQueue = temp;
+    currentTail = nextTail;
+    nextTail = 0;
+  }
+
+  return { visited, distMap };
+}
+
+/**
+ * Pipeline Step 5, 6, 7: edgeRefinement(), alphaMatting(), and decontamination()
+ * Smooth alpha transition on edge pixels and color unmixing to remove halos.
+ */
+function refineEdgesAndAlphaMatte(data, width, height, visited, distMap, bgModel) {
+  const totalPixels = width * height;
+  const innerTol = bgModel.innerTol;
+  const outerTol = bgModel.outerTol;
+  const tolRange = Math.max(1, outerTol - innerTol);
+  const bgR = bgModel.primary.r;
+  const bgG = bgModel.primary.g;
+  const bgB = bgModel.primary.b;
+
+  // 1. Initial Alpha Assignment based on distance and connectivity
+  for (let idx = 0; idx < totalPixels; idx++) {
+    const pIdx = idx * 4;
+    const origA = data[pIdx + 3];
+    if (origA < 30) {
+      data[pIdx + 3] = 0;
+      continue;
+    }
+
+    if (visited[idx] === 1) {
+      // Reached by perimeter flood fill
+      const d = distMap[idx];
+      if (d <= innerTol) {
+        data[pIdx + 3] = 0; // Pure background
+      } else if (d < outerTol) {
+        // Smoothstep alpha in transition edge zone
+        const t = (d - innerTol) / tolRange;
+        const smoothT = t * t * (3 - 2 * t);
+        const newAlpha = Math.round(smoothT * 255);
+        data[pIdx + 3] = Math.min(origA, Math.max(0, newAlpha));
+      } else {
+        // Just outside tolerance: keep opacity
+        data[pIdx + 3] = origA;
+      }
+    } else {
+      // Disconnected from perimeter: strictly preserve original object color and opacity!
+      data[pIdx + 3] = origA;
+    }
+  }
+
+  // 2. Boundary Feathering & Anti-Aliasing
+  const alphaCopy = new Uint8Array(totalPixels);
+  for (let i = 0; i < totalPixels; i++) {
+    alphaCopy[i] = data[i * 4 + 3];
+  }
+
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const idx = y * width + x;
+      const a = alphaCopy[idx];
+
+      // Check boundary pixels
+      if (a === 0) {
+        const nOpaque = (alphaCopy[idx - 1] > 200 ? 1 : 0) +
+                        (alphaCopy[idx + 1] > 200 ? 1 : 0) +
+                        (alphaCopy[idx - width] > 200 ? 1 : 0) +
+                        (alphaCopy[idx + width] > 200 ? 1 : 0);
+        if (nOpaque >= 2) {
+          const d = distMap[idx];
+          if (d > innerTol * 0.8) {
+            data[idx * 4 + 3] = Math.round(nOpaque * 35);
+          }
+        }
+      }
+    }
+  }
+
+  // 3. Background Decontamination (Halo Elimination)
+  // For semi-transparent edge pixels, unmix the background color bleeding into the foreground
+  for (let idx = 0; idx < totalPixels; idx++) {
+    const pIdx = idx * 4;
+    const a = data[pIdx + 3];
+    if (a > 0 && a < 254) {
+      const normA = a / 255.0;
+      const invA = 1.0 - normA;
+      const safeNormA = Math.max(0.18, normA);
+
+      // Unmix foreground color from background model color: F = (C - invA * B) / normA
+      const r = Math.round((data[pIdx] - invA * bgR) / safeNormA);
+      const g = Math.round((data[pIdx + 1] - invA * bgG) / safeNormA);
+      const b = Math.round((data[pIdx + 2] - invA * bgB) / safeNormA);
+
+      data[pIdx] = Math.max(0, Math.min(255, r));
+      data[pIdx + 1] = Math.max(0, Math.min(255, g));
+      data[pIdx + 2] = Math.max(0, Math.min(255, b));
+    }
+  }
+
+  // 4. Stray 1-Pixel Noise Cleanup
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const idx = y * width + x;
+      const a = data[idx * 4 + 3];
+
+      if (a > 0 && a < 150) {
+        const nTransparent = (data[(idx - 1) * 4 + 3] === 0 ? 1 : 0) +
+                             (data[(idx + 1) * 4 + 3] === 0 ? 1 : 0) +
+                             (data[(idx - width) * 4 + 3] === 0 ? 1 : 0) +
+                             (data[(idx + width) * 4 + 3] === 0 ? 1 : 0);
+        if (nTransparent === 4) {
+          data[idx * 4 + 3] = 0;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Execute Adaptive Background Removal Pipeline at 100% Original Resolution
+ */
+async function executeAdaptiveBackgroundRemoval(file) {
+  const img = new Image();
+  const fileUrl = URL.createObjectURL(file);
+  img.src = fileUrl;
+
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = () => reject(new Error('Gagal memuat gambar'));
+  });
+  URL.revokeObjectURL(fileUrl);
+
+  const width = img.naturalWidth || img.width;
+  const height = img.naturalHeight || img.height;
+
+  if (!width || !height) {
+    throw new Error('Resolusi gambar tidak valid');
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(img, 0, 0, width, height);
+
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const data = imageData.data;
+
+  // Pipeline Step 1 & 2: detectBackground() and buildBackgroundModel()
+  const bgModel = detectAndBuildBackgroundModel(data, width, height);
+
+  // Pipeline Step 3 & 4: createForegroundMask() and connectedComponent()
+  const { visited, distMap } = floodFillBackgroundConnected(data, width, height, bgModel);
+
+  // Pipeline Step 5, 6, 7: edgeRefinement(), alphaMatting(), and decontamination()
+  refineEdgesAndAlphaMatte(data, width, height, visited, distMap, bgModel);
+
+  // Put modified pixel data back into canvas at 100% original resolution
+  ctx.putImageData(imageData, 0, 0);
+
+  // Export as high-quality transparent PNG Blob
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (blob) resolve(blob);
+      else reject(new Error('Ekspor canvas gagal'));
+    }, 'image/png');
+  });
 }
 
 // Attach event listeners when DOM is loaded
@@ -214,16 +654,9 @@ async function processImage(file) {
   CuteLoading.show('progressSection', 'Sabar yahh..');
 
   try {
-    const fn = await getRemoveBackgroundLib();
-    const config = {
-      progress: (key, current, total) => {},
-      debug: false,
-    };
-
-    const resultBlob = await fn(file, config);
+    const resultBlob = await executeAdaptiveBackgroundRemoval(file);
     processedBlob = resultBlob;
 
-    // proses selesai - sembunyikan loading
     const processedUrl2 = URL.createObjectURL(resultBlob);
 
     if (processedUrl) URL.revokeObjectURL(processedUrl);
@@ -247,14 +680,13 @@ async function processImage(file) {
     showAlert(currentLang === 'id' ? 'Latar belakang berhasil dihapus!' : 'Background removed successfully!', 'ok');
 
   } catch (e) {
-    console.error(e);
+    console.error('Background removal error:', e);
     CuteLoading.hide('progressSection');
     $('cmpEmpty').style.display = 'flex';
-    const msg = e.message || String(e);
     showAlert(
       currentLang === 'id'
-        ? `Gagal: ${msg.slice(0, 120)}`
-        : `Failed: ${msg.slice(0, 120)}`,
+        ? 'Gambar tidak dapat diproses.'
+        : 'Image could not be processed.',
       'err'
     );
   }
