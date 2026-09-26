@@ -10,6 +10,7 @@ const MONITORED_SITE = {
 };
 
 const CHECK_INTERVAL = 30000; // 30 detik interval monitoring
+const MAX_HISTORY = 30; // Maksimal 30 check riwayat latensi
 const BACKEND_API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://localhost:3001/api/web-monitor'
   : '/api/web-monitor';
@@ -128,15 +129,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Storage Helper ---
   const loadStoredData = () => {
+    let savedTheme = 'dark'; // Req 6 Default: Dark Mode
+    try {
+      const explicitTheme = localStorage.getItem('theme');
+      if (explicitTheme === 'dark' || explicitTheme === 'light') {
+        savedTheme = explicitTheme;
+      }
+    } catch (e) {}
+
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (savedTheme) parsed.theme = savedTheme;
+        return parsed;
+      }
     } catch (e) {}
     return {
       history: [],
       uptime: { totalChecks: 0, onlineChecks: 0 },
       logs: [],
-      theme: 'dark',
+      theme: savedTheme,
       muted: false
     };
   };
@@ -144,6 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveStoredData = (data) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      if (data && data.theme) {
+        localStorage.setItem('theme', data.theme);
+      }
     } catch (e) {}
   };
 
@@ -184,7 +200,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const muteIcon = document.getElementById('muteIcon');
   const themeToggleBtn = document.getElementById('themeToggleBtn');
   const themeIcon = document.getElementById('themeIcon');
-  const logoutBtn = document.getElementById('logoutBtn');
+  const moreActionsBtn = document.getElementById('moreActionsBtn');
+  const appleMoreMenu = document.getElementById('appleMoreMenu');
+  const moreMenuWrapper = document.getElementById('moreMenuWrapper');
+  const menuItemDevices = document.getElementById('menuItemDevices');
+  const menuItemNotifications = document.getElementById('menuItemNotifications');
+  const menuItemSound = document.getElementById('menuItemSound');
+  const menuItemSoundIcon = document.getElementById('menuItemSoundIcon');
+  const menuItemSoundLabel = document.getElementById('menuItemSoundLabel');
+  const menuItemSoundBadge = document.getElementById('menuItemSoundBadge');
+  const menuItemTheme = document.getElementById('menuItemTheme');
+  const menuItemThemeIcon = document.getElementById('menuItemThemeIcon');
+  const menuItemThemeLabel = document.getElementById('menuItemThemeLabel');
+  const menuItemThemeBadge = document.getElementById('menuItemThemeBadge');
+  const menuItemLogout = document.getElementById('menuItemLogout');
+  const toolUsageList = document.getElementById('toolUsageList');
+  const guideAccordionToggle = document.getElementById('guideAccordionToggle');
+  const guideAccordionContent = document.getElementById('guideAccordionContent');
+  const accordionChevron = document.getElementById('accordionChevron');
+  const deviceBottomSheet = document.getElementById('deviceBottomSheet');
+  const closeDeviceSheetBtn = document.getElementById('closeDeviceSheetBtn');
+  const mobileSheetDevicesList = document.getElementById('mobileSheetDevicesList');
+  const mobileSheetActiveCount = document.getElementById('mobileSheetActiveCount');
 
   // Monitored Site Hero Elements
   const monitoredSiteName = document.getElementById('monitoredSiteName');
@@ -201,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const metricUptimeVal = document.getElementById('metricUptimeVal');
   const metricAvgLatencyVal = document.getElementById('metricAvgLatencyVal');
   const metricLastCheckVal = document.getElementById('metricLastCheckVal');
+  const mobileLastCheckVal = document.getElementById('mobileLastCheckVal');
 
   // Chart & Logs Elements
   const latencyChartSvg = document.getElementById('latencyChartSvg');
@@ -307,6 +345,9 @@ document.addEventListener('DOMContentLoaded', () => {
         muteAllBtn.title = 'Sound: Active';
       }
     }
+    if (menuItemSoundBadge) {
+      menuItemSoundBadge.textContent = state.muted ? 'Mati' : 'Nyala';
+    }
   };
 
   // --- Theme Controller (Dark / Light Mode) ---
@@ -323,6 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       }
       if (themeToggleBtn) themeToggleBtn.title = 'Ganti ke Mode Gelap';
+      if (menuItemThemeBadge) menuItemThemeBadge.textContent = 'Terang';
     } else {
       document.body.classList.remove('light-theme');
       document.body.classList.add('dark-theme');
@@ -341,6 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       }
       if (themeToggleBtn) themeToggleBtn.title = 'Ganti ke Mode Terang';
+      if (menuItemThemeBadge) menuItemThemeBadge.textContent = 'Gelap';
     }
   };
 
@@ -531,10 +574,23 @@ document.addEventListener('DOMContentLoaded', () => {
     logsList.innerHTML = '';
     logs.forEach(l => {
       const item = document.createElement('div');
-      item.className = `log-item ${l.type === 'online' ? 'online' : (l.type === 'info' ? '' : 'offline')}`;
+      item.className = `log-item ${l.type === 'online' ? 'online' : (l.type === 'info' ? 'info' : 'offline')}`;
+      
+      // Clean verbose messages (Req 17, 27)
+      let text = l.text || '';
+      if (/berubah status menjadi ONLINE/i.test(text)) text = 'Online';
+      else if (/berubah status menjadi OFFLINE/i.test(text)) text = 'Offline';
+      else if (/berubah status menjadi ERROR/i.test(text)) text = 'Error';
+      else if (/status tetap ONLINE/i.test(text)) text = 'Online';
+      else if (/Pemeriksaan manual dijalankan/i.test(text)) text = 'Cek manual';
+      else if (/Monitoring ketersediaan dimulai/i.test(text)) text = 'Monitoring aktif';
+
       item.innerHTML = `
-        <span class="log-time">[${l.time}]</span>
-        <span class="log-msg">${l.text}</span>
+        <div class="log-item-left">
+          <span class="log-dot" style="background: ${l.type === 'online' ? 'var(--color-green)' : (l.type === 'info' ? 'var(--accent-color)' : 'var(--color-red)')};"></span>
+          <span class="log-msg">${escapeHtml(text)}</span>
+        </div>
+        <span class="log-item-time">${escapeHtml(l.time)}</span>
       `;
       logsList.appendChild(item);
     });
@@ -543,16 +599,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Update Single Site UI (Req 4, 5, 7, 8, 10, 11, 12) ---
   const updateStatusPill = (status) => {
     if (!monitoredStatusPill || !monitoredStatusText) return;
-    monitoredStatusPill.className = `site-status-pill ${status.toLowerCase()}`;
-    monitoredStatusText.textContent = status;
+    const norm = (status || '').toUpperCase();
+    let display = 'Online';
+    if (norm === 'OFFLINE') display = 'Offline';
+    else if (norm === 'ERROR') display = 'Error';
+    else if (norm === 'CHECKING' || norm === 'MEMERIKSA' || norm === 'MEMERIKSA...') display = 'Memeriksa';
+
+    monitoredStatusPill.className = `site-status-pill ${norm.toLowerCase()}`;
+    monitoredStatusText.textContent = display;
 
     if (metricStatusVal) {
-      metricStatusVal.textContent = status;
-      metricStatusVal.className = `metric-value ${status === 'ONLINE' ? 'text-green' : (status === 'OFFLINE' ? 'text-red' : 'text-orange')}`;
+      metricStatusVal.textContent = display;
+      metricStatusVal.className = `metric-value ${norm === 'ONLINE' ? 'text-green' : (norm === 'OFFLINE' ? 'text-red' : 'text-orange')}`;
     }
 
     if (metricStatusIcon) {
-      metricStatusIcon.className = `metric-icon ${status === 'ONLINE' ? 'green' : (status === 'OFFLINE' ? 'red' : 'orange')}`;
+      metricStatusIcon.className = `metric-icon ${norm === 'ONLINE' ? 'green' : (norm === 'OFFLINE' ? 'red' : 'orange')}`;
     }
   };
 
@@ -566,11 +628,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // 2. Uptime (Req 10)
+    // 2. Uptime (Req 10, 27)
     if (metricUptimeVal) {
       const uptime = state.uptime || { totalChecks: 0, onlineChecks: 0 };
       if (uptime.totalChecks < 2) {
-        metricUptimeVal.textContent = 'Belum cukup data';
+        metricUptimeVal.textContent = '--';
       } else {
         const pct = ((uptime.onlineChecks / uptime.totalChecks) * 100).toFixed(1);
         metricUptimeVal.textContent = `${pct}%`;
@@ -590,14 +652,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // 4. Last Check (Req 12)
+    // 4. Last Check (Req 12, 13, 14, 27)
+    const history = state.history || [];
+    const lastCheckTime = (history.length > 0 && history[0].time) ? history[0].time : '--';
     if (metricLastCheckVal) {
-      const history = state.history || [];
-      if (history.length > 0 && history[0].time) {
-        metricLastCheckVal.textContent = history[0].time;
-      } else {
-        metricLastCheckVal.textContent = 'Belum diperiksa';
-      }
+      metricLastCheckVal.textContent = lastCheckTime;
+    }
+    if (mobileLastCheckVal) {
+      mobileLastCheckVal.textContent = lastCheckTime;
     }
   };
 
@@ -896,24 +958,44 @@ document.addEventListener('DOMContentLoaded', () => {
       metricLastActiveToolVal.title = lastActiveTool;
     }
 
+    // Render Clean Tool Usage List (Section L)
+    if (toolUsageList) {
+      const toolsKeys = Object.keys(toolNames.id);
+      const sortedTools = toolsKeys.map(key => ({
+        key,
+        name: toolNames.id[key] || key,
+        count: counts[key] || 0
+      })).sort((a, b) => b.count - a.count);
+
+      toolUsageList.innerHTML = sortedTools.map(item => `
+        <div class="tool-usage-row">
+          <div class="tool-usage-row-left">
+            <span class="tool-usage-name">${escapeHtml(item.name)}</span>
+          </div>
+          <span class="tool-usage-badge">${item.count}</span>
+        </div>
+      `).join('');
+    }
+
+    // Render Compact Analytics Logs (Section M)
     if (analyticsLogsList) {
-      analyticsLogsList.innerHTML = '';
       if (historyList.length === 0) {
-        if (emptyAnalyticsLogs) emptyAnalyticsLogs.style.display = 'block';
+        analyticsLogsList.innerHTML = '<div class="empty-logs" id="emptyAnalyticsLogs">Belum ada aktivitas alat.</div>';
       } else {
-        if (emptyAnalyticsLogs) emptyAnalyticsLogs.style.display = 'none';
-        historyList.forEach(item => {
-          const logItem = document.createElement('div');
-          logItem.className = 'log-item online';
+        analyticsLogsList.innerHTML = historyList.map(item => {
           const name = toolNames.id[item.tool] || item.tool;
-          const timeStr = new Date(item.time).toLocaleTimeString();
-          const dateStr = new Date(item.time).toLocaleDateString();
-          logItem.innerHTML = `
-            <span class="log-time">[${dateStr} ${timeStr}]</span>
-            <span class="log-msg"><strong>${name}</strong> berhasil dibuka</span>
+          const d = new Date(item.time);
+          const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          return `
+            <div class="analytics-log-row">
+              <div class="analytics-log-info">
+                <span class="analytics-log-title">${escapeHtml(name)}</span>
+                <span class="analytics-log-desc">Berhasil dibuka</span>
+              </div>
+              <span class="analytics-log-time">${timeStr}</span>
+            </div>
           `;
-          analyticsLogsList.appendChild(logItem);
-        });
+        }).join('');
       }
     }
 
@@ -1339,6 +1421,63 @@ document.addEventListener('DOMContentLoaded', () => {
     return `Aktif ${Math.floor(diffMs / 3600000)} jam lalu`;
   };
 
+  // --- Bottom Sheet Helpers (Req 18, 19) ---
+  const openDeviceBottomSheet = () => {
+    if (!deviceBottomSheet) return;
+    deviceBottomSheet.style.display = 'flex';
+    requestAnimationFrame(() => {
+      deviceBottomSheet.classList.add('active');
+    });
+  };
+
+  const closeDeviceBottomSheet = () => {
+    if (!deviceBottomSheet) return;
+    deviceBottomSheet.classList.remove('active');
+    setTimeout(() => {
+      deviceBottomSheet.style.display = 'none';
+    }, 280);
+  };
+
+  // --- Apple Native ⋯ Dropdown Menu Controllers (Sections A, B, C, T, U) ---
+  const openAppleMenu = () => {
+    if (!appleMoreMenu) return;
+    updateMuteUi();
+    if (menuItemThemeBadge) {
+      menuItemThemeBadge.textContent = state.theme === 'light' ? 'Terang' : 'Gelap';
+    }
+    appleMoreMenu.style.display = 'block';
+    requestAnimationFrame(() => {
+      appleMoreMenu.classList.add('show');
+    });
+    if (moreActionsBtn) {
+      moreActionsBtn.setAttribute('aria-expanded', 'true');
+    }
+  };
+
+  const closeAppleMenu = () => {
+    if (!appleMoreMenu) return;
+    appleMoreMenu.classList.remove('show');
+    if (moreActionsBtn) {
+      moreActionsBtn.setAttribute('aria-expanded', 'false');
+    }
+    setTimeout(() => {
+      if (!appleMoreMenu.classList.contains('show')) {
+        appleMoreMenu.style.display = 'none';
+      }
+    }, 190);
+  };
+
+  const toggleAppleMenu = () => {
+    if (!appleMoreMenu) return;
+    if (appleMoreMenu.classList.contains('show')) {
+      closeAppleMenu();
+    } else {
+      closeDeviceBottomSheet();
+      if (devicePopover) devicePopover.style.display = 'none';
+      openAppleMenu();
+    }
+  };
+
   const renderConnectedDevices = (devices = []) => {
     cachedDeviceList = devices;
     const count = devices.length || 1;
@@ -1347,6 +1486,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (headerDeviceBadge) headerDeviceBadge.textContent = count;
     if (popoverCounterBadge) popoverCounterBadge.textContent = countText;
     if (activeDevicesCountBadge) activeDevicesCountBadge.textContent = countText;
+    if (mobileSheetActiveCount) mobileSheetActiveCount.textContent = countText;
 
     const renderCard = (dev) => {
       const isCurrent = dev.sessionId === mySessionId;
@@ -1377,12 +1517,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cardsHtml = devices.map(renderCard).join('');
 
-    if (connectedDevicesList) {
-      connectedDevicesList.innerHTML = cardsHtml || '<div class="empty-logs">Tidak ada perangkat aktif.</div>';
-    }
-
+    // Desktop popover list
     if (deviceSessionsListPopover) {
       deviceSessionsListPopover.innerHTML = cardsHtml || '<div class="empty-logs">Tidak ada perangkat aktif.</div>';
+    }
+
+    // Mobile Bottom Sheet list
+    if (mobileSheetDevicesList) {
+      mobileSheetDevicesList.innerHTML = cardsHtml || '<div class="empty-logs">Tidak ada perangkat aktif.</div>';
+    }
+
+    // Connected devices section on dashboard
+    if (connectedDevicesList) {
+      const isMobileView = window.innerWidth < 768;
+      if (isMobileView && devices.length > 3) {
+        // Show first 3 and "Lihat semua (N) →"
+        const first3 = devices.slice(0, 3).map(renderCard).join('');
+        connectedDevicesList.innerHTML = `
+          ${first3}
+          <button type="button" class="device-see-all-btn" id="seeAllDevicesBtn">
+            Lihat semua (${devices.length} perangkat) →
+          </button>
+        `;
+        const seeAllBtn = document.getElementById('seeAllDevicesBtn');
+        if (seeAllBtn) {
+          seeAllBtn.addEventListener('click', openDeviceBottomSheet);
+        }
+      } else {
+        connectedDevicesList.innerHTML = cardsHtml || '<div class="empty-logs">Tidak ada perangkat aktif.</div>';
+      }
     }
   };
 
@@ -1476,10 +1639,17 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Set Monitored Site Target Info
+    // Set Monitored Site Target Info (Req 10: show hostname)
     if (monitoredSiteName) monitoredSiteName.textContent = MONITORED_SITE.name;
     if (monitoredSiteUrl) monitoredSiteUrl.href = MONITORED_SITE.url;
-    if (monitoredSiteUrlText) monitoredSiteUrlText.textContent = MONITORED_SITE.url;
+    if (monitoredSiteUrlText) {
+      try {
+        const u = new URL(MONITORED_SITE.url);
+        monitoredSiteUrlText.textContent = u.hostname || MONITORED_SITE.url;
+      } catch (e) {
+        monitoredSiteUrlText.textContent = MONITORED_SITE.url;
+      }
+    }
 
     // Apply saved theme & audio mute settings
     applyTheme(state.theme || 'dark');
@@ -1554,22 +1724,130 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Device Popover (Req 11, 15, 16, 17)
-    if (deviceInfoBtn && devicePopover) {
+    // Device Info Button (Desktop Popover vs Mobile Bottom Sheet - Req 4, 18, 19)
+    if (deviceInfoBtn) {
       deviceInfoBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const isOpen = devicePopover.style.display === 'block';
-        if (!isOpen) {
+        if (window.innerWidth < 768) {
           sendDeviceHeartbeat();
-          devicePopover.style.display = 'block';
-        } else {
-          devicePopover.style.display = 'none';
+          openDeviceBottomSheet();
+        } else if (devicePopover) {
+          const isOpen = devicePopover.style.display === 'block';
+          if (!isOpen) {
+            sendDeviceHeartbeat();
+            devicePopover.style.display = 'block';
+          } else {
+            devicePopover.style.display = 'none';
+          }
         }
       });
 
       document.addEventListener('click', (e) => {
         if (devicePopover && devicePopoverWrapper && !devicePopoverWrapper.contains(e.target)) {
           devicePopover.style.display = 'none';
+        }
+      });
+    }
+
+    if (closeDeviceSheetBtn) {
+      closeDeviceSheetBtn.addEventListener('click', closeDeviceBottomSheet);
+    }
+
+    if (deviceBottomSheet) {
+      deviceBottomSheet.addEventListener('click', (e) => {
+        if (e.target === deviceBottomSheet) closeDeviceBottomSheet();
+      });
+    }
+
+    // Apple ⋯ Dropdown Menu Toggle (Sections A, B, C, T, U)
+    if (moreActionsBtn) {
+      moreActionsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleAppleMenu();
+      });
+    }
+
+    // Dismiss Apple Menu on outside click (Section U)
+    document.addEventListener('click', (e) => {
+      if (appleMoreMenu && moreMenuWrapper && !moreMenuWrapper.contains(e.target)) {
+        closeAppleMenu();
+      }
+    });
+
+    // Dismiss Apple Menu and Bottom Sheet on Escape key (Section B)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAppleMenu();
+        closeDeviceBottomSheet();
+        if (devicePopover) devicePopover.style.display = 'none';
+      }
+    });
+
+    // Menu Item Actions (Section C)
+    if (menuItemDevices) {
+      menuItemDevices.addEventListener('click', () => {
+        closeAppleMenu();
+        sendDeviceHeartbeat();
+        openDeviceBottomSheet();
+      });
+    }
+
+    if (menuItemNotifications) {
+      menuItemNotifications.addEventListener('click', () => {
+        closeAppleMenu();
+        handleTestEmail();
+      });
+    }
+
+    if (menuItemSound) {
+      menuItemSound.addEventListener('click', () => {
+        state.muted = !state.muted;
+        saveStoredData(state);
+        updateMuteUi();
+        showToast(state.muted ? 'Alarm suara dimatikan' : 'Alarm suara diaktifkan');
+      });
+    }
+
+    if (menuItemTheme) {
+      menuItemTheme.addEventListener('click', () => {
+        const nextTheme = state.theme === 'light' ? 'dark' : 'light';
+        applyTheme(nextTheme);
+        showToast(nextTheme === 'light' ? 'Mode Terang diaktifkan' : 'Mode Gelap diaktifkan');
+        drawLatencyChart();
+        if (workspaceAnalytics && workspaceAnalytics.classList.contains('active')) {
+          renderAnalytics();
+        }
+      });
+    }
+
+    if (menuItemLogout) {
+      menuItemLogout.addEventListener('click', () => {
+        closeAppleMenu();
+        handleLogout();
+      });
+    }
+
+    // Maintenance Guide Accordion Toggle on Mobile (Section Q)
+    if (guideAccordionToggle) {
+      // Initialize collapsed on mobile
+      if (window.innerWidth < 768 && guideAccordionContent) {
+        guideAccordionContent.classList.add('collapsed');
+        if (accordionChevron) accordionChevron.classList.remove('expanded');
+        guideAccordionToggle.setAttribute('aria-expanded', 'false');
+      }
+
+      guideAccordionToggle.addEventListener('click', () => {
+        if (guideAccordionContent && accordionChevron) {
+          const isCollapsed = guideAccordionContent.classList.contains('collapsed');
+          if (isCollapsed) {
+            guideAccordionContent.classList.remove('collapsed');
+            accordionChevron.classList.add('expanded');
+            guideAccordionToggle.setAttribute('aria-expanded', 'true');
+          } else {
+            guideAccordionContent.classList.add('collapsed');
+            accordionChevron.classList.remove('expanded');
+            guideAccordionToggle.setAttribute('aria-expanded', 'false');
+          }
         }
       });
     }

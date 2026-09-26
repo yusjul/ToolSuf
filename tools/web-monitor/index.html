@@ -61,19 +61,21 @@
       <!-- Top Dashboard Header with Stats -->
       <header class="monitor-header">
         <div class="header-left">
-          <h1 data-i18n="toolTitle">Pemantau Situs Web</h1>
+          <div class="header-title-row">
+            <h1 data-i18n="toolTitle">Pemantau Situs Web</h1>
+          </div>
           <p class="header-subtitle" data-i18n="toolSubtitle">Monitor ketersediaan & latensi situs secara privat</p>
         </div>
         <div class="header-right">
-          <!-- Device Popover (Req 11, Real Device Detection & Sessions) -->
+          <!-- Device Popover & Trigger (Req 4, 5, 11, 19) -->
           <div class="popover-wrapper" id="devicePopoverWrapper">
-            <button id="deviceInfoBtn" class="btn-action" title="Informasi Perangkat Terhubung">
+            <button id="deviceInfoBtn" class="btn-action device-btn" title="Informasi Perangkat Terhubung" aria-label="Lihat perangkat terhubung">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                 <line x1="8" y1="21" x2="16" y2="21"></line>
                 <line x1="12" y1="17" x2="12" y2="21"></line>
               </svg>
-              <span>Device</span>
+              <span class="device-btn-label">Device</span>
               <span class="active-badge-pill-header" id="headerDeviceBadge">1</span>
             </button>
             <div class="device-popover" id="devicePopover" style="display: none;">
@@ -90,24 +92,8 @@
             </div>
           </div>
 
-          <!-- Kirim Test Email Laporan -->
-          <button id="testEmailBtn" class="btn-action icon-only-btn" title="Kirim Test Email Laporan">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-            </svg>
-          </button>
-
-          <!-- Mute / Sound Alarm Toggle -->
-          <button id="muteAllBtn" class="btn-action icon-only-btn" title="Mute / Unmute Sound">
-            <svg id="muteIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            </svg>
-          </button>
-
-          <!-- Dark / Light Theme Toggle (Req 18) -->
-          <button id="themeToggleBtn" class="btn-action icon-only-btn" title="Toggle Tema Gelap / Terang">
+          <!-- Dark / Light Theme Toggle (Req 6, 7, 8) -->
+          <button id="themeToggleBtn" class="btn-action icon-only-btn" title="Toggle Tema Gelap / Terang" aria-label="Ubah tema gelap atau terang">
             <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="5"></circle>
               <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -121,8 +107,22 @@
             </svg>
           </button>
 
-          <!-- Logout Button -->
-          <button id="logoutBtn" class="btn-action logout-btn" title="Keluar">
+          <!-- Desktop Actions (Hidden on Mobile, Moved to More Menu) -->
+          <button id="testEmailBtn" class="btn-action icon-only-btn desktop-only-btn" title="Kirim Test Email Laporan" aria-label="Kirim test email laporan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+            </svg>
+          </button>
+
+          <button id="muteAllBtn" class="btn-action icon-only-btn desktop-only-btn" title="Mute / Unmute Sound" aria-label="Bisukan suara alarm">
+            <svg id="muteIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+          </button>
+
+          <button id="logoutBtn" class="btn-action logout-btn desktop-only-btn" title="Keluar" aria-label="Keluar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
               <polyline points="16 17 21 12 16 7"></polyline>
@@ -130,20 +130,108 @@
             </svg>
             <span data-i18n="logoutBtn">Keluar</span>
           </button>
+
+          <!-- Mobile More Action Menu Button & Apple Dropdown (Sections A, B, C, T) -->
+          <div class="popover-wrapper" id="moreMenuWrapper">
+            <button id="moreActionsBtn" class="btn-action icon-only-btn mobile-only-btn" title="Menu Lainnya" aria-label="Buka menu opsi" aria-haspopup="true" aria-expanded="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="1.5"></circle>
+                <circle cx="19" cy="12" r="1.5"></circle>
+                <circle cx="5" cy="12" r="1.5"></circle>
+              </svg>
+            </button>
+            <div class="apple-dropdown-menu" id="appleMoreMenu" style="display: none;" role="menu">
+              <div class="apple-menu-group">
+                <button type="button" class="apple-menu-item" id="menuItemDevices" role="menuitem">
+                  <div class="apple-menu-left">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                      <line x1="8" y1="21" x2="16" y2="21"></line>
+                      <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    <span>Perangkat</span>
+                  </div>
+                  <span class="apple-menu-arrow">›</span>
+                </button>
+                <button type="button" class="apple-menu-item" id="menuItemNotifications" role="menuitem">
+                  <div class="apple-menu-left">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                    </svg>
+                    <span>Notifikasi Email</span>
+                  </div>
+                  <span class="apple-menu-arrow">›</span>
+                </button>
+              </div>
+              <div class="apple-menu-divider"></div>
+              <div class="apple-menu-group">
+                <button type="button" class="apple-menu-item" id="menuItemSound" role="menuitem">
+                  <div class="apple-menu-left">
+                    <svg id="menuItemSoundIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                    <span id="menuItemSoundLabel">Suara Alarm</span>
+                  </div>
+                  <span class="apple-menu-state-badge" id="menuItemSoundBadge">Nyala</span>
+                </button>
+                <button type="button" class="apple-menu-item" id="menuItemTheme" role="menuitem">
+                  <div class="apple-menu-left">
+                    <svg id="menuItemThemeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="5"></circle>
+                      <line x1="12" y1="1" x2="12" y2="3"></line>
+                      <line x1="12" y1="21" x2="12" y2="23"></line>
+                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                      <line x1="1" y1="12" x2="3" y2="12"></line>
+                      <line x1="21" y1="12" x2="23" y2="12"></line>
+                      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <span id="menuItemThemeLabel">Mode Tema</span>
+                  </div>
+                  <span class="apple-menu-state-badge" id="menuItemThemeBadge">Gelap</span>
+                </button>
+              </div>
+              <div class="apple-menu-divider"></div>
+              <div class="apple-menu-group">
+                <button type="button" class="apple-menu-item apple-menu-danger" id="menuItemLogout" role="menuitem">
+                  <div class="apple-menu-left">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                      <polyline points="16 17 21 12 16 7"></polyline>
+                      <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Keluar</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
-      <!-- Navigation Tabs (Apple Segmented Control Style) -->
-      <nav class="segmented-control">
-        <button class="control-item active" id="tabWebsites" data-i18n="tabWebsites">Pemantau Situs</button>
-        <button class="control-item" id="tabAnalytics" data-i18n="tabAnalytics">Analisis Penggunaan</button>
-        <button class="control-item" id="tabMaintenance" data-i18n="tabMaintenance">Pemeliharaan Fitur</button>
+      <!-- Navigation Tabs (Apple Segmented Control Style - Req 9) -->
+      <nav class="segmented-control" role="tablist">
+        <button class="control-item active" id="tabWebsites" role="tab" aria-selected="true">
+          <span class="tab-label-full" data-i18n="tabWebsites">Pemantau Situs</span>
+          <span class="tab-label-short">Pemantau</span>
+        </button>
+        <button class="control-item" id="tabAnalytics" role="tab" aria-selected="false">
+          <span class="tab-label-full" data-i18n="tabAnalytics">Analisis Penggunaan</span>
+          <span class="tab-label-short">Analisis</span>
+        </button>
+        <button class="control-item" id="tabMaintenance" role="tab" aria-selected="false">
+          <span class="tab-label-full" data-i18n="tabMaintenance">Pemeliharaan Fitur</span>
+          <span class="tab-label-short">Maintenance</span>
+        </button>
       </nav>
 
     <!-- Main Workspace Layout - Single Website Monitor (Req 1, 4, 5, 9, 13) -->
     <main class="monitor-workspace tab-content active" id="workspaceWebsites" style="display: flex; flex-direction: column; gap: 20px;">
       
-      <!-- Monitored Site Target Card (Req 4) -->
+      <!-- Monitored Site Target Card (Req 4, 10, 11, 12) -->
       <section class="single-site-card">
         <div class="single-site-header">
           <div class="single-site-info">
@@ -154,10 +242,10 @@
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
               </svg>
             </div>
-            <div>
+            <div class="site-titles">
               <h2 class="single-site-name" id="monitoredSiteName">Website Saya</h2>
-              <a class="single-site-url" id="monitoredSiteUrl" href="https://domain-saya.com" target="_blank" rel="noopener noreferrer">
-                <span id="monitoredSiteUrlText">https://domain-saya.com</span>
+              <a class="single-site-url" id="monitoredSiteUrl" href="https://domain-saya.com" target="_blank" rel="noopener noreferrer" aria-label="Buka website yang dipantau">
+                <span id="monitoredSiteUrlText">domain-saya.com</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                   <polyline points="15 3 21 3 21 9"></polyline>
@@ -169,24 +257,24 @@
           <div class="single-site-status">
             <div class="site-status-pill checking" id="monitoredStatusPill">
               <span class="status-pulse-dot"></span>
-              <span class="status-text" id="monitoredStatusText">MEMERIKSA...</span>
+              <span class="status-text" id="monitoredStatusText">Memeriksa</span>
             </div>
-            <button id="manualCheckBtn" class="btn-action check-now-btn" title="Periksa Sekarang">
+            <button id="manualCheckBtn" class="btn-action check-now-btn" title="Cek Sekarang" aria-label="Cek status website sekarang">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="23 4 23 10 17 10"></polyline>
                 <polyline points="1 20 1 14 7 14"></polyline>
                 <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
               </svg>
-              <span>Cek Sekarang</span>
+              <span class="check-btn-label">Cek</span>
             </button>
           </div>
         </div>
       </section>
 
-      <!-- 5 Relevant Single Site Metrics (Req 5) -->
+      <!-- 5 Relevant Single Site Metrics (Req 5, 13, 14, 15) -->
       <section class="single-metrics-grid">
-        <!-- STATUS -->
-        <div class="metric-card">
+        <!-- 1. STATUS -->
+        <div class="metric-card metric-status-card">
           <div class="metric-icon green" id="metricStatusIcon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12"></polyline>
@@ -194,12 +282,12 @@
           </div>
           <div class="metric-info">
             <span class="metric-label">STATUS</span>
-            <span id="metricStatusVal" class="metric-value text-green">ONLINE</span>
+            <span id="metricStatusVal" class="metric-value text-green">Online</span>
           </div>
         </div>
 
-        <!-- LATENSI -->
-        <div class="metric-card">
+        <!-- 2. LATENSI -->
+        <div class="metric-card metric-latency-card">
           <div class="metric-icon orange">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
@@ -212,8 +300,8 @@
           </div>
         </div>
 
-        <!-- UPTIME -->
-        <div class="metric-card">
+        <!-- 3. UPTIME -->
+        <div class="metric-card metric-uptime-card">
           <div class="metric-icon blue">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -222,12 +310,12 @@
           </div>
           <div class="metric-info">
             <span class="metric-label">UPTIME</span>
-            <span id="metricUptimeVal" class="metric-value" style="font-size: 16px;">Belum cukup data</span>
+            <span id="metricUptimeVal" class="metric-value">--</span>
           </div>
         </div>
 
-        <!-- AVG LATENSI -->
-        <div class="metric-card">
+        <!-- 4. AVG LATENSI -->
+        <div class="metric-card metric-avg-card">
           <div class="metric-icon purple">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 3v18h18"></path>
@@ -235,13 +323,13 @@
             </svg>
           </div>
           <div class="metric-info">
-            <span class="metric-label">AVG LATENSI</span>
+            <span class="metric-label">AVG</span>
             <span id="metricAvgLatencyVal" class="metric-value">--</span>
           </div>
         </div>
 
-        <!-- LAST CHECK -->
-        <div class="metric-card">
+        <!-- 5. LAST CHECK (Desktop Only Card / Handled in Mobile subtitle row) -->
+        <div class="metric-card metric-lastcheck-card desktop-only-card">
           <div class="metric-icon cyan">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
@@ -250,10 +338,16 @@
           </div>
           <div class="metric-info">
             <span class="metric-label">LAST CHECK</span>
-            <span id="metricLastCheckVal" class="metric-value" style="font-size: 16px;">Belum diperiksa</span>
+            <span id="metricLastCheckVal" class="metric-value">--</span>
           </div>
         </div>
       </section>
+
+      <!-- Mobile Last Check Subtitle Row (Req 13, 14) -->
+      <div class="mobile-last-check-row" id="mobileLastCheckRow">
+        <span class="last-check-dot"></span>
+        <span>Last check · <strong id="mobileLastCheckVal">--</strong></span>
+      </div>
 
       <!-- Latency History Chart (Req 9) & Activity Logs (Req 13) -->
       <div class="single-monitor-body">
@@ -315,26 +409,34 @@
       </section>
     </main>
 
-    <!-- Main Workspace Layout - User Analytics -->
+    <!-- Main Workspace Layout - User Analytics (Req J, K, L, M) -->
     <main class="monitor-workspace tab-content" id="workspaceAnalytics" style="display: none;">
-      <!-- Chart Panel -->
-      <section class="sites-section">
+      <!-- Chart / Tool List Panel -->
+      <section class="sites-section analytics-card-panel">
         <div class="section-title-bar">
-          <h2 data-i18n="usageChartTitle">Grafik Penggunaan Alat</h2>
-          <button id="resetAnalyticsBtn" class="btn-link" style="color: var(--color-red);" data-i18n="resetAnalytics">Reset Statistik</button>
+          <div>
+            <h2 class="section-title-clean">Penggunaan Alat</h2>
+            <p class="section-subtitle desktop-only-inline">Frekuensi peluncuran fitur & tool ToolSuf</p>
+          </div>
+          <button id="resetAnalyticsBtn" class="btn-link-reset" aria-label="Reset statistik penggunaan">Reset</button>
         </div>
-        <div class="chart-card-container">
+        <!-- Tool Usage List (Clean Apple List - Req L) -->
+        <div class="tool-usage-clean-list" id="toolUsageList">
+          <!-- Rendered dynamically -->
+        </div>
+        <!-- Canvas for Desktop View / Large Screen Chart -->
+        <div class="chart-card-container desktop-only-chart">
           <canvas id="usageChartCanvas"></canvas>
         </div>
       </section>
 
-      <!-- Recent Launch History Panel -->
-      <aside class="logs-section">
+      <!-- Recent Launch History Panel (Req M) -->
+      <aside class="logs-section analytics-logs-panel">
         <div class="section-title-bar">
-          <h2 data-i18n="recentToolActivity">Log Penggunaan Alat</h2>
+          <h2 class="section-title-clean">Log Penggunaan</h2>
         </div>
-        <div class="logs-container">
-          <div id="analyticsLogsList" class="logs-list">
+        <div class="logs-container analytics-logs-container">
+          <div id="analyticsLogsList" class="analytics-clean-logs">
             <!-- Analytics logs will appear here -->
             <div class="empty-logs" id="emptyAnalyticsLogs" data-i18n="noAnalyticsLogs">Belum ada aktivitas alat.</div>
           </div>
@@ -342,20 +444,20 @@
       </aside>
     </main>
 
-    <!-- Main Workspace Layout - Feature Maintenance -->
+    <!-- Main Workspace Layout - Feature Maintenance (Req N, O, P, Q) -->
     <main class="monitor-workspace tab-content" id="workspaceMaintenance" style="display: none;">
       <section class="maintenance-section">
         <div class="section-title-bar">
           <div>
-            <h2 data-i18n="maintenanceTitle">Pemeliharaan Fitur</h2>
-            <p class="section-subtitle" data-i18n="maintenanceSubtitle">Atur status akses dan pemeliharaan untuk setiap tool ToolSuf</p>
+            <h2 class="section-title-clean" data-i18n="maintenanceTitle">Pemeliharaan Fitur</h2>
+            <p class="section-subtitle desktop-only-inline" data-i18n="maintenanceSubtitle">Atur status akses dan pemeliharaan untuk setiap tool ToolSuf</p>
           </div>
           <div class="title-bar-actions">
             <button id="resetAllMaintenanceBtn" class="btn-link" data-i18n="resetMaintenance">Aktifkan Semua</button>
           </div>
         </div>
 
-        <!-- Global Maintenance Banner Card -->
+        <!-- Global Maintenance Banner Card (Req O) -->
         <div class="global-maintenance-banner">
           <div class="global-banner-left">
             <div class="global-banner-icon">
@@ -364,8 +466,8 @@
               </svg>
             </div>
             <div>
-              <div class="global-banner-title" data-i18n="globalBannerTitle">Mode Pemeliharaan Global</div>
-              <div class="global-banner-desc" data-i18n="globalBannerDesc">Kunci dan masukkan seluruh tool ke mode maintenance secara bersamaan</div>
+              <div class="global-banner-title">Mode Pemeliharaan Global</div>
+              <div class="global-banner-desc">Nonaktifkan semua fitur sementara.</div>
             </div>
           </div>
           <label class="apple-switch" title="Toggle Global Maintenance" aria-label="Toggle Global Maintenance">
@@ -383,18 +485,21 @@
           <input type="text" id="maintenanceSearchInput" placeholder="Cari nama fitur atau tool..." autocomplete="off">
         </div>
 
-        <!-- Maintenance Cards Grid (Mobile: 1 Baris 3 Card) -->
+        <!-- Maintenance Cards Grid (Mobile: Compact Apple Cards - Req P) -->
         <div id="maintenanceGrid" class="maintenance-grid">
           <!-- Dynamically populated -->
         </div>
       </section>
 
-      <!-- Quick Guide Panel -->
-      <aside class="logs-section maintenance-sidebar">
-        <div class="section-title-bar">
-          <h2 data-i18n="maintenanceGuideTitle">Panduan Kontrol</h2>
+      <!-- Quick Guide Panel (Accordion on Mobile - Req Q) -->
+      <aside class="logs-section maintenance-sidebar" id="maintenanceSidebar">
+        <div class="section-title-bar accordion-header" id="guideAccordionToggle" role="button" tabindex="0" aria-expanded="false" aria-label="Buka panduan kontrol">
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <h2 data-i18n="maintenanceGuideTitle">Panduan Kontrol</h2>
+            <span class="accordion-chevron" id="accordionChevron">›</span>
+          </div>
         </div>
-        <div class="logs-container maintenance-guide-box">
+        <div class="logs-container maintenance-guide-box accordion-content" id="guideAccordionContent">
           <div class="guide-item">
             <div class="guide-dot active"></div>
             <div>
@@ -454,6 +559,28 @@
     </div>
   </div>
   </div><!-- /dashboardView -->
+
+  <!-- Device Bottom Sheet (Placed outside dashboardView for perfect viewport fixed overlay) -->
+  <div class="bottom-sheet-backdrop" id="deviceBottomSheet" style="display: none;">
+    <div class="bottom-sheet-card" role="dialog" aria-modal="true" aria-labelledby="deviceSheetTitle">
+      <div class="bottom-sheet-grabber" aria-hidden="true"></div>
+      <div class="bottom-sheet-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h3 id="deviceSheetTitle">Perangkat Terhubung</h3>
+          <span class="active-badge-pill" id="mobileSheetActiveCount">1 Aktif</span>
+        </div>
+        <button id="closeDeviceSheetBtn" class="modal-close-btn" aria-label="Tutup daftar perangkat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="bottom-sheet-body" id="mobileSheetDevicesList">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
 
   <script src="../../shared/maintenance.js"></script>
   <script src="../../shared/toolsuf-download.js"></script>
