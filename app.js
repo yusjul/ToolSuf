@@ -935,7 +935,11 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.replace((base || '') + '/yusjul-admin/');
       return;
     }
-    if (initPath.includes('pdf-compressor') || initQuery === 'pdf-compressor' || initHash === 'pdf-compressor') {
+    if (initQuery && toolsInfo[initQuery]) {
+      openTool(initQuery);
+    } else if (initHash && toolsInfo[initHash]) {
+      openTool(initHash);
+    } else if (initPath.includes('pdf-compressor')) {
       openTool('pdf-compressor');
     }
   } catch (e) {}
