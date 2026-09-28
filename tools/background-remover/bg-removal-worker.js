@@ -235,14 +235,25 @@ function refineEdgesAndAlphaMatte(data, width, height, visited, distMap, bgModel
   }
 }
 
-// ─── Message Handler ────────────────────────────────────────────────────
+// ─── Error & Message Handlers ──────────────────────────────────────────
+self.onerror = function(err) {
+  try {
+    self.postMessage({ type: 'error', message: (err && err.message) ? err.message : 'Worker internal error' });
+  } catch (e) {}
+};
+
 self.onmessage = function(e) {
+  if (!e.data) return;
   const { jobId, imageData, cancelled } = e.data;
   if (cancelled) return;
 
   try {
-    const { data, width, height } = imageData;
+    if (!imageData || !imageData.data || !imageData.width || !imageData.height) {
+      self.postMessage({ type: 'error', jobId, message: 'Data gambar tidak valid untuk worker' });
+      return;
+    }
 
+    const { data, width, height } = imageData;
     self.postMessage({ type: 'progress', jobId, pct: 10 });
 
     const bgModel = detectAndBuildBackgroundModel(data, width, height);

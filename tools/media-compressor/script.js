@@ -304,6 +304,12 @@ async function doZip() {
             }
           }
           showAlert('✓ ' + files.length + t.success, 'ok');
+          if (typeof trackFeatureUsage === 'function') {
+            trackFeatureUsage('image-compressor', 'compress', {
+              fileCount: files.length,
+              format: format || 'original'
+            });
+          }
           refreshStats();
           renderList();
         }
@@ -375,6 +381,12 @@ async function doZip() {
     }
 
     showAlert('✓ ' + files.length + t.success, 'ok');
+    if (typeof trackFeatureUsage === 'function') {
+      trackFeatureUsage('image-compressor', 'compress', {
+        fileCount: files.length,
+        format: format || 'original'
+      });
+    }
   } catch (err) {
     console.error(err);
     showAlert(t.failed || 'Gagal memproses file.', 'err');

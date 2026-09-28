@@ -24,20 +24,25 @@ try {
 const urlParams = new URLSearchParams(window.location.search);
 const initialLang = urlParams.get('lang') === 'en' ? 'en' : 'id';
 
-// 3. Initialize state store
-const state = new CompressorState();
+// Guard: Stop initialization if feature or global maintenance is active (Req 14)
+if (window.__TOOLSUF_MAINTENANCE__ || (typeof ToolSufMaintenance !== 'undefined' && ToolSufMaintenance.isMaintenanceActive('pdf-compressor'))) {
+  console.info('[PDF Compressor] Feature is under maintenance. Initialization stopped.');
+} else {
+  // 3. Initialize state store
+  const state = new CompressorState();
 
-// 4. Initialize UI controller
-const ui = new CompressorUI(
-  state,
-  translations,
-  handleFileSelect,
-  handleCompress,
-  handleCancel,
-  handleReset
-);
+  // 4. Initialize UI controller
+  const ui = new CompressorUI(
+    state,
+    translations,
+    handleFileSelect,
+    handleCompress,
+    handleCancel,
+    handleReset
+  );
 
-ui.setLanguage(initialLang);
+  ui.setLanguage(initialLang);
+}
 
 /**
  * Handle incoming file from drag & drop or file picker
@@ -132,6 +137,19 @@ async function handleCompress() {
         state.setResult(result);
         ui.renderResult();
         ui.showToast(ui.t('toastSuccess'));
+
+        // Trigger Real-Time Feature Usage Tracking (Section 2, 4)
+        if (typeof trackFeatureUsage === 'function') {
+          const origKb = Math.round((result.originalSize || 0) / 1024);
+          const compKb = Math.round((result.compressedSize || 0) / 1024);
+          const savePct = origKb > 0 ? Math.round((1 - compKb / origKb) * 100) : 0;
+          trackFeatureUsage('pdf-compressor', 'compress', {
+            fileName: state.file ? state.file.name : 'document.pdf',
+            originalSize: `${origKb} KB`,
+            compressedSize: `${compKb} KB`,
+            reduction: `${savePct}%`
+          });
+        }
       },
       onFail: (job) => {
         state.setProcessing(false);
@@ -164,6 +182,19 @@ async function handleCompress() {
     state.setResult(result);
     ui.renderResult();
     ui.showToast(ui.t('toastSuccess'));
+
+    // Trigger Real-Time Feature Usage Tracking (Section 2, 4)
+    if (typeof trackFeatureUsage === 'function') {
+      const origKb = Math.round((result.originalSize || 0) / 1024);
+      const compKb = Math.round((result.compressedSize || 0) / 1024);
+      const savePct = origKb > 0 ? Math.round((1 - compKb / origKb) * 100) : 0;
+      trackFeatureUsage('pdf-compressor', 'compress', {
+        fileName: state.file ? state.file.name : 'document.pdf',
+        originalSize: `${origKb} KB`,
+        compressedSize: `${compKb} KB`,
+        reduction: `${savePct}%`
+      });
+    }
   } catch (err) {
     state.setProcessing(false);
     if (err.message === 'CANCELLED') {

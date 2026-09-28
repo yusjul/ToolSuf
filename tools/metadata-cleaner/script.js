@@ -805,6 +805,9 @@ function cleanActiveImage() {
     // Download cleaned file
     downloadBlob(activeFile.cleanedBlob, activeFile.name);
     notifyParent(translations[currentLang].cleanSuccess);
+    if (typeof trackFeatureUsage === 'function') {
+      trackFeatureUsage('metadata-cleaner', 'clean', { fileName: activeFile.name });
+    }
     
     renderFileList();
     renderInspector();
@@ -878,6 +881,9 @@ function cleanAllImages() {
             downloadBlob(blob, zipBase, 'zip');
           }
           notifyParent(translations[currentLang].zipSuccess);
+          if (typeof trackFeatureUsage === 'function') {
+            trackFeatureUsage('metadata-cleaner', 'clean', { fileCount: filesToClean.length });
+          }
           renderFileList();
           renderInspector();
         }
@@ -910,6 +916,9 @@ function cleanAllImages() {
           const zipBase = uploadedFiles[0] ? uploadedFiles[0].name : 'photos';
           downloadBlob(zipBlob, zipBase, 'zip');
           notifyParent(translations[currentLang].zipSuccess);
+          if (typeof trackFeatureUsage === 'function') {
+            trackFeatureUsage('metadata-cleaner', 'clean', { fileCount: uploadedFiles.length });
+          }
           renderFileList();
           renderInspector();
         });

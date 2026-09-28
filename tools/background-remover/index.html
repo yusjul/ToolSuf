@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Background Remover</title>
+  <title>Background Remover — ToolSuf</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="../../shared/cute-loading.css">
   <script src="../../shared/maintenance.js"></script>
-  <script type="module" src="script.js"></script>
 </head>
 <body>
   <div class="app" id="app">
     <div class="container">
+      
+      <!-- App Header Icon -->
       <div class="header" aria-hidden="true">
         <div class="header-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -24,49 +25,74 @@
         </div>
       </div>
 
-      <div class="section-title" id="secPickFile">Pilih Gambar</div>
-      <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
-        <input type="file" id="fi" accept="image/*" style="display:none">
+      <!-- Upload Section -->
+      <div class="section-title" id="secPickFile">Upload Gambar</div>
+      <div class="drop" id="drop" role="button" tabindex="0" aria-label="Upload gambar" onclick="document.getElementById('fi').click()">
+        <input type="file" id="fi" accept="image/jpeg,image/png,image/webp,image/jfif,image/bmp" style="display:none">
         <div class="drop-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3v4a1 1 0 0 0 1 1h4"/>
-            <path d="M18 17h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h4l5 5v7a2 2 0 0 1 -2 2z"/>
-            <path d="M16 17v2a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2"/>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
           </svg>
         </div>
         <div class="drop-t" id="lblDropTitle">Seret & lepas gambar di sini</div>
-        <div class="drop-s" id="lblDropSub">Mendukung format JPG, PNG, WEBP, dan lainnya</div>
+        <div class="drop-s" id="lblDropSub">Mendukung format JPG, PNG, WEBP</div>
       </div>
 
-      <!-- Loading State -->
+      <!-- Selected File Card (Preview, File Info, Reset) -->
+      <div class="file-card" id="fileCard" style="display:none">
+        <div class="file-preview-wrap">
+          <div class="checkerboard-bg"></div>
+          <img id="filePreviewThumb" class="file-thumb" alt="Preview">
+        </div>
+        <div class="file-meta">
+          <div class="file-name" id="selectedFileName">image.png</div>
+          <div class="file-details">
+            <span class="file-badge" id="selectedFileExt">PNG</span>
+            <span class="file-size" id="selectedFileSize">0 KB</span>
+          </div>
+        </div>
+        <button type="button" class="btn-icon-clear" id="btnClearSelected" title="Hapus Gambar" aria-label="Hapus file">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Action Button: Remove Background (Triggers processing) -->
+      <button class="btn-p" id="btnExecuteRemove" style="display:none; margin-bottom: 20px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+        </svg>
+        <span id="lblBtnExecute">Hapus Background</span>
+      </button>
+
+      <!-- Global Loading State -->
       <div id="progressSection" class="cute-loading" role="status" aria-live="polite" aria-busy="false" data-cute-loading="1">
         <div class="cute-loading-text" id="statusLabel">Sabar yahh..</div>
         <div class="cute-loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
       </div>
 
-      <!-- Preview Section -->
-      <div class="section-title" id="secPreview">Pratinjau Hasil</div>
-      <div class="card preview-card">
-        <div class="cmp" id="cmpContainer">
-          <div class="cmp-empty" id="cmpEmpty">
-            <div class="cmp-empty-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="4" ry="4"/>
-                <circle cx="8.5" cy="8.5" r="1.5"/>
-                <polyline points="21 15 16 10 5 21"/>
-              </svg>
-            </div>
-            <div class="cmp-empty-title" id="cmpEmptyTitle">Pilih gambar untuk memproses dan melihat hasil</div>
-          </div>
-          <div id="cmpImages" style="display:none">
+      <!-- Result Preview Section -->
+      <div id="resultSection" style="display:none">
+        <div class="section-title" id="secPreview">Pratinjau Hasil</div>
+        
+        <!-- Comparison Card (Before | After) -->
+        <div class="card preview-card">
+          <div class="cmp" id="cmpContainer">
             <div class="cmp-stage" id="cmpStage">
-              <img id="cmpOriginal" alt="Original">
-              <!-- Output container has transparent checkerboard background -->
+              <img id="cmpOriginal" alt="Original (Sebelum)">
+              
+              <!-- Result container with transparent checkerboard background -->
               <div class="cmp-after" id="cmpAfter">
                 <div class="checkerboard-bg" id="bgOverlay"></div>
-                <img id="cmpResult" alt="No Background">
+                <img id="cmpResult" alt="Clean (Sesudah)">
               </div>
-              <div class="cmp-handle" id="cmpHandle" role="slider" tabindex="0" aria-label="Perbandingan Sebelum dan Sesudah" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+
+              <!-- Interactive Drag Handle Slider -->
+              <div class="cmp-handle" id="cmpHandle" role="slider" tabindex="0" aria-label="Bandingkan Sebelum dan Sesudah" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
                 <div class="cmp-handle-knob">
                   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="7 6 3 10 7 14"/>
@@ -74,56 +100,93 @@
                   </svg>
                 </div>
               </div>
+
+              <!-- Badges -->
               <div class="cmp-labels" id="cmpLabels">
-                <span class="cmp-badge">Asli</span>
-                <span class="cmp-badge">Bersih</span>
+                <span class="cmp-badge" id="lblBadgeBefore">Sebelum</span>
+                <span class="cmp-badge" id="lblBadgeAfter">Sesudah</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Background Changer Options -->
-      <div class="section-title" id="bgOptionsTitle" style="display:none">Kustomisasi Latar Belakang</div>
-      <div class="settings-card" id="bgOptionsCard" style="display:none">
-        <div class="setting-row">
-          <div class="setting-icon" style="background:#5856D6">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><path d="M12 2a7 7 0 1 0 10 10"/>
-            </svg>
+        <!-- Output Settings Card -->
+        <div class="settings-card" id="outputSettingsCard">
+          
+          <!-- Format Output Selection (PNG, WEBP, JPG) -->
+          <div class="setting-row">
+            <div class="setting-text">
+              <div class="setting-title" id="lblOutputFormat">Format Output</div>
+              <div class="setting-desc" id="lblOutputFormatDesc">Pilih format berkas hasil</div>
+            </div>
+            <div class="format-segmented" role="radiogroup" aria-label="Format Output">
+              <button type="button" class="format-btn active" data-format="png" id="btnFmtPng">PNG</button>
+              <button type="button" class="format-btn" data-format="webp" id="btnFmtWebp">WEBP</button>
+              <button type="button" class="format-btn" data-format="jpg" id="btnFmtJpg">JPG</button>
+            </div>
           </div>
-          <div class="setting-text">
-            <div class="setting-title" id="lblBgColor">Warna Latar</div>
-            <div class="setting-desc" id="lblBgColorDesc">Ganti warna latar hasil potongan</div>
+
+          <!-- Quality Slider (Shown for WEBP and JPG) -->
+          <div class="setting-row" id="qualityRow" style="display:none">
+            <div class="setting-text">
+              <div class="setting-title" id="lblQualityTitle">Kualitas Gambar</div>
+              <div class="setting-desc" id="lblQualityDesc">Atur kompresi kualitas gambar</div>
+            </div>
+            <div class="quality-ctrl">
+              <input type="range" id="qualitySlider" min="50" max="100" value="85" step="5" aria-label="Kualitas Gambar">
+              <span class="quality-val" id="qualityValue">85%</span>
+            </div>
           </div>
-          <div class="color-options">
-            <button class="color-btn active" data-color="transparent" title="Transparan" style="background: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%); background-size: 8px 8px; background-position: 0 0, 0 4px, 4px -4px, -4px 0;"></button>
-            <button class="color-btn" data-color="#FFFFFF" title="Putih" style="background: #FFFFFF; border: 0.5px solid #ccc;"></button>
-            <button class="color-btn" data-color="#000000" title="Hitam" style="background: #000000;"></button>
-            <button class="color-btn" data-color="#007AFF" title="Biru" style="background: #007AFF;"></button>
-            <button class="color-btn" data-color="#34C759" title="Hijau" style="background: #34C759;"></button>
-            <button class="color-btn" data-color="#FF9500" title="Oranye" style="background: #FF9500;"></button>
-            <button class="color-btn" data-color="#FF3B30" title="Merah" style="background: #FF3B30;"></button>
-            <input type="color" id="customColorPicker" title="Warna Kustom" value="#007AFF" style="width: 24px; height: 24px; border: none; padding: 0; cursor: pointer; border-radius: 50%;">
+
+          <!-- Background Color Options (Shown for JPG and customizable for PNG/WEBP) -->
+          <div class="setting-row" id="bgColorRow">
+            <div class="setting-text">
+              <div class="setting-title" id="lblBgColor">Warna Latar</div>
+              <div class="setting-desc" id="lblBgColorDesc">Warna latar belakang hasil gambar</div>
+            </div>
+            <div class="color-options" id="colorOptions">
+              <button type="button" class="color-btn active" data-color="transparent" id="colorBtnTrans" title="Transparan"></button>
+              <button type="button" class="color-btn" data-color="#FFFFFF" id="colorBtnWhite" title="Putih"></button>
+              <button type="button" class="color-btn" data-color="#000000" id="colorBtnBlack" title="Hitam"></button>
+              <button type="button" class="color-btn" data-color="#007AFF" title="Biru"></button>
+              <button type="button" class="color-btn" data-color="#34C759" title="Hijau"></button>
+              <input type="color" id="customColorPicker" title="Pilih Warna Kustom" value="#FF9500" aria-label="Warna Kustom">
+            </div>
           </div>
+
         </div>
+
+        <!-- Download Action Button -->
+        <button class="btn-p" id="downloadBtn" onclick="downloadResult()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span id="lblDownloadBtn">Unduh PNG Transparan</span>
+        </button>
+
       </div>
 
-      <!-- Action Buttons -->
-      <button class="btn-p" id="downloadBtn" onclick="downloadResult()" disabled>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-        </svg> <span id="lblDownloadBtn">Unduh PNG Transparan</span>
-      </button>
-
-      <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px">
-        <button class="btn-s" id="resetBtn" onclick="resetAll()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg> <span id="lblResetBtn">Hapus Gambar</span></button>
+      <!-- Secondary Reset Button -->
+      <div style="margin-top: 10px;">
+        <button type="button" class="btn-s" id="resetBtn" onclick="resetAll()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+            <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+          </svg>
+          <span id="lblResetBtn">Reset</span>
+        </button>
       </div>
 
-      <div class="alert" id="alertBox"></div>
+      <!-- Alert Box -->
+      <div class="alert" id="alertBox" role="alert" aria-live="assertive"></div>
+
     </div>
   </div>
+
   <script src="../../shared/cute-loading.js"></script>
   <script src="../../shared/toolsuf-download.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

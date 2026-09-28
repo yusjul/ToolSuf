@@ -191,7 +191,8 @@ function calculateWeeklyMetrics(sites, history, periodStart, periodEnd) {
 /**
  * Membangun template email HTML yang bersih, Apple-like, inline CSS, responsive
  */
-function buildWeeklyReportHtml(summary, period) {
+function buildWeeklyReportHtml(summary, period, usageSummary = null) {
+  const activeUsageSummary = usageSummary || summary.featureUsage || null;
   const sitesHtml = summary.sites.map(site => {
     const statusColor = site.status === 'online' ? '#30D158' : '#FF453A';
     const statusBg = site.status === 'online' ? 'rgba(48, 209, 88, 0.15)' : 'rgba(255, 69, 58, 0.15)';
@@ -298,6 +299,16 @@ function buildWeeklyReportHtml(summary, period) {
       ${sitesHtml || '<div style="color: #8E8E93; font-size: 13px; text-align: center; padding: 20px;">Belum ada situs yang dipantau.</div>'}
     </div>
 
+    <!-- Feature Usage Section (Section 10) -->
+    <div style="margin-bottom: 28px;">
+      <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8E8E93; margin-bottom: 12px;">
+        PENGGUNAAN FITUR (FEATURE USAGE)
+      </div>
+      <div style="background-color: #18181C; border: 1px solid #28282F; border-radius: 12px; padding: 18px;">
+        ${buildFeatureUsageTableHtml(activeUsageSummary)}
+      </div>
+    </div>
+
     <!-- Footer -->
     <div style="border-top: 1px solid #23232A; padding-top: 20px; text-align: center; font-size: 11px; color: #636366;">
       <p style="margin: 0 0 4px 0;">Dibuat otomatis oleh Web Monitor.</p>
@@ -311,23 +322,61 @@ function buildWeeklyReportHtml(summary, period) {
   `.trim();
 }
 
+function buildFeatureUsageTableHtml(usageSummary) {
+  if (!usageSummary || !Array.isArray(usageSummary.featureList) || usageSummary.featureList.length === 0) {
+    return '<div style="color: #8E8E93; font-size: 13px; text-align: center; padding: 12px;">Belum ada penggunaan fitur yang tercatat pada periode ini.</div>';
+  }
+
+  const rows = usageSummary.featureList.map(item => `
+    <tr style="border-bottom: 1px solid #222228;">
+      <td style="padding: 9px 0; color: #FCFCFD; font-size: 13px;">${item.featureName || item.featureId}</td>
+      <td style="padding: 9px 0; text-align: right; color: #A1A1AA; font-weight: 600; font-size: 13px;">${item.count}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="border-bottom: 1px solid #28282F; color: #8E8E93; font-size: 11px; text-transform: uppercase;">
+          <th style="padding: 0 0 8px 0; text-align: left; font-weight: 600;">Nama Fitur</th>
+          <th style="padding: 0 0 8px 0; text-align: right; font-weight: 600;">Frekuensi</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+        <tr>
+          <td style="padding: 12px 0 4px 0; font-weight: 700; color: #FCFCFD; font-size: 13px;">Total Usage</td>
+          <td style="padding: 12px 0 4px 0; font-weight: 700; text-align: right; color: #0A84FF; font-size: 15px;">${usageSummary.totalUsage || 0}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+}
+
 /**
  * Generate Laporan Mingguan Lengkap
- * (Memenuhi Requirement 21: generateWeeklyReport terpisah dari sendWeeklyReportEmail)
+ * (Memenuhi Requirement 21 & Section 10 & 12: generateWeeklyReport terpisah dari sendWeeklyReportEmail)
  */
 function generateWeeklyReport(customPeriod = null) {
   const period = customPeriod || getWeeklyPeriodRange();
   const sites = monitorService.getSites();
   const history = monitorService.getHistory(7);
 
+  // Ambil data penggunaan fitur dari database
+  const usageService = require('./usage-service');
+  const usageSummary = usageService.getFeatureUsageSummary(period.periodStart, period.periodEnd);
+
   const summary = calculateWeeklyMetrics(sites, history, period.periodStart, period.periodEnd);
-  const html = buildWeeklyReportHtml(summary, period);
+  summary.featureUsage = usageSummary;
+
+  const html = buildWeeklyReportHtml(summary, period, usageSummary);
   const subject = `[Web Monitor] Laporan Mingguan — ${period.formattedDateRange}`;
 
   return {
     subject,
     period,
     summary,
+    featureUsage: usageSummary,
     html
   };
 }
@@ -336,5 +385,6 @@ module.exports = {
   generateWeeklyReport,
   getWeeklyPeriodRange,
   calculateWeeklyMetrics,
-  buildWeeklyReportHtml
+  buildWeeklyReportHtml,
+  buildFeatureUsageTableHtml
 };

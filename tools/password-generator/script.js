@@ -29,7 +29,7 @@ function buildCharset(opts) {
   return c;
 }
 
-function generatePassword() {
+function generatePassword(isUserAction = true) {
   const opts = getOptions();
   const charset = buildCharset(opts);
   if (!charset) {
@@ -52,6 +52,15 @@ function generatePassword() {
     el.classList.remove('fading');
     updateStrength(pwd, opts);
   }, 150);
+
+  // Trigger Real-Time Feature Usage Tracking (Section 2, 4)
+  if (isUserAction && typeof trackFeatureUsage === 'function') {
+    trackFeatureUsage('password-generator', 'generate', {
+      length: opts.length,
+      includeNumbers: opts.num,
+      includeSymbols: opts.sym
+    });
+  }
 }
 
 function updateStrength(pwd, opts) {
@@ -267,6 +276,6 @@ window.exportPasswordTxt = exportPasswordTxt;
 
 document.addEventListener('DOMContentLoaded', () => {
   updateLength(16);
-  generatePassword();
+  generatePassword(false); // Initial load: DO NOT send email notification (Section 2)
   if (window.__initialLang) syncLang(window.__initialLang);
 });

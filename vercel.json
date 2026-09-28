@@ -1,6 +1,10 @@
 {
   "version": 2,
   "rewrites": [
+    { "source": "/api/maintenance/:match*", "destination": "/api/features.js" },
+    { "source": "/api/maintenance", "destination": "/api/features.js" },
+    { "source": "/api/features/:match*", "destination": "/api/features.js" },
+    { "source": "/api/features", "destination": "/api/features.js" },
     { "source": "/api/web-monitor/:match*", "destination": "/api/web-monitor.js" },
     { "source": "/api/web-monitor", "destination": "/api/web-monitor.js" }
   ]

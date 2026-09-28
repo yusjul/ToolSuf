@@ -308,6 +308,9 @@ async function doZip() {
             setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 1000);
           }
           showAlert('✓ ' + files.length + ' file direname & dikemas dalam ZIP!', 'ok');
+          if (typeof trackFeatureUsage === 'function') {
+            trackFeatureUsage('batch-renamer', 'rename', { fileCount: files.length });
+          }
         }
       },
       onFail: (job) => {
@@ -350,6 +353,9 @@ async function doZip() {
       setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 1000);
     }
     showAlert('✓ ' + files.length + ' file direname & dikemas dalam ZIP!', 'ok');
+    if (typeof trackFeatureUsage === 'function') {
+      trackFeatureUsage('batch-renamer', 'rename', { fileCount: files.length });
+    }
   } catch (err) {
     console.error(err);
     showAlert('Gagal mengemas file ke ZIP.', 'err');

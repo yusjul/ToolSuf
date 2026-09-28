@@ -599,6 +599,15 @@ async function generateQR() {
     const sec = document.getElementById('qr-output-section');
     sec.style.display = 'block';
     sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Trigger Real-Time Feature Usage Tracking (Section 2, 4)
+    if (typeof trackFeatureUsage === 'function') {
+      trackFeatureUsage('qr-generator', 'generate-qr', {
+        type: state.type,
+        ecc: state.ecc,
+        size: `${state.size}x${state.size}`
+      });
+    }
   } catch(e) {
     console.error(e);
     showToast(t('toastTooLong'));
@@ -1070,6 +1079,13 @@ function showScanResult(text) {
   sec.style.display = 'block';
   sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   showToast(t('toastDecodeOk'));
+
+  // Trigger Real-Time Feature Usage Tracking (Section 2, 4)
+  if (typeof trackFeatureUsage === 'function') {
+    trackFeatureUsage('qr-generator', 'scan-qr', {
+      resultType: rtype
+    });
+  }
 }
 
 function showScanError(msg) {

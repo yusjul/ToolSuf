@@ -1,4 +1,4 @@
-const CACHE_NAME = 'toolsuf-cache-v11';
+const CACHE_NAME = 'toolsuf-cache-v13';
 const ASSETS_TO_CACHE = [
   'index.html',
   'style.css',
@@ -51,6 +51,11 @@ self.addEventListener('activate', (e) => {
 
 // Fetch Event: Network First, Fallback to Cache
 self.addEventListener('fetch', (e) => {
+  // 1. Bypass Service Worker sepenuhnya untuk semua panggilan API (maintenance, monitor, status, heartbeat)
+  if (e.request.url.includes('/api/') || e.request.url.includes('_t=') || e.request.method !== 'GET') {
+    return; // Serahkan langsung ke jaringan tanpa intervensi cache
+  }
+
   // Only handle same-origin requests
   if (!e.request.url.startsWith(self.location.origin)) {
     return;
@@ -58,8 +63,8 @@ self.addEventListener('fetch', (e) => {
 
   e.respondWith(
     fetch(e.request).then((networkResponse) => {
-      // Cache fresh responses for offline fallback
-      if (networkResponse && networkResponse.status === 200) {
+      // Cache fresh responses for offline fallback (hanya aset statis non-API)
+      if (networkResponse && networkResponse.status === 200 && !e.request.url.includes('/api/')) {
         const responseToCache = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(e.request, responseToCache);

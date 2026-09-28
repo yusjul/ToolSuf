@@ -178,12 +178,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginUsernameInput = document.getElementById('loginUsername');
   const loginPasswordInput = document.getElementById('loginPassword');
   const loginAlert = document.getElementById('loginAlert');
-  const loginBtn = document.getElementById('loginBtn');
+  const loginBtn = document.getElementById('loginSubmitBtn');
   const loginBtnText = document.getElementById('loginBtnText');
   const loginBtnSpinner = document.getElementById('loginBtnSpinner');
-  const togglePasswordBtn = document.getElementById('togglePassword');
-  const eyeIcon = document.getElementById('eyeIcon');
-  const eyeOffIcon = document.getElementById('eyeOffIcon');
+  const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+  const eyeIcon = document.getElementById('eyeOpenIcon');
+  const eyeOffIcon = document.getElementById('eyeClosedIcon');
 
   // Header Elements & Device Tracking Elements (Req 11)
   const deviceInfoBtn = document.getElementById('deviceInfoBtn');
@@ -283,6 +283,47 @@ document.addEventListener('DOMContentLoaded', () => {
   const resetMaintenanceMsgBtn = document.getElementById('resetMaintenanceMsgBtn');
   const maintenanceMsgForm = document.getElementById('maintenanceMsgForm');
 
+  // Confirmation Modal Elements (Apple-style confirm - Req 8 & 9)
+  const maintenanceConfirmModal = document.getElementById('maintenanceConfirmModal');
+  const maintenanceConfirmTitle = document.getElementById('maintenanceConfirmTitle');
+  const maintenanceConfirmMessage = document.getElementById('maintenanceConfirmMessage');
+  const maintenanceConfirmCancelBtn = document.getElementById('maintenanceConfirmCancelBtn');
+  const maintenanceConfirmActionBtn = document.getElementById('maintenanceConfirmActionBtn');
+
+  const promptMaintenanceConfirm = ({ title, message, confirmText = 'Aktifkan', cancelText = 'Batal' }) => {
+    return new Promise((resolve) => {
+      if (!maintenanceConfirmModal) {
+        resolve(true);
+        return;
+      }
+
+      if (maintenanceConfirmTitle) maintenanceConfirmTitle.textContent = title;
+      if (maintenanceConfirmMessage) maintenanceConfirmMessage.textContent = message;
+      if (maintenanceConfirmActionBtn) maintenanceConfirmActionBtn.textContent = confirmText;
+      if (maintenanceConfirmCancelBtn) maintenanceConfirmCancelBtn.textContent = cancelText;
+
+      maintenanceConfirmModal.style.display = 'flex';
+
+      const cleanup = (result) => {
+        maintenanceConfirmModal.style.display = 'none';
+        if (maintenanceConfirmActionBtn) maintenanceConfirmActionBtn.removeEventListener('click', onConfirm);
+        if (maintenanceConfirmCancelBtn) maintenanceConfirmCancelBtn.removeEventListener('click', onCancel);
+        maintenanceConfirmModal.removeEventListener('click', onBackdrop);
+        resolve(result);
+      };
+
+      const onConfirm = () => cleanup(true);
+      const onCancel = () => cleanup(false);
+      const onBackdrop = (e) => {
+        if (e.target === maintenanceConfirmModal) cleanup(false);
+      };
+
+      if (maintenanceConfirmActionBtn) maintenanceConfirmActionBtn.addEventListener('click', onConfirm);
+      if (maintenanceConfirmCancelBtn) maintenanceConfirmCancelBtn.addEventListener('click', onCancel);
+      maintenanceConfirmModal.addEventListener('click', onBackdrop);
+    });
+  };
+
   // --- Toast Notification Helper ---
   const showToast = (message) => {
     let container = document.getElementById('toastContainer');
@@ -326,6 +367,26 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {}
   };
 
+  const updateSettingsUi = () => {
+    const soundStatus = document.getElementById('settingsSoundStatusText');
+    const soundBtnText = document.getElementById('settingsSoundBtnText');
+    const themeStatus = document.getElementById('settingsThemeStatusText');
+    const themeBtnText = document.getElementById('settingsThemeBtnText');
+
+    if (soundStatus) {
+      soundStatus.textContent = state.muted ? 'Alarm suara saat ini non-aktif' : 'Alarm suara saat ini aktif';
+    }
+    if (soundBtnText) {
+      soundBtnText.textContent = state.muted ? 'Mati' : 'Nyala';
+    }
+    if (themeStatus) {
+      themeStatus.textContent = state.theme === 'light' ? 'Mode Terang sedang aktif' : 'Mode Gelap sedang aktif';
+    }
+    if (themeBtnText) {
+      themeBtnText.textContent = state.theme === 'light' ? 'Mode Terang' : 'Mode Gelap';
+    }
+  };
+
   const updateMuteUi = () => {
     if (muteAllBtn && muteIcon) {
       if (state.muted) {
@@ -348,6 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (menuItemSoundBadge) {
       menuItemSoundBadge.textContent = state.muted ? 'Mati' : 'Nyala';
     }
+    updateSettingsUi();
   };
 
   // --- Theme Controller (Dark / Light Mode) ---
@@ -385,6 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (themeToggleBtn) themeToggleBtn.title = 'Ganti ke Mode Terang';
       if (menuItemThemeBadge) menuItemThemeBadge.textContent = 'Gelap';
     }
+    updateSettingsUi();
   };
 
   // --- Device Info Detection (Req 15, 16, 17) ---
@@ -563,50 +626,88 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const renderLogs = () => {
-    if (!logsList) return;
     const logs = state.logs || [];
-    if (logs.length === 0) {
-      if (emptyLogs) emptyLogs.style.display = 'block';
-      logsList.innerHTML = '<div class="empty-logs" id="emptyLogs">Belum ada aktivitas log.</div>';
-      return;
-    }
-    if (emptyLogs) emptyLogs.style.display = 'none';
-    logsList.innerHTML = '';
-    logs.forEach(l => {
-      const item = document.createElement('div');
-      item.className = `log-item ${l.type === 'online' ? 'online' : (l.type === 'info' ? 'info' : 'offline')}`;
-      
-      // Clean verbose messages (Req 17, 27)
-      let text = l.text || '';
-      if (/berubah status menjadi ONLINE/i.test(text)) text = 'Online';
-      else if (/berubah status menjadi OFFLINE/i.test(text)) text = 'Offline';
-      else if (/berubah status menjadi ERROR/i.test(text)) text = 'Error';
-      else if (/status tetap ONLINE/i.test(text)) text = 'Online';
-      else if (/Pemeriksaan manual dijalankan/i.test(text)) text = 'Cek manual';
-      else if (/Monitoring ketersediaan dimulai/i.test(text)) text = 'Monitoring aktif';
 
-      item.innerHTML = `
-        <div class="log-item-left">
-          <span class="log-dot" style="background: ${l.type === 'online' ? 'var(--color-green)' : (l.type === 'info' ? 'var(--accent-color)' : 'var(--color-red)')};"></span>
-          <span class="log-msg">${escapeHtml(text)}</span>
-        </div>
-        <span class="log-item-time">${escapeHtml(l.time)}</span>
-      `;
-      logsList.appendChild(item);
-    });
+    // 1. Render full logs list on Activity Page
+    if (logsList) {
+      if (logs.length === 0) {
+        if (emptyLogs) emptyLogs.style.display = 'block';
+        logsList.innerHTML = '<div class="empty-logs" id="emptyLogs">Belum ada aktivitas log.</div>';
+      } else {
+        if (emptyLogs) emptyLogs.style.display = 'none';
+        logsList.innerHTML = '';
+        logs.forEach(l => {
+          const item = document.createElement('div');
+          item.className = `log-item ${l.type === 'online' ? 'online' : (l.type === 'info' ? 'info' : 'offline')}`;
+
+          let text = l.text || '';
+          if (/berubah status menjadi ONLINE/i.test(text)) text = 'Online';
+          else if (/berubah status menjadi OFFLINE/i.test(text)) text = 'Offline';
+          else if (/berubah status menjadi ERROR/i.test(text)) text = 'Error';
+          else if (/status tetap ONLINE/i.test(text)) text = 'Online';
+          else if (/Pemeriksaan manual dijalankan/i.test(text)) text = 'Cek manual';
+          else if (/Monitoring ketersediaan dimulai/i.test(text)) text = 'Monitoring aktif';
+
+          item.innerHTML = `
+            <div class="log-item-left">
+              <span class="log-dot" style="background: ${l.type === 'online' ? 'var(--color-green)' : (l.type === 'info' ? 'var(--accent-color)' : 'var(--color-red)')};"></span>
+              <span class="log-msg">${escapeHtml(text)}</span>
+            </div>
+            <span class="log-item-time">${escapeHtml(l.time)}</span>
+          `;
+          logsList.appendChild(item);
+        });
+      }
+    }
+
+    // 2. Render compact snapshot on Dashboard Page (Latest 3 items, Section 12 & 30)
+    const recentLogsContainer = document.getElementById('dashboardRecentLogsList');
+    if (recentLogsContainer) {
+      if (logs.length === 0) {
+        recentLogsContainer.innerHTML = '<div class="empty-logs">Belum ada aktivitas terkini.</div>';
+      } else {
+        recentLogsContainer.innerHTML = '';
+        const recent = logs.slice(0, 3);
+        recent.forEach(l => {
+          const row = document.createElement('div');
+          row.className = 'compact-activity-item';
+          const isOnline = l.type === 'online';
+          const dotColor = isOnline ? 'var(--color-green)' : (l.type === 'info' ? 'var(--accent-color)' : 'var(--color-red)');
+          row.innerHTML = `
+            <div class="compact-activity-left">
+              <span class="activity-status-dot" style="background: ${dotColor};"></span>
+              <div class="compact-activity-text">
+                <span class="activity-site">${escapeHtml(MONITORED_SITE.name)}</span>
+                <span class="activity-status">· ${isOnline ? 'Online' : (l.type === 'info' ? 'Normal' : 'Offline')}</span>
+              </div>
+            </div>
+            <span class="activity-time">${escapeHtml(l.time)}</span>
+          `;
+          recentLogsContainer.appendChild(row);
+        });
+      }
+    }
   };
 
   // --- Update Single Site UI (Req 4, 5, 7, 8, 10, 11, 12) ---
   const updateStatusPill = (status) => {
-    if (!monitoredStatusPill || !monitoredStatusText) return;
     const norm = (status || '').toUpperCase();
     let display = 'Online';
     if (norm === 'OFFLINE') display = 'Offline';
     else if (norm === 'ERROR') display = 'Error';
     else if (norm === 'CHECKING' || norm === 'MEMERIKSA' || norm === 'MEMERIKSA...') display = 'Memeriksa';
 
-    monitoredStatusPill.className = `site-status-pill ${norm.toLowerCase()}`;
-    monitoredStatusText.textContent = display;
+    if (monitoredStatusPill && monitoredStatusText) {
+      monitoredStatusPill.className = `site-status-pill ${norm.toLowerCase()}`;
+      monitoredStatusText.textContent = display;
+    }
+
+    const sitesPageStatusPill = document.getElementById('sitesPageStatusPill');
+    const sitesPageStatusText = document.getElementById('sitesPageStatusText');
+    if (sitesPageStatusPill && sitesPageStatusText) {
+      sitesPageStatusPill.className = `site-status-pill ${norm.toLowerCase()}`;
+      sitesPageStatusText.textContent = display;
+    }
 
     if (metricStatusVal) {
       metricStatusVal.textContent = display;
@@ -865,36 +966,152 @@ document.addEventListener('DOMContentLoaded', () => {
     addLog('info', 'Monitoring dihentikan.');
   };
 
-  // --- Tab Navigation Controller ---
-  const switchTab = (tabName) => {
-    const tabs = [
-      { id: 'websites', btn: tabWebsites, view: workspaceWebsites },
-      { id: 'analytics', btn: tabAnalytics, view: workspaceAnalytics },
-      { id: 'maintenance', btn: tabMaintenance, view: workspaceMaintenance }
-    ];
+  // --- Mobile Navigation Drawer Controller ---
+  const openMobileNav = () => {
+    const backdrop = document.getElementById('mobileNavBackdrop');
+    const drawer = document.getElementById('mobileNavDrawer');
+    const toggleBtn = document.getElementById('mobileNavToggleBtn');
+    // Drawer is mobile-only; the overlay is display:none at >=768px, so bail out
+    // instead of locking body scroll behind an invisible backdrop.
+    if (window.innerWidth >= 768) return;
+    if (backdrop && drawer) {
+      // Only one overlay at a time (Section 18)
+      closeAppleMenu();
+      closeDeviceBottomSheet();
+      if (devicePopover) devicePopover.style.display = 'none';
 
-    tabs.forEach(t => {
-      if (t.id === tabName) {
-        if (t.btn) t.btn.classList.add('active');
-        if (t.view) {
-          t.view.style.display = t.id === 'websites' ? 'flex' : 'grid';
-          t.view.classList.add('active');
+      backdrop.style.display = 'block';
+      requestAnimationFrame(() => {
+        drawer.classList.add('open');
+        backdrop.classList.add('active');
+      });
+      if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+      backdrop.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('drawer-open');
+
+      const closeBtn = document.getElementById('closeMobileNavBtn');
+      if (closeBtn) closeBtn.focus();
+    }
+  };
+
+  const closeMobileNav = () => {
+    const backdrop = document.getElementById('mobileNavBackdrop');
+    const drawer = document.getElementById('mobileNavDrawer');
+    const toggleBtn = document.getElementById('mobileNavToggleBtn');
+    if (backdrop && drawer) {
+      const wasOpen = backdrop.classList.contains('active');
+      drawer.classList.remove('open');
+      backdrop.classList.remove('active');
+      backdrop.setAttribute('aria-hidden', 'true');
+      if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('drawer-open');
+      setTimeout(() => {
+        if (!backdrop.classList.contains('active')) {
+          backdrop.style.display = 'none';
         }
-      } else {
-        if (t.btn) t.btn.classList.remove('active');
-        if (t.view) {
-          t.view.style.display = 'none';
-          t.view.classList.remove('active');
+      }, 260);
+
+      // Return focus to the trigger only when the drawer actually closes via a gesture
+      if (wasOpen && toggleBtn && document.activeElement && drawer.contains(document.activeElement)) {
+        toggleBtn.focus();
+      }
+    }
+  };
+
+  // --- Sync Sites Page Details ---
+  const syncSitesPage = () => {
+    const siteNameEl = document.getElementById('sitesPageSiteName');
+    const siteUrlEl = document.getElementById('sitesPageSiteUrl');
+    const siteUrlTextEl = document.getElementById('sitesPageSiteUrlText');
+    if (siteNameEl) siteNameEl.textContent = MONITORED_SITE.name;
+    if (siteUrlEl) siteUrlEl.href = MONITORED_SITE.url;
+    if (siteUrlTextEl) {
+      try {
+        const u = new URL(MONITORED_SITE.url);
+        siteUrlTextEl.textContent = u.hostname || MONITORED_SITE.url;
+      } catch (e) {
+        siteUrlTextEl.textContent = MONITORED_SITE.url;
+      }
+    }
+    if (lastStatus) {
+      updateStatusPill(lastStatus);
+    }
+  };
+
+  // --- Multi-Page Navigation Controller (Section 2, 4, 5) ---
+  const PAGE_MAP = {
+    dashboard: 'pageDashboard',
+    sites: 'pageSites',
+    websites: 'pageSites', // legacy alias
+    activity: 'pageActivity',
+    analytics: 'pageAnalytics',
+    maintenance: 'pageMaintenance',
+    settings: 'pageSettings',
+    profile: 'pageProfile'
+  };
+
+  const switchTab = (tabName) => {
+    const targetKey = (tabName === 'websites' ? 'sites' : tabName) || 'dashboard';
+    const targetPageId = PAGE_MAP[targetKey] || 'pageDashboard';
+
+    // 1. Single Active Page Guarantee (Section 4)
+    Object.keys(PAGE_MAP).forEach(k => {
+      const pid = PAGE_MAP[k];
+      const pageEl = document.getElementById(pid);
+      if (pageEl) {
+        if (pid === targetPageId) {
+          pageEl.classList.add('active');
+        } else {
+          pageEl.classList.remove('active');
         }
       }
     });
 
-    if (tabName === 'analytics') {
-      renderAnalytics();
-    } else if (tabName === 'maintenance') {
-      renderMaintenance();
-    } else if (tabName === 'websites') {
+    // 2. Update Desktop Navigation Active State
+    document.querySelectorAll('.desktop-nav-bar .control-item').forEach(btn => {
+      const p = btn.getAttribute('data-page');
+      if (p === targetKey) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+      } else {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+      }
+    });
+
+    // 3. Update Mobile Drawer Active State
+    document.querySelectorAll('.drawer-menu-item[data-page]').forEach(item => {
+      const p = item.getAttribute('data-page');
+      if (p === targetKey) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+
+    // 4. Close Mobile Drawer & Settings Popup
+    closeMobileNav();
+    closeAppleMenu();
+
+    // 5. Scroll content to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // 6. Page-specific view updates (Single polling guarantee preserved)
+    if (targetKey === 'dashboard') {
+      renderLogs();
+      updateMetrics();
+    } else if (targetKey === 'sites') {
+      syncSitesPage();
       drawLatencyChart();
+    } else if (targetKey === 'activity') {
+      renderLogs();
+    } else if (targetKey === 'analytics') {
+      renderAnalytics();
+    } else if (targetKey === 'maintenance') {
+      renderMaintenance();
+    } else if (targetKey === 'settings') {
+      updateSettingsUi();
+      sendDeviceHeartbeat();
     }
   };
 
@@ -1127,9 +1344,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const features = config.features || {};
-    // Pastikan web-monitor tidak pernah ada di UI fitur pemeliharaan
-    delete features['web-monitor'];
-    const featureIds = Object.keys(features).filter(id => id !== 'web-monitor');
+    const featureIds = Object.keys(features);
     const searchQuery = (maintenanceSearchInput ? maintenanceSearchInput.value : '').toLowerCase().trim();
 
     let totalCount = featureIds.length;
@@ -1200,12 +1415,32 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       const toggleInput = card.querySelector('.feature-mnt-toggle');
-      toggleInput.addEventListener('change', () => {
+      toggleInput.addEventListener('change', async () => {
         const checked = toggleInput.checked;
-        ToolSufMaintenance.setFeatureMaintenance(id, checked);
-        notifyMaintenanceChange();
-        showToast('Status maintenance berhasil diubah!');
-        renderMaintenance();
+        if (checked) {
+          const confirmed = await promptMaintenanceConfirm({
+            title: `Aktifkan maintenance untuk ${feat.name || id}?`,
+            message: 'Fitur ini tidak dapat digunakan oleh pengguna sampai maintenance dimatikan.',
+            confirmText: 'Aktifkan',
+            cancelText: 'Batal'
+          });
+          if (!confirmed) {
+            toggleInput.checked = false;
+            return;
+          }
+        }
+
+        toggleInput.disabled = true;
+        try {
+          await ToolSufMaintenance.setFeatureMaintenance(id, checked);
+          notifyMaintenanceChange();
+          showToast(`Status maintenance untuk ${feat.name || id} berhasil diubah!`);
+        } catch (e) {
+          showToast('Gagal mengubah status maintenance di server');
+        } finally {
+          toggleInput.disabled = false;
+          renderMaintenance();
+        }
       });
 
       const msgBtn = card.querySelector('.maintenance-msg-btn');
@@ -1472,6 +1707,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (appleMoreMenu.classList.contains('show')) {
       closeAppleMenu();
     } else {
+      // Only one overlay at a time (Section 18)
+      closeMobileNav();
       closeDeviceBottomSheet();
       if (devicePopover) devicePopover.style.display = 'none';
       openAppleMenu();
@@ -1622,6 +1859,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- View Display Switches ---
   const showLoginView = () => {
+    // The global theme must be applied on the login screen too, otherwise the
+    // body keeps its initial markup class and login would always render dark.
+    applyTheme(state.theme || 'dark');
     if (loginView) loginView.style.display = 'flex';
     if (dashboardView) dashboardView.style.display = 'none';
   };
@@ -1659,6 +1899,9 @@ document.addEventListener('DOMContentLoaded', () => {
     updateMetrics();
     renderLogs();
     drawLatencyChart();
+    syncSitesPage();
+    updateSettingsUi();
+    switchTab('dashboard');
 
     // Start Real Device Tracking & Session Heartbeat (Req 11)
     startDeviceTracker();
@@ -1774,11 +2017,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Dismiss Apple Menu and Bottom Sheet on Escape key (Section B)
+    // Dismiss Apple Menu, Mobile Nav, and Bottom Sheet on Escape key (Section B)
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeAppleMenu();
         closeDeviceBottomSheet();
+        closeMobileNav();
         if (devicePopover) devicePopover.style.display = 'none';
       }
     });
@@ -1834,9 +2078,14 @@ document.addEventListener('DOMContentLoaded', () => {
         guideAccordionContent.classList.add('collapsed');
         if (accordionChevron) accordionChevron.classList.remove('expanded');
         guideAccordionToggle.setAttribute('aria-expanded', 'false');
+      } else {
+        // Desktop always shows the guide, so report it as expanded
+        guideAccordionToggle.setAttribute('aria-expanded', 'true');
       }
 
       guideAccordionToggle.addEventListener('click', () => {
+        // Only collapsible below 768px; desktop keeps the guide always visible
+        if (window.innerWidth >= 768) return;
         if (guideAccordionContent && accordionChevron) {
           const isCollapsed = guideAccordionContent.classList.contains('collapsed');
           if (isCollapsed) {
@@ -1848,6 +2097,14 @@ document.addEventListener('DOMContentLoaded', () => {
             accordionChevron.classList.remove('expanded');
             guideAccordionToggle.setAttribute('aria-expanded', 'false');
           }
+        }
+      });
+
+      // role="button" + tabindex="0" needs Enter / Space to be keyboard-operable (Section 21)
+      guideAccordionToggle.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          guideAccordionToggle.click();
         }
       });
     }
@@ -1906,10 +2163,90 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Tabs
-    if (tabWebsites) tabWebsites.addEventListener('click', () => switchTab('websites'));
-    if (tabAnalytics) tabAnalytics.addEventListener('click', () => switchTab('analytics'));
-    if (tabMaintenance) tabMaintenance.addEventListener('click', () => switchTab('maintenance'));
+    // Desktop Segmented Navigation Tabs (Section 4, 18)
+    document.querySelectorAll('.desktop-nav-bar .control-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const page = btn.getAttribute('data-page');
+        if (page) switchTab(page);
+      });
+    });
+
+    // Mobile Drawer Navigation Items (Section 5)
+    document.querySelectorAll('.drawer-menu-item[data-page]').forEach(item => {
+      item.addEventListener('click', () => {
+        const page = item.getAttribute('data-page');
+        if (page) switchTab(page);
+      });
+    });
+
+    // Mobile Hamburger Toggle & Close (Section 5, 6)
+    const mobileNavToggleBtn = document.getElementById('mobileNavToggleBtn');
+    const closeMobileNavBtn = document.getElementById('closeMobileNavBtn');
+    const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');
+    if (mobileNavToggleBtn) mobileNavToggleBtn.addEventListener('click', openMobileNav);
+    if (closeMobileNavBtn) closeMobileNavBtn.addEventListener('click', closeMobileNav);
+    if (mobileNavBackdrop) {
+      mobileNavBackdrop.addEventListener('click', (e) => {
+        if (e.target === mobileNavBackdrop) closeMobileNav();
+      });
+    }
+
+    // Dashboard Recent Activity -> View All -> switch to Activity tab
+    const viewAllActivityBtn = document.getElementById('viewAllActivityBtn');
+    if (viewAllActivityBtn) {
+      viewAllActivityBtn.addEventListener('click', () => switchTab('activity'));
+    }
+
+    // Sites Page Manual Check
+    const sitesManualCheckBtn = document.getElementById('sitesManualCheckBtn');
+    if (sitesManualCheckBtn) {
+      sitesManualCheckBtn.addEventListener('click', () => {
+        executeCheck();
+        showToast('Memeriksa status website...');
+      });
+    }
+
+    // Settings Page Actions
+    const settingsTestEmailBtn = document.getElementById('settingsTestEmailBtn');
+    if (settingsTestEmailBtn) settingsTestEmailBtn.addEventListener('click', handleTestEmail);
+
+    const settingsToggleSoundBtn = document.getElementById('settingsToggleSoundBtn');
+    if (settingsToggleSoundBtn) {
+      settingsToggleSoundBtn.addEventListener('click', () => {
+        state.muted = !state.muted;
+        saveStoredData(state);
+        updateMuteUi();
+        showToast(state.muted ? 'Alarm suara dimatikan' : 'Alarm suara diaktifkan');
+      });
+    }
+
+    const settingsToggleThemeBtn = document.getElementById('settingsToggleThemeBtn');
+    if (settingsToggleThemeBtn) {
+      settingsToggleThemeBtn.addEventListener('click', () => {
+        const nextTheme = state.theme === 'light' ? 'dark' : 'light';
+        applyTheme(nextTheme);
+        showToast(nextTheme === 'light' ? 'Mode Terang diaktifkan' : 'Mode Gelap diaktifkan');
+        drawLatencyChart();
+        if (document.getElementById('pageAnalytics')?.classList.contains('active')) {
+          renderAnalytics();
+        }
+      });
+    }
+
+    // Profile & Mobile Drawer Logout
+    const profileLogoutBtn = document.getElementById('profileLogoutBtn');
+    if (profileLogoutBtn) {
+      profileLogoutBtn.addEventListener('click', () => {
+        handleLogout();
+      });
+    }
+    const mobileDrawerLogoutBtn = document.getElementById('mobileDrawerLogoutBtn');
+    if (mobileDrawerLogoutBtn) {
+      mobileDrawerLogoutBtn.addEventListener('click', () => {
+        closeMobileNav();
+        handleLogout();
+      });
+    }
 
     if (resetAnalyticsBtn) {
       resetAnalyticsBtn.addEventListener('click', () => {
@@ -1921,31 +2258,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Maintenance Event Listeners
     if (globalMaintenanceSwitch) {
-      globalMaintenanceSwitch.addEventListener('change', () => {
+      globalMaintenanceSwitch.addEventListener('change', async () => {
         const checked = globalMaintenanceSwitch.checked;
-        if (typeof ToolSufMaintenance !== 'undefined') {
-          ToolSufMaintenance.setGlobalMaintenance(checked);
-          notifyMaintenanceChange();
-          showToast('Mode pemeliharaan global berhasil diubah!');
+        if (checked) {
+          const confirmed = await promptMaintenanceConfirm({
+            title: 'Aktifkan Global Maintenance?',
+            message: 'Semua fitur akan menjadi tidak tersedia sampai maintenance dimatikan.',
+            confirmText: 'Aktifkan',
+            cancelText: 'Batal'
+          });
+          if (!confirmed) {
+            globalMaintenanceSwitch.checked = false;
+            return;
+          }
+        }
+
+        globalMaintenanceSwitch.disabled = true;
+        try {
+          if (typeof ToolSufMaintenance !== 'undefined') {
+            await ToolSufMaintenance.setGlobalMaintenance(checked);
+            notifyMaintenanceChange();
+            showToast(checked ? 'Global Maintenance aktif: Seluruh fitur aplikasi dalam pemeliharaan' : 'Global Maintenance dimatikan: Seluruh fitur kembali normal');
+          }
+        } catch (e) {
+          showToast('Gagal mengubah mode global di server');
+        } finally {
+          globalMaintenanceSwitch.disabled = false;
           renderMaintenance();
         }
       });
     }
 
     if (resetAllMaintenanceBtn) {
-      resetAllMaintenanceBtn.addEventListener('click', () => {
-        if (typeof ToolSufMaintenance !== 'undefined') {
-          ToolSufMaintenance.setGlobalMaintenance(false);
-          const config = ToolSufMaintenance.getConfig();
-          if (config.features) {
-            Object.keys(config.features).forEach(id => {
-              if (id !== 'web-monitor') {
-                ToolSufMaintenance.setFeatureMaintenance(id, false);
+      resetAllMaintenanceBtn.addEventListener('click', async () => {
+        resetAllMaintenanceBtn.disabled = true;
+        try {
+          if (typeof ToolSufMaintenance !== 'undefined') {
+            if (ToolSufMaintenance.resetAllMaintenance) {
+              await ToolSufMaintenance.resetAllMaintenance();
+            } else {
+              await ToolSufMaintenance.setGlobalMaintenance(false);
+              const config = ToolSufMaintenance.getConfig();
+              if (config.features) {
+                for (const id of Object.keys(config.features)) {
+                  if (id !== 'web-monitor') {
+                    await ToolSufMaintenance.setFeatureMaintenance(id, false);
+                  }
+                }
               }
-            });
+            }
+            notifyMaintenanceChange();
+            showToast('Semua fitur berhasil diaktifkan kembali!');
           }
-          notifyMaintenanceChange();
-          showToast('Semua fitur berhasil diaktifkan kembali!');
+        } catch (e) {
+          showToast('Gagal mereset status maintenance');
+        } finally {
+          resetAllMaintenanceBtn.disabled = false;
           renderMaintenance();
         }
       });
@@ -1967,37 +2335,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (maintenanceMsgForm) {
-      maintenanceMsgForm.addEventListener('submit', (e) => {
+      maintenanceMsgForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const featId = editMaintenanceFeatureId.value;
         const msg = (maintenanceCustomMsgInput.value || '').trim();
         if (featId && typeof ToolSufMaintenance !== 'undefined') {
           const config = ToolSufMaintenance.getConfig();
           const currentEnabled = config.features && config.features[featId] ? config.features[featId].enabled : false;
-          ToolSufMaintenance.setFeatureMaintenance(featId, currentEnabled, msg);
-          notifyMaintenanceChange();
-          closeMaintenanceMsgModal();
-          showToast('Pesan berhasil disimpan!');
-          renderMaintenance();
+          try {
+            await ToolSufMaintenance.setFeatureMaintenance(featId, currentEnabled, msg);
+            notifyMaintenanceChange();
+            closeMaintenanceMsgModal();
+            showToast('Pesan berhasil disimpan!');
+          } catch (err) {
+            showToast('Gagal menyimpan pesan ke server');
+          } finally {
+            renderMaintenance();
+          }
         }
       });
     }
 
     if (resetMaintenanceMsgBtn) {
-      resetMaintenanceMsgBtn.addEventListener('click', () => {
+      resetMaintenanceMsgBtn.addEventListener('click', async () => {
         const featId = editMaintenanceFeatureId.value;
         if (featId && typeof ToolSufMaintenance !== 'undefined') {
           const config = ToolSufMaintenance.getConfig();
           const currentEnabled = config.features && config.features[featId] ? config.features[featId].enabled : false;
-          ToolSufMaintenance.setFeatureMaintenance(featId, currentEnabled, null);
-          notifyMaintenanceChange();
-          if (maintenanceCustomMsgInput) maintenanceCustomMsgInput.value = '';
-          closeMaintenanceMsgModal();
-          showToast('Pesan di-reset ke bawaan!');
-          renderMaintenance();
+          try {
+            await ToolSufMaintenance.setFeatureMaintenance(featId, currentEnabled, null);
+            notifyMaintenanceChange();
+            if (maintenanceCustomMsgInput) maintenanceCustomMsgInput.value = '';
+            closeMaintenanceMsgModal();
+            showToast('Pesan di-reset ke bawaan!');
+          } catch (err) {
+            showToast('Gagal mereset pesan ke server');
+          } finally {
+            renderMaintenance();
+          }
         }
       });
     }
+
+    // Auto-update maintenance tab bila ada sinkronisasi dari server atau tab lain
+    window.addEventListener('toolsuf-maintenance-changed', () => {
+      renderMaintenance();
+    });
 
     // Logout
     if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
@@ -2046,6 +2429,9 @@ document.addEventListener('DOMContentLoaded', () => {
       loginPasswordInput.type = isPassword ? 'text' : 'password';
       if (eyeIcon) eyeIcon.classList.toggle('hidden', isPassword);
       if (eyeOffIcon) eyeOffIcon.classList.toggle('hidden', !isPassword);
+      // aria-pressed reflects "password is currently visible"
+      togglePasswordBtn.setAttribute('aria-pressed', String(isPassword));
+      togglePasswordBtn.setAttribute('aria-label', isPassword ? 'Sembunyikan password' : 'Tampilkan password');
     });
   }
 

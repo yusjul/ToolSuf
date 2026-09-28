@@ -736,6 +736,13 @@ async function convertPDF() {
               saveAs(blob, outputName);
             }
             showAlert(t('successDocx'), 'ok');
+            if (typeof trackFeatureUsage === 'function') {
+              trackFeatureUsage('pdf-to-docs', 'convert-docx', {
+                fileName: pdfData?.name || 'document.pdf',
+                format: 'docx',
+                pageCount: pageTexts.length
+              });
+            }
           } else {
             if (typeof ToolSufDownload !== 'undefined') {
               await ToolSufDownload.downloadFile({
@@ -749,6 +756,13 @@ async function convertPDF() {
               saveAs(blob, outputName);
             }
             showAlert(t('successTxt'), 'ok');
+            if (typeof trackFeatureUsage === 'function') {
+              trackFeatureUsage('pdf-to-docs', 'convert-txt', {
+                fileName: pdfData?.name || 'document.pdf',
+                format: 'txt',
+                pageCount: pageTexts.length
+              });
+            }
           }
         }
       },
@@ -1208,6 +1222,13 @@ async function generateDOCX() {
     saveAs(blob, `toolsuf-${baseName}-pdf-to-docs.docx`);
   }
   showAlert(t('successDocx'), 'ok');
+  if (typeof trackFeatureUsage === 'function') {
+    trackFeatureUsage('pdf-to-docs', 'convert-docx', {
+      fileName: pdfData?.name || 'document.pdf',
+      format: 'docx',
+      pageCount: pageTexts.length
+    });
+  }
   convBtn.disabled = false;
   if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
 }
@@ -1234,6 +1255,13 @@ async function generateTXT() {
     saveAs(blob, `toolsuf-${baseName}-pdf-to-docs.txt`);
   }
   showAlert(t('successTxt'), 'ok');
+  if (typeof trackFeatureUsage === 'function') {
+    trackFeatureUsage('pdf-to-docs', 'convert-txt', {
+      fileName: pdfData?.name || 'document.pdf',
+      format: 'txt',
+      pageCount: pageTexts.length
+    });
+  }
   convBtn.disabled = false;
   if (typeof CuteLoading !== 'undefined') { CuteLoading.hide('progressCard'); } else { progressCard.style.display = 'none'; }
 }

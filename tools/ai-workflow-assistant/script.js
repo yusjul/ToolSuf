@@ -1190,6 +1190,12 @@ async function runWorkflow() {
     }
 
     addLog(translations[currentLang].logFinished, 'success');
+    if (typeof trackFeatureUsage === 'function') {
+      trackFeatureUsage('ai-workflow-assistant', 'execute-workflow', {
+        nodeCount: state.nodes.length,
+        connectionCount: state.connections.length
+      });
+    }
   } catch (err) {
     addLog(translations[currentLang].logModelError.replace('{err}', err.message || err), 'error');
     addLog(translations[currentLang].logErrorInterrupt, 'error');

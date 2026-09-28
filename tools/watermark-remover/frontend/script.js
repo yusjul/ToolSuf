@@ -657,6 +657,12 @@ async function processViaServer() {
         if (blob) {
           showResult(blob);
           showAlert(tr('success'), 'ok');
+          if (typeof trackFeatureUsage === 'function') {
+            trackFeatureUsage('watermark-remover', 'remove-watermark', {
+              fileName: videoFile?.name || 'video.mp4',
+              maskCount: masks.length
+            });
+          }
         }
       },
       onFail: (job) => {
@@ -734,6 +740,12 @@ async function processViaServer() {
     showProgress(100, tr('success'));
     showResult(blob);
     showAlert(tr('success'), 'ok');
+    if (typeof trackFeatureUsage === 'function') {
+      trackFeatureUsage('watermark-remover', 'remove-watermark', {
+        fileName: videoFile?.name || 'video.mp4',
+        maskCount: masks.length
+      });
+    }
 
   } catch (err) {
     console.error('[watermark-remover]', err);

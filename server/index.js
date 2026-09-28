@@ -1,5 +1,6 @@
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
 const dotenv = require('dotenv');
 
 // Muat environment variables dari .env di root project
@@ -9,8 +10,26 @@ const monitorService = require('./monitor-service');
 const reportGenerator = require('./report-generator');
 const emailProvider = require('./email-provider');
 const scheduler = require('./scheduler');
+const featureService = require('./feature-service');
+const usageService = require('./usage-service');
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
+
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.wasm': 'application/wasm',
+  '.pdf': 'application/pdf',
+  '.webp': 'image/webp',
+  '.mp4': 'video/mp4'
+};
 
 // Helper untuk parse JSON body pada HTTP request
 function parseJsonBody(req) {
@@ -29,13 +48,16 @@ function parseJsonBody(req) {
   });
 }
 
-// Helper kirim JSON response dengan CORS headers
+// Helper kirim JSON response dengan CORS headers dan no-cache policy
 function sendJson(res, statusCode, data) {
   res.writeHead(statusCode, {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Pragma, Cache-Control',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    'Pragma': 'no-cache',
+    'Expires': '0'
   });
   res.end(JSON.stringify(data));
 }
@@ -125,8 +147,8 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Pragma, Cache-Control'
     });
     return res.end();
   }
@@ -135,6 +157,155 @@ const server = http.createServer(async (req, res) => {
   const pathname = url.pathname;
 
   try {
+    // 0. MAINTENANCE APIS (2-Level Maintenance System)
+    // 0a. GET /api/maintenance -> Minimal 2-Level JSON response
+    if (req.method === 'GET' && pathname === '/api/maintenance') {
+      const mnt = featureService.getMaintenanceResponse();
+      return sendJson(res, 200, mnt);
+    }
+
+    // 0b. PUT / PATCH / POST /api/maintenance/global -> Update global maintenance
+    if (['PUT', 'PATCH', 'POST'].includes(req.method) && pathname === '/api/maintenance/global') {
+      const body = await parseJsonBody(req);
+      const enabled = body.enabled !== undefined ? body.enabled : (body.maintenance !== undefined ? body.maintenance : body.global);
+      const updatedBy = body.updated_by || 'admin';
+      featureService.setGlobalMaintenance(enabled, updatedBy);
+      return sendJson(res, 200, { success: true, ...featureService.getMaintenanceResponse() });
+    }
+
+    // 0c. PUT / PATCH / POST /api/maintenance/features/:featureId -> Update feature maintenance
+    const mntFeatureMatch = pathname.match(/^\/api\/maintenance\/(?:features\/)?([^\/]+)\/?$/i);
+    if (mntFeatureMatch && ['PUT', 'PATCH', 'POST'].includes(req.method) && mntFeatureMatch[1] !== 'global') {
+      const featureId = decodeURIComponent(mntFeatureMatch[1]);
+      const body = await parseJsonBody(req);
+      const enabled = body.enabled !== undefined ? body.enabled : (body.maintenance !== undefined ? body.maintenance : true);
+      const message = body.message !== undefined ? body.message : body.maintenance_message;
+      const updatedBy = body.updated_by || 'admin';
+
+      featureService.setFeatureMaintenance(featureId, enabled, message, updatedBy);
+      return sendJson(res, 200, {
+        success: true,
+        featureId,
+        enabled: Boolean(enabled),
+        ...featureService.getMaintenanceResponse()
+      });
+    }
+
+    // FEATURE MAINTENANCE APIS (Existing Compatibility Endpoints)
+    // GET /api/features/status or /api/features
+    if (req.method === 'GET' && (pathname === '/api/features/status' || pathname === '/api/features')) {
+      const status = featureService.getStatusResponse();
+      return sendJson(res, 200, status);
+    }
+
+    // POST /api/features/global/maintenance
+    if (req.method === 'POST' && pathname === '/api/features/global/maintenance') {
+      const body = await parseJsonBody(req);
+      const enabled = body.maintenance !== undefined ? body.maintenance : (body.enabled !== undefined ? body.enabled : body.global);
+      const updatedBy = body.updated_by || 'admin';
+      const status = featureService.setGlobalMaintenance(enabled, updatedBy);
+      return sendJson(res, 200, { success: true, ...status });
+    }
+
+    // POST /api/features/reset-all
+    if (req.method === 'POST' && pathname === '/api/features/reset-all') {
+      const body = await parseJsonBody(req);
+      const updatedBy = body.updated_by || 'admin';
+      const status = featureService.resetAllMaintenance(updatedBy);
+      return sendJson(res, 200, { success: true, ...status });
+    }
+
+    // PUT / PATCH / POST /api/features/:featureId/maintenance
+    const featureMntMatch = pathname.match(/^\/api\/features\/([^\/]+)\/maintenance\/?$/i);
+    if (featureMntMatch && ['PUT', 'PATCH', 'POST'].includes(req.method)) {
+      const featureId = decodeURIComponent(featureMntMatch[1]);
+      const body = await parseJsonBody(req);
+      const maintenance = body.maintenance !== undefined ? body.maintenance : (body.enabled !== undefined ? body.enabled : true);
+      const message = body.message !== undefined ? body.message : body.maintenance_message;
+      const updatedBy = body.updated_by || 'admin';
+
+      const status = featureService.setFeatureMaintenance(featureId, maintenance, message, updatedBy);
+      return sendJson(res, 200, {
+        success: true,
+        featureId,
+        maintenance,
+        ...status
+      });
+    }
+
+    // =========================================================================
+    // REAL-TIME FEATURE USAGE APIS (Section 1, 4, 5, 8, 9, 12)
+    // =========================================================================
+    // POST /api/usage
+    if (req.method === 'POST' && (pathname === '/api/usage' || pathname === '/api/web-monitor/usage')) {
+      const body = await parseJsonBody(req);
+      const { featureId, action, metadata, timestamp, eventId } = body;
+
+      if (!featureId || typeof featureId !== 'string') {
+        return sendJson(res, 400, { success: false, error: 'featureId is required' });
+      }
+      if (!action || typeof action !== 'string') {
+        return sendJson(res, 400, { success: false, error: 'action is required' });
+      }
+
+      const reqIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || '';
+      const cleanReqIp = reqIp.replace('::ffff:', '');
+      const clientIp = (cleanReqIp === '::1' || cleanReqIp === '127.0.0.1') ? '127.0.0.1 (Local)' : (cleanReqIp || '127.0.0.1');
+
+      // 1. Catat penggunaan ke database
+      let recordResult;
+      try {
+        recordResult = usageService.recordFeatureUsage({
+          featureId,
+          action,
+          metadata: metadata || {},
+          timestamp: timestamp || new Date().toISOString(),
+          eventId: eventId || null,
+          clientIp,
+          userAgent: req.headers['user-agent'] || ''
+        });
+      } catch (err) {
+        return sendJson(res, 400, { success: false, error: err.message });
+      }
+
+      if (recordResult.isDuplicate) {
+        return sendJson(res, 200, {
+          success: true,
+          usageRecorded: true,
+          notificationSent: Boolean(recordResult.record && recordResult.record.notificationSent),
+          duplicate: true
+        });
+      }
+
+      // 2. Langsung kirim notifikasi email via SMTP backend
+      let notificationSent = false;
+      try {
+        const emailResult = await usageService.sendFeatureUsageNotification(recordResult.record);
+        notificationSent = Boolean(emailResult && emailResult.success);
+      } catch (emailErr) {
+        console.warn(`[EMAIL] notification failed: ${emailErr.message}`);
+        notificationSent = false;
+      }
+
+      // 3. Return response standar sesuai Section 5
+      return sendJson(res, 200, {
+        success: true,
+        usageRecorded: true,
+        notificationSent
+      });
+    }
+
+    // GET /api/usage or /api/usage/summary
+    if (req.method === 'GET' && (pathname === '/api/usage' || pathname === '/api/usage/summary')) {
+      const summary = usageService.getFeatureUsageSummary();
+      return sendJson(res, 200, {
+        success: true,
+        total: summary.totalUsage,
+        summary: summary.byFeature,
+        ...summary
+      });
+    }
+
     // 1. GET /api/web-monitor/status
     if (req.method === 'GET' && pathname === '/api/web-monitor/status') {
       const emailConfig = emailProvider.getConfig();
@@ -327,6 +498,26 @@ const server = http.createServer(async (req, res) => {
       });
 
       return sendJson(res, 200, { success: true, alerted: true });
+    }
+
+    // Static file serving fallback for full web application
+    if (!pathname.startsWith('/api')) {
+      let relativePath = pathname === '/' ? '/index.html' : pathname;
+      if (relativePath === '/yusjul-admin') relativePath = '/yusjul-admin/index.html';
+      if (relativePath === '/pdf-compressor') relativePath = '/tools/pdf-compressor/index.html';
+
+      const safePath = path.normalize(path.join(__dirname, '..', relativePath));
+      const rootDir = path.normalize(path.join(__dirname, '..'));
+
+      if (safePath.startsWith(rootDir) && fs.existsSync(safePath) && fs.statSync(safePath).isFile()) {
+        const ext = path.extname(safePath).toLowerCase();
+        const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+        res.writeHead(200, {
+          'Content-Type': contentType,
+          'Access-Control-Allow-Origin': '*'
+        });
+        return fs.createReadStream(safePath).pipe(res);
+      }
     }
 
     // 404 Not Found

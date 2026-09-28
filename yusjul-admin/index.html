@@ -59,17 +59,25 @@
   <div id="dashboardView" style="display: none;">
     <div class="monitor-container animate-fade-in">
       
-      <!-- Top Dashboard Header with Stats -->
+      <!-- Top Dashboard Header with Mobile Hamburger -->
       <header class="monitor-header">
         <div class="header-left">
+          <!-- Mobile Hamburger Menu Button (Section 5 & 6) -->
+          <button id="mobileNavToggleBtn" class="mobile-nav-toggle-btn mobile-only-btn" title="Buka Menu Navigasi" aria-label="Buka menu navigasi" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
           <div class="header-title-row">
-            <h1 data-i18n="toolTitle">Pemantau Situs Web</h1>
+            <h1 data-i18n="toolTitle">Web Monitor</h1>
           </div>
-          <p class="header-subtitle" data-i18n="toolSubtitle">Monitor ketersediaan & latensi situs secara privat</p>
+          <p class="header-subtitle desktop-only-inline" data-i18n="toolSubtitle">Monitor ketersediaan & latensi situs secara privat</p>
         </div>
         <div class="header-right">
-          <!-- Device Popover & Trigger (Req 4, 5, 11, 19) -->
-          <div class="popover-wrapper" id="devicePopoverWrapper">
+          <!-- Device Popover & Trigger (Desktop) -->
+          <div class="popover-wrapper desktop-only-btn" id="devicePopoverWrapper">
             <button id="deviceInfoBtn" class="btn-action device-btn" title="Informasi Perangkat Terhubung" aria-label="Lihat perangkat terhubung">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
@@ -93,7 +101,7 @@
             </div>
           </div>
 
-          <!-- Dark / Light Theme Toggle (Req 6, 7, 8) -->
+          <!-- Dark / Light Theme Toggle -->
           <button id="themeToggleBtn" class="btn-action icon-only-btn" title="Toggle Tema Gelap / Terang" aria-label="Ubah tema gelap atau terang">
             <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="5"></circle>
@@ -108,7 +116,7 @@
             </svg>
           </button>
 
-          <!-- Desktop Actions (Hidden on Mobile, Moved to More Menu) -->
+          <!-- Desktop Actions -->
           <button id="testEmailBtn" class="btn-action icon-only-btn desktop-only-btn" title="Kirim Test Email Laporan" aria-label="Kirim test email laporan">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="4" width="20" height="16" rx="2"></rect>
@@ -132,9 +140,9 @@
             <span data-i18n="logoutBtn">Keluar</span>
           </button>
 
-          <!-- Mobile More Action Menu Button & Apple Dropdown (Sections A, B, C, T) -->
+          <!-- Mobile More Options Dropdown -->
           <div class="popover-wrapper" id="moreMenuWrapper">
-            <button id="moreActionsBtn" class="btn-action icon-only-btn mobile-only-btn" title="Menu Lainnya" aria-label="Buka menu opsi" aria-haspopup="true" aria-expanded="false">
+            <button id="moreActionsBtn" class="btn-action icon-only-btn mobile-only-btn" title="Menu Opsi" aria-label="Buka menu opsi" aria-haspopup="true" aria-expanded="false">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="1.5"></circle>
                 <circle cx="19" cy="12" r="1.5"></circle>
@@ -183,12 +191,6 @@
                       <circle cx="12" cy="12" r="5"></circle>
                       <line x1="12" y1="1" x2="12" y2="3"></line>
                       <line x1="12" y1="21" x2="12" y2="23"></line>
-                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                      <line x1="1" y1="12" x2="3" y2="12"></line>
-                      <line x1="21" y1="12" x2="23" y2="12"></line>
-                      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                     </svg>
                     <span id="menuItemThemeLabel">Mode Tema</span>
                   </div>
@@ -213,146 +215,211 @@
         </div>
       </header>
 
-      <!-- Navigation Tabs (Apple Segmented Control Style - Req 9) -->
-      <nav class="segmented-control" role="tablist">
-        <button class="control-item active" id="tabWebsites" role="tab" aria-selected="true">
-          <span class="tab-label-full" data-i18n="tabWebsites">Pemantau Situs</span>
-          <span class="tab-label-short">Pemantau</span>
+      <!-- Desktop Segmented Navigation Bar -->
+      <nav class="segmented-control desktop-nav-bar" role="tablist">
+        <button class="control-item active" id="tabDashboard" data-page="dashboard" role="tab" aria-selected="true">
+          <span>Dashboard</span>
         </button>
-        <button class="control-item" id="tabAnalytics" role="tab" aria-selected="false">
-          <span class="tab-label-full" data-i18n="tabAnalytics">Analisis Penggunaan</span>
-          <span class="tab-label-short">Analisis</span>
+        <button class="control-item" id="tabWebsites" data-page="sites" role="tab" aria-selected="false">
+          <span data-i18n="tabWebsites">Pemantau</span>
         </button>
-        <button class="control-item" id="tabMaintenance" role="tab" aria-selected="false">
-          <span class="tab-label-full" data-i18n="tabMaintenance">Pemeliharaan Fitur</span>
-          <span class="tab-label-short">Maintenance</span>
+        <button class="control-item" id="tabActivity" data-page="activity" role="tab" aria-selected="false">
+          <span>Aktivitas</span>
+        </button>
+        <button class="control-item" id="tabAnalytics" data-page="analytics" role="tab" aria-selected="false">
+          <span data-i18n="tabAnalytics">Analisis</span>
+        </button>
+        <button class="control-item" id="tabMaintenance" data-page="maintenance" role="tab" aria-selected="false">
+          <span data-i18n="tabMaintenance">Maintenance</span>
+        </button>
+        <button class="control-item" id="tabSettings" data-page="settings" role="tab" aria-selected="false">
+          <span>Pengaturan</span>
+        </button>
+        <button class="control-item" id="tabProfile" data-page="profile" role="tab" aria-selected="false">
+          <span>Profil</span>
         </button>
       </nav>
 
-    <!-- Main Workspace Layout - Single Website Monitor (Req 1, 4, 5, 9, 13) -->
-    <main class="monitor-workspace tab-content active" id="workspaceWebsites" style="display: flex; flex-direction: column; gap: 20px;">
-      
-      <!-- Monitored Site Target Card (Req 4, 10, 11, 12) -->
-      <section class="single-site-card">
-        <div class="single-site-header">
-          <div class="single-site-info">
-            <div class="site-icon-box">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="2" y1="12" x2="22" y2="12"></line>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+      <!-- Mobile Navigation Drawer Overlay & Backdrop (Section 5) -->
+      <div class="mobile-nav-backdrop" id="mobileNavBackdrop" style="display: none;">
+        <div class="mobile-nav-drawer" id="mobileNavDrawer">
+          <div class="mobile-drawer-header">
+            <div class="drawer-brand">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drawer-brand-icon">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
               </svg>
+              <span>Web Monitor</span>
             </div>
-            <div class="site-titles">
-              <h2 class="single-site-name" id="monitoredSiteName">Website Saya</h2>
-              <a class="single-site-url" id="monitoredSiteUrl" href="https://domain-saya.com" target="_blank" rel="noopener noreferrer" aria-label="Buka website yang dipantau">
-                <span id="monitoredSiteUrlText">domain-saya.com</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                  <polyline points="15 3 21 3 21 9"></polyline>
-                  <line x1="10" y1="14" x2="21" y2="3"></line>
-                </svg>
-              </a>
-            </div>
-          </div>
-          <div class="single-site-status">
-            <div class="site-status-pill checking" id="monitoredStatusPill">
-              <span class="status-pulse-dot"></span>
-              <span class="status-text" id="monitoredStatusText">Memeriksa</span>
-            </div>
-            <button id="manualCheckBtn" class="btn-action check-now-btn" title="Cek Sekarang" aria-label="Cek status website sekarang">
+            <button id="closeMobileNavBtn" class="drawer-close-btn" aria-label="Tutup navigasi">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="23 4 23 10 17 10"></polyline>
-                <polyline points="1 20 1 14 7 14"></polyline>
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
-              <span class="check-btn-label">Cek</span>
             </button>
           </div>
+          <nav class="mobile-drawer-menu" role="menu">
+            <button type="button" class="drawer-menu-item active" data-page="dashboard" role="menuitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <span>Dashboard</span>
+            </button>
+            <button type="button" class="drawer-menu-item" data-page="sites" role="menuitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span>Sites / Pemantau</span>
+            </button>
+            <button type="button" class="drawer-menu-item" data-page="activity" role="menuitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>Activity / Logs</span>
+            </button>
+            <button type="button" class="drawer-menu-item" data-page="analytics" role="menuitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+              <span>Analytics</span>
+            </button>
+            <button type="button" class="drawer-menu-item" data-page="maintenance" role="menuitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              <span>Maintenance</span>
+            </button>
+            <button type="button" class="drawer-menu-item" data-page="settings" role="menuitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>Settings</span>
+            </button>
+            <button type="button" class="drawer-menu-item" data-page="profile" role="menuitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>Profile</span>
+            </button>
+            <div class="drawer-menu-divider"></div>
+            <button type="button" class="drawer-menu-item drawer-menu-logout" id="mobileDrawerLogoutBtn" role="menuitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span>Logout</span>
+            </button>
+          </nav>
         </div>
-      </section>
-
-      <!-- 5 Relevant Single Site Metrics (Req 5, 13, 14, 15) -->
-      <section class="single-metrics-grid">
-        <!-- 1. STATUS -->
-        <div class="metric-card metric-status-card">
-          <div class="metric-icon green" id="metricStatusIcon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          </div>
-          <div class="metric-info">
-            <span class="metric-label">STATUS</span>
-            <span id="metricStatusVal" class="metric-value text-green">Online</span>
-          </div>
-        </div>
-
-        <!-- 2. LATENSI -->
-        <div class="metric-card metric-latency-card">
-          <div class="metric-icon orange">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-          </div>
-          <div class="metric-info">
-            <span class="metric-label">LATENSI</span>
-            <span id="metricLatencyVal" class="metric-value">--</span>
-          </div>
-        </div>
-
-        <!-- 3. UPTIME -->
-        <div class="metric-card metric-uptime-card">
-          <div class="metric-icon blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-          </div>
-          <div class="metric-info">
-            <span class="metric-label">UPTIME</span>
-            <span id="metricUptimeVal" class="metric-value">--</span>
-          </div>
-        </div>
-
-        <!-- 4. AVG LATENSI -->
-        <div class="metric-card metric-avg-card">
-          <div class="metric-icon purple">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 3v18h18"></path>
-              <path d="m19 9-5 5-4-4-3 3"></path>
-            </svg>
-          </div>
-          <div class="metric-info">
-            <span class="metric-label">AVG</span>
-            <span id="metricAvgLatencyVal" class="metric-value">--</span>
-          </div>
-        </div>
-
-        <!-- 5. LAST CHECK (Desktop Only Card / Handled in Mobile subtitle row) -->
-        <div class="metric-card metric-lastcheck-card desktop-only-card">
-          <div class="metric-icon cyan">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 14 10"></polyline>
-            </svg>
-          </div>
-          <div class="metric-info">
-            <span class="metric-label">LAST CHECK</span>
-            <span id="metricLastCheckVal" class="metric-value">--</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- Mobile Last Check Subtitle Row (Req 13, 14) -->
-      <div class="mobile-last-check-row" id="mobileLastCheckRow">
-        <span class="last-check-dot"></span>
-        <span>Last check · <strong id="mobileLastCheckVal">--</strong></span>
       </div>
 
-      <!-- Latency History Chart (Req 9) & Activity Logs (Req 13) -->
-      <div class="single-monitor-body">
-        <!-- Latency Chart Panel -->
+      <!-- ============================================================ -->
+      <!-- 1. PAGE: DASHBOARD (Active by default, Section 4, 8, 9, 10)  -->
+      <!-- ============================================================ -->
+      <main class="page monitor-page active" id="pageDashboard">
+        <!-- 4 Compact Stat Cards (Strict 2-Column on Mobile, 4-Column on Desktop) -->
+        <section class="stat-grid-compact">
+          <div class="compact-stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label">TOTAL SITES</span>
+              <div class="stat-card-icon icon-cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              </div>
+            </div>
+            <div class="stat-card-value" id="dashboardTotalSitesVal">1</div>
+          </div>
+
+          <div class="compact-stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label">STATUS</span>
+              <div class="stat-card-icon icon-green" id="metricStatusIcon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <div class="stat-card-value text-green" id="metricStatusVal">Online</div>
+          </div>
+
+          <div class="compact-stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label">LATENSI</span>
+              <div class="stat-card-icon icon-orange">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+            </div>
+            <div class="stat-card-value" id="metricLatencyVal">--</div>
+          </div>
+
+          <div class="compact-stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label">UPTIME</span>
+              <div class="stat-card-icon icon-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+            </div>
+            <div class="stat-card-value" id="metricUptimeVal">--</div>
+          </div>
+        </section>
+
+        <!-- Compact Monitored Site Overview (Section 10) -->
+        <section class="compact-site-card">
+          <div class="compact-site-main">
+            <div class="site-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div class="compact-site-info">
+              <div class="compact-site-title-row">
+                <span class="compact-site-name" id="monitoredSiteName">Website Saya</span>
+                <span class="site-status-pill checking" id="monitoredStatusPill">
+                  <span class="status-pulse-dot"></span>
+                  <span class="status-text" id="monitoredStatusText">Memeriksa</span>
+                </span>
+              </div>
+              <div class="compact-site-meta">
+                <a class="single-site-url" id="monitoredSiteUrl" href="https://domain-saya.com" target="_blank" rel="noopener noreferrer">
+                  <span id="monitoredSiteUrlText">domain-saya.com</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
+                <span class="meta-separator">·</span>
+                <span>Avg: <strong id="metricAvgLatencyVal">--</strong></span>
+                <span class="meta-separator">·</span>
+                <span>Cek: <strong id="mobileLastCheckVal">--</strong></span>
+              </div>
+            </div>
+          </div>
+          <button id="manualCheckBtn" class="btn-action check-now-btn" title="Cek Sekarang" aria-label="Cek status sekarang">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span>Cek</span>
+          </button>
+        </section>
+
+        <!-- Recent Activity Snapshot (Plain list - Section 11 & 12) -->
+        <section class="plain-section">
+          <div class="section-title-bar">
+            <h2>Aktivitas Terkini</h2>
+            <button type="button" class="btn-link" id="viewAllActivityBtn">Lihat Semua ›</button>
+          </div>
+          <div class="compact-activity-list" id="dashboardRecentLogsList">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+      </main>
+
+      <!-- ============================================================ -->
+      <!-- 2. PAGE: SITES / PEMANTAU (Section 10 & 21)                  -->
+      <!-- ============================================================ -->
+      <main class="page monitor-page" id="pageSites">
+        <section class="compact-site-card">
+          <div class="compact-site-main">
+            <div class="site-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div class="compact-site-info">
+              <div class="compact-site-title-row">
+                <span class="compact-site-name" id="sitesPageSiteName">Website Saya</span>
+                <span class="site-status-pill checking" id="sitesPageStatusPill">
+                  <span class="status-pulse-dot"></span>
+                  <span class="status-text" id="sitesPageStatusText">Memeriksa</span>
+                </span>
+              </div>
+              <div class="compact-site-meta">
+                <a class="single-site-url" id="sitesPageSiteUrl" href="https://domain-saya.com" target="_blank" rel="noopener noreferrer">
+                  <span id="sitesPageSiteUrlText">domain-saya.com</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
+                <span class="meta-separator">·</span>
+                <span>Interval: 30s</span>
+              </div>
+            </div>
+          </div>
+          <button id="sitesManualCheckBtn" class="btn-action check-now-btn" title="Cek Sekarang" aria-label="Cek status sekarang">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span>Cek</span>
+          </button>
+        </section>
+
+        <!-- Latency Chart Panel (Section 21) -->
         <section class="latency-chart-section">
           <div class="section-title-bar">
             <div>
@@ -370,11 +437,18 @@
             <div id="chartTooltip" class="chart-tooltip" style="display: none;"></div>
           </div>
         </section>
+      </main>
 
-        <!-- Activity Logs Panel (Req 13) -->
-        <aside class="single-logs-section">
+      <!-- ============================================================ -->
+      <!-- 3. PAGE: ACTIVITY / LOGS (Section 12)                        -->
+      <!-- ============================================================ -->
+      <main class="page monitor-page" id="pageActivity">
+        <section class="plain-section">
           <div class="section-title-bar">
-            <h2>Log Aktivitas</h2>
+            <div>
+              <h2>Log Aktivitas</h2>
+              <p class="section-subtitle">Catatan riwayat status dan ketersediaan sistem</p>
+            </div>
             <button id="clearLogsBtn" class="btn-link">Bersihkan</button>
           </div>
           <div class="logs-container">
@@ -382,150 +456,241 @@
               <div class="empty-logs" id="emptyLogs">Belum ada aktivitas log.</div>
             </div>
           </div>
+        </section>
+      </main>
+
+      <!-- ============================================================ -->
+      <!-- 4. PAGE: ANALYTICS (Section J, K, L, M)                      -->
+      <!-- ============================================================ -->
+      <main class="page monitor-page" id="pageAnalytics">
+        <section class="analytics-card-panel">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="section-title-clean">Penggunaan Alat</h2>
+              <p class="section-subtitle">Frekuensi peluncuran fitur & tool ToolSuf</p>
+            </div>
+            <button id="resetAnalyticsBtn" class="btn-link-reset" aria-label="Reset statistik penggunaan">Reset</button>
+          </div>
+          <div class="tool-usage-clean-list" id="toolUsageList">
+            <!-- Rendered dynamically -->
+          </div>
+          <div class="chart-card-container desktop-only-chart">
+            <canvas id="usageChartCanvas"></canvas>
+          </div>
+        </section>
+
+        <aside class="analytics-logs-panel">
+          <div class="section-title-bar">
+            <h2 class="section-title-clean">Log Penggunaan</h2>
+          </div>
+          <div class="logs-container analytics-logs-container">
+            <div id="analyticsLogsList" class="analytics-clean-logs">
+              <div class="empty-logs" id="emptyAnalyticsLogs" data-i18n="noAnalyticsLogs">Belum ada aktivitas alat.</div>
+            </div>
+          </div>
         </aside>
-      </div>
+      </main>
 
-      <!-- Perangkat Terhubung (Req 11, Real Device Detection & Sessions) -->
-      <section class="connected-devices-section">
-        <div class="section-title-bar">
-          <div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <h2>Perangkat Terhubung</h2>
-              <span class="active-badge-pill" id="activeDevicesCountBadge">1 Aktif</span>
+      <!-- ============================================================ -->
+      <!-- 5. PAGE: MAINTENANCE (Section N, O, P, Q)                    -->
+      <!-- ============================================================ -->
+      <main class="page monitor-page" id="pageMaintenance">
+        <section class="maintenance-section">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="section-title-clean" data-i18n="maintenanceTitle">Pemeliharaan Fitur</h2>
+              <p class="section-subtitle desktop-only-inline" data-i18n="maintenanceSubtitle">Atur status akses dan pemeliharaan untuk setiap tool ToolSuf</p>
             </div>
-            <p class="section-subtitle">Daftar perangkat & browser yang sedang aktif mengakses Web Monitor</p>
+            <div class="title-bar-actions">
+              <button id="resetAllMaintenanceBtn" class="btn-link" data-i18n="resetMaintenance">Aktifkan Semua</button>
+            </div>
           </div>
-          <button id="refreshDevicesBtn" class="btn-link" title="Segarkan daftar perangkat aktif">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="margin-right: 4px;">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <polyline points="1 20 1 14 7 14"></polyline>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+
+          <!-- Global Maintenance Banner Card -->
+          <div class="global-maintenance-banner">
+            <div class="global-banner-left">
+              <div class="global-banner-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="global-banner-title">Mode Pemeliharaan Global</div>
+                <div class="global-banner-desc">Nonaktifkan semua fitur sementara.</div>
+              </div>
+            </div>
+            <label class="apple-switch" title="Toggle Global Maintenance" aria-label="Toggle Global Maintenance">
+              <input type="checkbox" id="globalMaintenanceSwitch">
+              <span class="apple-switch-slider"></span>
+            </label>
+          </div>
+
+          <!-- Search Bar (Height 40px, Section 13) -->
+          <div class="maintenance-search-bar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            Perbarui
-          </button>
-        </div>
-        <div class="connected-devices-grid" id="connectedDevicesList">
-          <!-- Rendered dynamically -->
-        </div>
-      </section>
-    </main>
-
-    <!-- Main Workspace Layout - User Analytics (Req J, K, L, M) -->
-    <main class="monitor-workspace tab-content" id="workspaceAnalytics" style="display: none;">
-      <!-- Chart / Tool List Panel -->
-      <section class="sites-section analytics-card-panel">
-        <div class="section-title-bar">
-          <div>
-            <h2 class="section-title-clean">Penggunaan Alat</h2>
-            <p class="section-subtitle desktop-only-inline">Frekuensi peluncuran fitur & tool ToolSuf</p>
+            <input type="text" id="maintenanceSearchInput" placeholder="Cari nama fitur atau tool..." autocomplete="off">
           </div>
-          <button id="resetAnalyticsBtn" class="btn-link-reset" aria-label="Reset statistik penggunaan">Reset</button>
-        </div>
-        <!-- Tool Usage List (Clean Apple List - Req L) -->
-        <div class="tool-usage-clean-list" id="toolUsageList">
-          <!-- Rendered dynamically -->
-        </div>
-        <!-- Canvas for Desktop View / Large Screen Chart -->
-        <div class="chart-card-container desktop-only-chart">
-          <canvas id="usageChartCanvas"></canvas>
-        </div>
-      </section>
 
-      <!-- Recent Launch History Panel (Req M) -->
-      <aside class="logs-section analytics-logs-panel">
-        <div class="section-title-bar">
-          <h2 class="section-title-clean">Log Penggunaan</h2>
-        </div>
-        <div class="logs-container analytics-logs-container">
-          <div id="analyticsLogsList" class="analytics-clean-logs">
-            <!-- Analytics logs will appear here -->
-            <div class="empty-logs" id="emptyAnalyticsLogs" data-i18n="noAnalyticsLogs">Belum ada aktivitas alat.</div>
+          <!-- Maintenance Cards Grid -->
+          <div id="maintenanceGrid" class="maintenance-grid">
+            <!-- Dynamically populated -->
           </div>
-        </div>
-      </aside>
-    </main>
+        </section>
 
-    <!-- Main Workspace Layout - Feature Maintenance (Req N, O, P, Q) -->
-    <main class="monitor-workspace tab-content" id="workspaceMaintenance" style="display: none;">
-      <section class="maintenance-section">
-        <div class="section-title-bar">
-          <div>
-            <h2 class="section-title-clean" data-i18n="maintenanceTitle">Pemeliharaan Fitur</h2>
-            <p class="section-subtitle desktop-only-inline" data-i18n="maintenanceSubtitle">Atur status akses dan pemeliharaan untuk setiap tool ToolSuf</p>
+        <!-- Quick Guide Panel -->
+        <aside class="logs-section maintenance-sidebar" id="maintenanceSidebar">
+          <div class="section-title-bar accordion-header" id="guideAccordionToggle" role="button" tabindex="0" aria-expanded="false" aria-label="Buka panduan kontrol">
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              <h2 data-i18n="maintenanceGuideTitle">Panduan Kontrol</h2>
+              <span class="accordion-chevron" id="accordionChevron">›</span>
+            </div>
           </div>
-          <div class="title-bar-actions">
-            <button id="resetAllMaintenanceBtn" class="btn-link" data-i18n="resetMaintenance">Aktifkan Semua</button>
+          <div class="logs-container maintenance-guide-box accordion-content" id="guideAccordionContent">
+            <div class="guide-item">
+              <div class="guide-dot active"></div>
+              <div>
+                <strong>Mode Normal (Hijau)</strong>
+                <p>Tool dapat dibuka dan digunakan dengan normal oleh pengguna.</p>
+              </div>
+            </div>
+            <div class="guide-item">
+              <div class="guide-dot warning"></div>
+              <div>
+                <strong>Maintenance (Oranye)</strong>
+                <p>Badge otomatis tampil di beranda dan akses iframe tool diblokir.</p>
+              </div>
+            </div>
+            <div class="guide-item">
+              <div class="guide-dot info"></div>
+              <div>
+                <strong>Sinkronisasi Realtime</strong>
+                <p>Pengaturan tersimpan instan dan sinkron langsung ke beranda tanpa refresh.</p>
+              </div>
+            </div>
           </div>
-        </div>
+        </aside>
+      </main>
 
-        <!-- Global Maintenance Banner Card (Req O) -->
-        <div class="global-maintenance-banner">
-          <div class="global-banner-left">
-            <div class="global-banner-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <!-- ============================================================ -->
+      <!-- 6. PAGE: SETTINGS & PERANGKAT TERHUBUNG                      -->
+      <!-- ============================================================ -->
+      <main class="page monitor-page" id="pageSettings">
+        <section class="connected-devices-section">
+          <div class="section-title-bar">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <h2>Perangkat Terhubung</h2>
+                <span class="active-badge-pill" id="activeDevicesCountBadge">1 Aktif</span>
+              </div>
+              <p class="section-subtitle">Daftar perangkat & browser yang sedang aktif mengakses Web Monitor</p>
+            </div>
+            <button id="refreshDevicesBtn" class="btn-link" title="Segarkan daftar perangkat aktif">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="margin-right: 4px;">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
               </svg>
-            </div>
-            <div>
-              <div class="global-banner-title">Mode Pemeliharaan Global</div>
-              <div class="global-banner-desc">Nonaktifkan semua fitur sementara.</div>
-            </div>
+              Perbarui
+            </button>
           </div>
-          <label class="apple-switch" title="Toggle Global Maintenance" aria-label="Toggle Global Maintenance">
-            <input type="checkbox" id="globalMaintenanceSwitch">
-            <span class="apple-switch-slider"></span>
-          </label>
-        </div>
+          <div class="connected-devices-grid" id="connectedDevicesList">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
 
-        <!-- Search Bar -->
-        <div class="maintenance-search-bar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" id="maintenanceSearchInput" placeholder="Cari nama fitur atau tool..." autocomplete="off">
-        </div>
+        <!-- Quick Settings Actions Panel -->
+        <section class="plain-section">
+          <div class="section-title-bar">
+            <h2>Pengaturan Sistem</h2>
+          </div>
+          <div class="quick-settings-list">
+            <div class="quick-setting-row">
+              <div class="setting-row-left">
+                <div class="setting-row-icon icon-blue">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                </div>
+                <div class="setting-row-info">
+                  <span class="setting-row-title">Notifikasi Email</span>
+                  <span class="setting-row-desc">Kirim test laporan ketersediaan situs ke email</span>
+                </div>
+              </div>
+              <button id="settingsTestEmailBtn" class="btn-action secondary-btn">Kirim Test</button>
+            </div>
 
-        <!-- Maintenance Cards Grid (Mobile: Compact Apple Cards - Req P) -->
-        <div id="maintenanceGrid" class="maintenance-grid">
-          <!-- Dynamically populated -->
-        </div>
-      </section>
+            <div class="quick-setting-row">
+              <div class="setting-row-left">
+                <div class="setting-row-icon icon-orange">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                </div>
+                <div class="setting-row-info">
+                  <span class="setting-row-title">Suara Alarm</span>
+                  <span class="setting-row-desc" id="settingsSoundStatusText">Bunyikan alarm saat situs terdeteksi down</span>
+                </div>
+              </div>
+              <button id="settingsToggleSoundBtn" class="btn-action secondary-btn">
+                <span id="settingsSoundBtnText">Nyala</span>
+              </button>
+            </div>
 
-      <!-- Quick Guide Panel (Accordion on Mobile - Req Q) -->
-      <aside class="logs-section maintenance-sidebar" id="maintenanceSidebar">
-        <div class="section-title-bar accordion-header" id="guideAccordionToggle" role="button" tabindex="0" aria-expanded="false" aria-label="Buka panduan kontrol">
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <h2 data-i18n="maintenanceGuideTitle">Panduan Kontrol</h2>
-            <span class="accordion-chevron" id="accordionChevron">›</span>
-          </div>
-        </div>
-        <div class="logs-container maintenance-guide-box accordion-content" id="guideAccordionContent">
-          <div class="guide-item">
-            <div class="guide-dot active"></div>
-            <div>
-              <strong>Mode Normal (Hijau)</strong>
-              <p>Tool dapat dibuka dan digunakan dengan normal oleh pengguna.</p>
+            <div class="quick-setting-row">
+              <div class="setting-row-left">
+                <div class="setting-row-icon icon-purple">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
+                </div>
+                <div class="setting-row-info">
+                  <span class="setting-row-title">Tema Aplikasi</span>
+                  <span class="setting-row-desc" id="settingsThemeStatusText">Beralih antara Mode Gelap dan Mode Terang</span>
+                </div>
+              </div>
+              <button id="settingsToggleThemeBtn" class="btn-action secondary-btn">
+                <span id="settingsThemeBtnText">Mode Gelap</span>
+              </button>
             </div>
           </div>
-          <div class="guide-item">
-            <div class="guide-dot warning"></div>
+        </section>
+      </main>
+
+      <!-- ============================================================ -->
+      <!-- 7. PAGE: PROFILE (Profil Administrator)                      -->
+      <!-- ============================================================ -->
+      <main class="page monitor-page" id="pageProfile">
+        <section class="profile-card">
+          <div class="profile-header-info">
+            <div class="profile-avatar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
             <div>
-              <strong>Maintenance (Oranye)</strong>
-              <p>Badge otomatis tampil di beranda dan akses iframe tool diblokir.</p>
+              <h2 class="profile-username">yusjul</h2>
+              <span class="profile-role-badge">Super Admin</span>
             </div>
           </div>
-          <div class="guide-item">
-            <div class="guide-dot info"></div>
-            <div>
-              <strong>Sinkronisasi Realtime</strong>
-              <p>Pengaturan tersimpan instan dan sinkron langsung ke beranda tanpa refresh.</p>
+          <div class="profile-details-list">
+            <div class="profile-detail-item">
+              <span class="detail-label">Status Sesi</span>
+              <span class="detail-val text-green">● Aktif Terverifikasi</span>
+            </div>
+            <div class="profile-detail-item">
+              <span class="detail-label">Hak Akses</span>
+              <span class="detail-val">Monitoring, Analytics & Maintenance</span>
+            </div>
+            <div class="profile-detail-item">
+              <span class="detail-label">Keamanan</span>
+              <span class="detail-val">Session Storage Token Guard</span>
             </div>
           </div>
-        </div>
-      </aside>
-    </main>
-  </div>
+          <div class="profile-actions">
+            <button id="profileLogoutBtn" class="btn-action logout-btn" style="width: 100%;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span>Keluar dari Akun</span>
+            </button>
+          </div>
+        </section>
+      </main>
+    </div><!-- /monitor-container -->
+  </div><!-- /dashboardView -->
 
   <!-- Custom Maintenance Message Modal -->
   <div class="modal-backdrop" id="maintenanceMsgModal">
@@ -557,6 +722,25 @@
           </div>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Apple-Style Maintenance Confirmation Modal (Req 8 & 9) -->
+  <div class="modal-backdrop" id="maintenanceConfirmModal" style="display: none;">
+    <div class="modal-sheet confirm-modal-card" style="max-width: 420px; text-align: center; padding: 24px;">
+      <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(255, 149, 0, 0.15); color: #ff9500; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <h3 id="maintenanceConfirmTitle" style="margin: 0 0 8px 0; font-size: 1.15rem; font-weight: 600;">Konfirmasi</h3>
+      <p id="maintenanceConfirmMessage" style="margin: 0 0 24px 0; font-size: 0.9rem; opacity: 0.82; line-height: 1.45;">Apakah Anda yakin ingin mengaktifkan mode maintenance?</p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button type="button" id="maintenanceConfirmCancelBtn" class="btn-action secondary-btn" style="flex: 1; padding: 10px 16px; border-radius: 8px;">Batal</button>
+        <button type="button" id="maintenanceConfirmActionBtn" class="btn-action primary-btn" style="flex: 1; padding: 10px 16px; border-radius: 8px; background: #ff9500; border-color: #ff9500; color: #fff;">Aktifkan</button>
+      </div>
     </div>
   </div>
   </div><!-- /dashboardView -->

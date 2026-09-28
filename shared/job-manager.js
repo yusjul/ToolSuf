@@ -283,6 +283,16 @@
       _notifyListeners('job-completed', job);
       GlobalNotificationService.notify(job);
 
+      // Track feature usage automatically when background job succeeds (Section 1 & 2)
+      if (typeof trackFeatureUsage === 'function' && job.feature) {
+        try {
+          trackFeatureUsage(job.feature, 'process', {
+            inputName: job.inputName || null,
+            outputName: job.outputName || null
+          });
+        } catch (e) {}
+      }
+
       if (typeof job.onComplete === 'function') {
         try { job.onComplete(job); } catch(e) {}
       }
@@ -545,6 +555,7 @@
     IS_MOBILE,
     registerProcessor,
     hasProcessor,
+    _processors,
     getInstance,
     createJob,
     cancelJob,

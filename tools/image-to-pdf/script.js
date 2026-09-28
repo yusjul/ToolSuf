@@ -1545,6 +1545,15 @@ async function generatePDF() {
         if (blob) {
           await downloadBlob(blob, rawInputName);
           showAlert(t('success'), 'ok');
+
+          // Trigger Real-Time Feature Usage Tracking (Section 2, 4)
+          if (typeof trackFeatureUsage === 'function') {
+            trackFeatureUsage('image-to-pdf', 'convert', {
+              pageCount: images.length,
+              pageSize: sizeKey,
+              orientation: orient
+            });
+          }
         }
       },
       onFail: (job) => {
@@ -1589,6 +1598,15 @@ async function generatePDF() {
     await downloadBlob(pdfBlob, rawInputName);
 
     showAlert(t('success'), 'ok');
+
+    // Trigger Real-Time Feature Usage Tracking (Section 2, 4)
+    if (typeof trackFeatureUsage === 'function') {
+      trackFeatureUsage('image-to-pdf', 'convert', {
+        pageCount: images.length,
+        pageSize: sizeKey,
+        orientation: orient
+      });
+    }
   } catch (e) {
     console.error(e);
     showAlert(t('error'), 'err');

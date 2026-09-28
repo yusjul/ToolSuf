@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
       privacy: 'Privacy Policy',
       terms: 'Terms of Service',
       status: 'Status',
-      closeBtn: 'Close Window',
+      closeBtn: 'Close',
       iframeTitle: 'Integrated Productivity Tool',
       toolPassTitle: 'Password Generator',
       toolRenameTitle: 'Batch Renamer Pro',
@@ -78,6 +78,12 @@ document.addEventListener('DOMContentLoaded', () => {
       toolVideoToUhdTitle: 'UHD Video Upscaler',
       cardMaintenanceBadge: 'MAINTENANCE',
       cardMaintenanceDesc: 'Feature is currently under maintenance. Please check back later.',
+      maintenanceBadge: 'MAINTENANCE',
+      maintenanceTitle: 'Feature Under Development',
+      maintenanceDesc: 'We are currently making improvements to this feature. Please try again once the development process is complete.',
+      maintenanceBack: 'Back',
+      maintenanceHome: 'Back to Home',
+      maintenanceClose: 'Close',
     },
     id: {
       navHome: 'Beranda',
@@ -135,12 +141,18 @@ document.addEventListener('DOMContentLoaded', () => {
       privacy: 'Kebijakan Privasi',
       terms: 'Ketentuan Layanan',
       status: 'Status',
-      closeBtn: 'Tutup Jendela',
+      closeBtn: 'Tutup',
       iframeTitle: 'Alat Produktivitas Terintegrasi',
       toolPassTitle: 'Generator Kata Sandi',
       toolRenameTitle: 'Pengganti Nama File Pro',
       cardMaintenanceBadge: 'MAINTENANCE',
       cardMaintenanceDesc: 'Fitur sedang dalam pemeliharaan. Silakan coba kembali nanti.',
+      maintenanceBadge: 'MAINTENANCE',
+      maintenanceTitle: 'Fitur Sedang Dikembangkan',
+      maintenanceDesc: 'Kami sedang melakukan beberapa peningkatan pada fitur ini. Silakan coba kembali setelah proses pengembangan selesai.',
+      maintenanceBack: 'Kembali',
+      maintenanceHome: 'Kembali ke Beranda',
+      maintenanceClose: 'Tutup',
     }
   };
 
@@ -186,6 +198,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     syncIframeTheme();
     window.dispatchEvent(new Event('theme-changed'));
+    if (typeof _syncActiveModalMaintenance === 'function') {
+      _syncActiveModalMaintenance();
+    }
   };
 
   // Sync theme inside iframe via postMessage (reliable cross-origin)
@@ -227,6 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Listen to message events from iframe (cross-origin safe)
   window.addEventListener('message', (e) => {
     if (!e.data) return;
+    if (e.data.type === 'closeToolModal') {
+      closeTool();
+      return;
+    }
     if (e.data.type === 'showToast') {
       showToast(e.data.message);
     } else if (e.data.type === 'downloadFile' || e.data.type === 'download' || e.data.type === 'downloadPDF') {
@@ -376,8 +395,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update close button accessibility label
     if (closeWindowBtn) {
-      closeWindowBtn.setAttribute('title', translations[lang].closeBtn);
-      closeWindowBtn.setAttribute('aria-label', translations[lang].closeBtn);
+      const closeLabel = lang === 'en' ? 'Close' : 'Tutup';
+      closeWindowBtn.setAttribute('title', closeLabel);
+      closeWindowBtn.setAttribute('aria-label', closeLabel);
     }
 
     // Dynamic icon text updates for modal window header
@@ -408,6 +428,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Re-apply maintenance badges/descriptions in current language
     _applyMaintenanceBadges();
+    if (typeof _syncActiveModalMaintenance === 'function') {
+      _syncActiveModalMaintenance();
+    }
   };
 
   // Language Dropdown toggling
@@ -728,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const descEl = card.querySelector('.card-desc, p');
       let existingBadge = card.querySelector('.mnt-card-badge');
 
-      if (ToolSufMaintenance.isFeatureMaintenance(toolKey)) {
+      if (ToolSufMaintenance.isMaintenanceActive(toolKey)) {
         card.classList.add('mnt-active');
         card.setAttribute('aria-disabled', 'true');
         card.setAttribute('tabindex', '-1');
@@ -803,11 +826,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- MAINTENANCE CHECK: Prevent tool from loading if in maintenance ---
-    if (typeof ToolSufMaintenance !== 'undefined' && ToolSufMaintenance.isFeatureMaintenance(toolKey)) {
+    if (typeof ToolSufMaintenance !== 'undefined' && ToolSufMaintenance.isMaintenanceActive(toolKey)) {
+      const isCurrentDark = htmlEl.classList.contains('dark') || (localStorage.getItem('theme') === 'dark');
       toolFrame.removeAttribute('src');
       toolFrame.srcdoc = ToolSufMaintenance.generateMaintenanceHTML(toolKey, {
-        isDark: !document.documentElement.classList.contains('light'),
-        showHomeBtn: false
+        isDark: isCurrentDark,
+        lang: currentLang,
+        showHomeBtn: true,
+        isModal: true
       });
 
       modalOverlay.classList.add('active');
@@ -857,17 +883,43 @@ document.addEventListener('DOMContentLoaded', () => {
   // Apply maintenance badges to tool cards on load
   _applyMaintenanceBadges();
 
-  const _syncActiveModalMaintenance = () => {
+  function _syncActiveModalMaintenance() {
     if (!modalOverlay.classList.contains('active') || !activeTool) return;
     if (typeof ToolSufMaintenance === 'undefined') return;
 
-    const isMnt = ToolSufMaintenance.isFeatureMaintenance(activeTool);
+    const isMnt = ToolSufMaintenance.isMaintenanceActive(activeTool);
     if (isMnt) {
-      toolFrame.removeAttribute('src');
-      toolFrame.srcdoc = ToolSufMaintenance.generateMaintenanceHTML(activeTool, {
-        isDark: !document.documentElement.classList.contains('light'),
-        showHomeBtn: false
-      });
+      const config = toolsInfo[activeTool];
+      if (config) {
+        const title = currentLang === 'id' ? config.titleId : config.titleEn;
+        macTitle.innerHTML = `${config.icon} ${title}`;
+      }
+      if (closeWindowBtn) {
+        const closeLabel = currentLang === 'en' ? 'Close' : 'Tutup';
+        closeWindowBtn.setAttribute('title', closeLabel);
+        closeWindowBtn.setAttribute('aria-label', closeLabel);
+      }
+
+      const isCurrentDark = htmlEl.classList.contains('dark') || (localStorage.getItem('theme') === 'dark');
+
+      let syncedLive = false;
+      try {
+        if (toolFrame && toolFrame.contentWindow && toolFrame.hasAttribute('srcdoc')) {
+          toolFrame.contentWindow.postMessage({ type: 'syncTheme', dark: isCurrentDark }, '*');
+          toolFrame.contentWindow.postMessage({ type: 'syncLang', lang: currentLang }, '*');
+          syncedLive = true;
+        }
+      } catch (e) {}
+
+      if (!syncedLive || !toolFrame.hasAttribute('srcdoc')) {
+        toolFrame.removeAttribute('src');
+        toolFrame.srcdoc = ToolSufMaintenance.generateMaintenanceHTML(activeTool, {
+          isDark: isCurrentDark,
+          lang: currentLang,
+          showHomeBtn: true,
+          isModal: true
+        });
+      }
     } else {
       if (toolFrame.hasAttribute('srcdoc')) {
         const config = toolsInfo[activeTool];
@@ -877,7 +929,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     }
-  };
+  }
 
   // Listen for maintenance config changes (e.g. from admin panel or other tabs)
   window.addEventListener('toolsuf-maintenance-changed', () => {
@@ -922,7 +974,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Direct route detection and popstate handling
-  window.addEventListener('popstate', () => {
+  window.addEventListener('popstate', async () => {
+    if (typeof ToolSufMaintenance !== 'undefined' && ToolSufMaintenance.fetchStatus) {
+      try { await ToolSufMaintenance.fetchStatus(); } catch (e) {}
+    }
+    _applyMaintenanceBadges();
+
     if (window.location.pathname.includes('pdf-compressor')) {
       openTool('pdf-compressor');
     } else if (modalOverlay.classList.contains('active')) {
@@ -930,53 +987,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  try {
-    const initPath = window.location.pathname.toLowerCase();
-    const initQuery = new URLSearchParams(window.location.search).get('tool');
-    const initHash = window.location.hash.toLowerCase().replace('#', '');
-    if (initPath.includes('yusjul-admin')) {
-      const base = window.location.pathname.replace(/\/yusjul-admin.*$/, '').replace(/\/$/, '');
-      window.location.replace((base || '') + '/yusjul-admin/');
-      return;
-    }
-    if (initQuery && toolsInfo[initQuery]) {
-      openTool(initQuery);
-    } else if (initHash && toolsInfo[initHash]) {
-      openTool(initHash);
-    } else if (initPath.includes('pdf-compressor')) {
-      openTool('pdf-compressor');
-    }
-  } catch (e) {}
-
-  // Secret Logo Trigger (Triple-click / tap)
-  const logoEl = document.querySelector('.header-container .logo');
-  if (logoEl) {
-    let logoClickCount = 0;
-    let logoClickTimeout = null;
-
-    const handleLogoTap = (e) => {
-      // Prevent browser default touch behavior (like double-tap zoom)
-      if (e.type === 'touchstart') {
-        e.preventDefault();
+  const handleInitialRoute = async () => {
+    try {
+      // 1. Ambil status maintenance terbaru dari server sebelum route guard
+      if (typeof ToolSufMaintenance !== 'undefined' && ToolSufMaintenance.fetchStatus) {
+        try {
+          await ToolSufMaintenance.fetchStatus();
+        } catch (e) {}
       }
-      
-      logoClickCount++;
-      if (logoClickCount === 1) {
-        logoClickTimeout = setTimeout(() => {
-          logoClickCount = 0;
-          // Smooth scroll to top for single click/tap
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 600); // 600ms time window for triple tap
-      } else if (logoClickCount === 3) {
-        if (logoClickTimeout) clearTimeout(logoClickTimeout);
-        logoClickCount = 0;
-        openTool('web-monitor');
-      }
-    };
+      _applyMaintenanceBadges();
 
-    logoEl.addEventListener('click', handleLogoTap);
-    logoEl.addEventListener('touchstart', handleLogoTap, { passive: false });
-  }
+      const initPath = window.location.pathname.toLowerCase();
+      const initQuery = new URLSearchParams(window.location.search).get('tool');
+      const initHash = window.location.hash.toLowerCase().replace('#', '');
+
+      if (initPath.includes('yusjul-admin')) {
+        const base = window.location.pathname.replace(/\/yusjul-admin.*$/, '').replace(/\/$/, '');
+        window.location.replace((base || '') + '/yusjul-admin/');
+        return;
+      }
+
+      if (initQuery && toolsInfo[initQuery]) {
+        openTool(initQuery);
+      } else if (initHash && toolsInfo[initHash]) {
+        openTool(initHash);
+      } else if (initPath.includes('pdf-compressor')) {
+        openTool('pdf-compressor');
+      }
+    } catch (e) {}
+  };
+
+  handleInitialRoute();
 
   // Handle "Coming Soon" tool cards
   document.querySelectorAll('.coming-soon').forEach(card => {

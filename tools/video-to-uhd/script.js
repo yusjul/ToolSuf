@@ -513,6 +513,12 @@ async function convertVideo() {
           infoUhdBitrate.textContent = formatBitrate(Math.round(blob.size * 8 / videoMeta.dur));
           setProgress(100, t('success'));
           showAlert(t('success'), 'ok');
+          if (typeof trackFeatureUsage === 'function') {
+            trackFeatureUsage('video-to-uhd', 'upscale-video', {
+              fileName: videoFile?.name || 'video.mp4',
+              resolution: targetResKey
+            });
+          }
         }
       },
       onFail: (job) => {
@@ -595,6 +601,12 @@ async function convertVideo() {
 
     setProgress(100, t('success'));
     showAlert(t('success'), 'ok');
+    if (typeof trackFeatureUsage === 'function') {
+      trackFeatureUsage('video-to-uhd', 'upscale-video', {
+        fileName: videoFile?.name || 'video.mp4',
+        resolution: targetResKey
+      });
+    }
   } catch (e) {
     console.error(e);
     showAlert(t('error'), 'err');

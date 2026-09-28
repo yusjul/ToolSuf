@@ -19,7 +19,8 @@
 
   // Pemetaan resmi slug fitur ToolSuf
   const FEATURE_SLUGS = {
-    'background-remover': 'background-remover',
+    'background-remover': 'remove-bg',
+    'remove-bg': 'remove-bg',
     'image-compressor': 'image-compressor',
     'media-compressor': 'image-compressor',
     'pdf-compressor': 'pdf-compressor',
@@ -222,15 +223,90 @@
     return finalFilename;
   }
 
+  // --- Centralized Feature Usage Tracker (Section 4) ---
+  const _recentSends = new Map();
+  const DEBOUNCE_MS = 2500;
+
+  async function trackFeatureUsage(featureId, action, metadata = {}) {
+    if (!featureId || !action) {
+      console.warn('[trackFeatureUsage] featureId and action are required.');
+      return { success: false, error: 'featureId and action required' };
+    }
+
+    const cleanId = String(featureId).toLowerCase().trim();
+    const cleanAction = String(action).toLowerCase().trim();
+    const now = Date.now();
+    const debounceKey = `${cleanId}:${cleanAction}`;
+
+    if (_recentSends.has(debounceKey)) {
+      const lastTime = _recentSends.get(debounceKey);
+      if (now - lastTime < DEBOUNCE_MS) {
+        return { success: true, throttled: true, usageRecorded: true };
+      }
+    }
+    _recentSends.set(debounceKey, now);
+
+    const eventId = 'evt-' + now + '-' + Math.random().toString(36).substring(2, 9);
+    const timestamp = new Date().toISOString();
+
+    const payload = {
+      featureId: cleanId,
+      action: cleanAction,
+      metadata: metadata || {},
+      timestamp,
+      eventId
+    };
+
+    let apiBase = '';
+    try {
+      if (typeof window !== 'undefined') {
+        const origin = window.location.origin;
+        if (origin && !origin.startsWith('file:') && !origin.startsWith('null')) {
+          apiBase = origin;
+        }
+      }
+    } catch (e) {}
+    if (!apiBase) apiBase = 'http://localhost:3001';
+
+    try {
+      const response = await fetch(`${apiBase}/api/usage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        const resData = await response.json();
+        return resData;
+      } else {
+        const errText = await response.text();
+        console.warn('[trackFeatureUsage] Server returned status:', response.status, errText);
+        return { success: true, usageRecorded: false, error: `HTTP ${response.status}` };
+      }
+    } catch (netErr) {
+      console.warn('[trackFeatureUsage] Request failed silently (feature continues):', netErr.message);
+      return { success: true, usageRecorded: false, error: netErr.message };
+    }
+  }
+
   // Ekspos ke global scope
   const ToolSufDownload = {
     FEATURE_SLUGS,
     generateFilename,
     downloadFile,
-    sanitizeBaseName
+    sanitizeBaseName,
+    trackFeatureUsage
   };
 
   global.ToolSufDownload = ToolSufDownload;
   global.downloadFile = downloadFile;
+  global.trackFeatureUsage = trackFeatureUsage;
+  if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
+    try {
+      window.parent.trackFeatureUsage = trackFeatureUsage;
+    } catch (e) {}
+  }
 
 })(typeof window !== 'undefined' ? window : globalThis);
